@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Frienduit Tactickle Hub</title>
+  <title>Frienduit Tactical Hub</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
     html, body {
       margin: 0;
       padding: 0;
@@ -14,6 +17,7 @@
       display: flex;
       flex-direction: column;
       min-height: 100vh;
+      height: auto;
       text-align: center;
       animation: pulse-background 5s infinite alternate ease-in-out;
       position: relative;
@@ -33,12 +37,13 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(255, 255, 255, 0.1);
-      opacity: 0.25;
+      background: rgba(255, 255, 255, 0.15);
+      opacity: 0.35;
       pointer-events: none;
       z-index: -1;
       filter: url(#noiseFilter);
-      animation: static-noise 0.2s infinite;
+      animation: static-noise 0.25s infinite;
+      mix-blend-mode: overlay;
     }
     @keyframes static-noise {
       0% {
@@ -118,6 +123,41 @@
       position: relative;
       z-index: 1;
     }
+    .info-box {
+      background: #0f172a;
+      padding: 1rem;
+      border-radius: 5px;
+      border: 1px solid #38bdf8;
+      max-width: 600px;
+      margin: 1rem auto;
+      position: relative;
+      z-index: 1;
+      transition: box-shadow 0.3s ease;
+    }
+    .info-box:hover {
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.5);
+    }
+    .info-box h3 {
+      font-size: clamp(1.2rem, 3vw, 1.5rem);
+      margin-bottom: 0.5rem;
+      text-shadow: 0 0 5px rgba(56, 189, 248, 0.3);
+    }
+    .info-box p {
+      font-size: clamp(0.9rem, 2.5vw, 1rem);
+      margin: 0;
+    }
+    .info-box::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      opacity: 0.2;
+      filter: url(#noiseFilter);
+      z-index: -1;
+    }
     .projects {
       padding: 2rem;
       background: rgba(30, 41, 59, 0.8);
@@ -170,7 +210,7 @@
       box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
     }
     footer {
-      padding: 1rem 1rem 2rem;
+      padding: 1rem 1rem 4rem;
       font-size: 0.9rem;
       color: #94a3b8;
       position: relative;
@@ -206,13 +246,20 @@
         padding: 0 1rem;
       }
       footer {
-        padding: 1rem 1rem 3rem;
+        padding: 1rem 1rem 5rem;
+      }
+      .info-box {
+        margin: 1rem;
       }
     }
     @supports not (filter: url(#noiseFilter)) {
       .static-overlay {
-        background: rgba(255, 255, 255, 0.15);
-        opacity: 0.2;
+        background: rgba(255, 255, 255, 0.2);
+        opacity: 0.25;
+      }
+      .info-box::before {
+        background: rgba(255, 255, 255, 0.1);
+        opacity: 0.15;
       }
     }
   </style>
@@ -220,7 +267,7 @@
 <body>
   <svg style="position: absolute; width: 0; height: 0;" aria-hidden="true">
     <filter id="noiseFilter">
-      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch" />
+      <feTurbulence type="fractalNoise" baseFrequency="1.0" numOctaves="3" stitchTiles="stitch" />
       <feColorMatrix type="saturate" values="0" />
       <feBlend mode="multiply" in="SourceGraphic" />
     </filter>
@@ -228,12 +275,16 @@
   <div class="static-overlay"></div>
   <header>
     <div class="badge" aria-label="Status Update">Shadows Stirring</div>
-    <h1>Frienduit Tactickle Hub</h1>
+    <h1>Frienduit Tactical Hub</h1>
   </header>
   <section class="hero">
     <p>Whispers in the void. MoistOps awakens hidden protocols. Phantom tools emerge from the fog. Tune in before the veil lifts.</p>
     <!-- Replace with newsletter form (e.g., Mailchimp) when ready -->
     <a href="mailto:postalkenny@gmail.com?subject=Access%20the%20Frienduit%20Tactical%20Hub%20Signal" class="cta-button" aria-label="Access the signal">Intercept the Whisper</a>
+    <div class="info-box">
+      <h3>Ether Signal: Powell’s Whisper</h3>
+      <p>Signals shift in the void. The Fed’s voice hints at rate cuts as jobs falter. Tariffs stir inflation’s ghost. Markets brace for a storm—gains or losses hang in the balance.</p>
+    </div>
   </section>
   <section class="projects">
     <h2>Echoes in the Pipeline</h2>
