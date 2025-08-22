@@ -37,12 +37,12 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(255, 255, 255, 0.15);
-      opacity: 0.35;
+      background: rgba(255, 255, 255, 0.4);
+      opacity: 0.85;
       pointer-events: none;
       z-index: -1;
-      filter: url(#noiseFilter);
-      animation: static-noise 0.25s infinite;
+      filter: url(#noiseFilter) contrast(1.2);
+      animation: static-noise 0.5s infinite;
       mix-blend-mode: overlay;
     }
     @keyframes static-noise {
@@ -85,6 +85,8 @@
       padding: 1rem;
       position: relative;
       z-index: 1;
+      min-height: fit-content;
+      overflow: visible;
     }
     h1 {
       font-size: clamp(2rem, 5vw, 2.5rem);
@@ -122,6 +124,56 @@
       padding: 2rem;
       position: relative;
       z-index: 1;
+      min-height: fit-content;
+      overflow: visible;
+      max-height: calc(100vh - 2rem);
+    }
+    .newsletter-form {
+      max-width: 600px;
+      margin: 1rem auto;
+      position: relative;
+      z-index: 1;
+    }
+    .newsletter-form p {
+      font-size: clamp(0.9rem, 2.5vw, 1rem);
+      margin-bottom: 0.5rem;
+      text-shadow: 0 0 5px rgba(56, 189, 248, 0.3);
+    }
+    .newsletter-form input[type="email"] {
+      padding: 0.5rem;
+      font-size: 1rem;
+      border: 1px solid #38bdf8;
+      border-radius: 5px;
+      background: #0f172a;
+      color: #f1f5f9;
+      width: 70%;
+      margin-right: 0.5rem;
+    }
+    .newsletter-form input[type="submit"] {
+      padding: 0.5rem 1.5rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      background: #22c55e;
+      color: #f1f5f9;
+      cursor: pointer;
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+    .newsletter-form input[type="submit"]:hover {
+      background: #16a34a;
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+    }
+    .newsletter-form::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      opacity: 0.2;
+      filter: url(#noiseFilter);
+      z-index: -1;
     }
     .info-box {
       background: #0f172a;
@@ -164,6 +216,8 @@
       width: 100%;
       position: relative;
       z-index: 1;
+      min-height: fit-content;
+      overflow: visible;
     }
     .projects h2 {
       font-size: clamp(1.5rem, 4vw, 2rem);
@@ -210,11 +264,13 @@
       box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
     }
     footer {
-      padding: 1rem 1rem 4rem;
+      padding: 1rem 1rem 9rem;
       font-size: 0.9rem;
       color: #94a3b8;
       position: relative;
       z-index: 1;
+      min-height: fit-content;
+      overflow: visible;
     }
     footer a {
       color: #38bdf8;
@@ -246,18 +302,21 @@
         padding: 0 1rem;
       }
       footer {
-        padding: 1rem 1rem 5rem;
+        padding: 1rem 1rem 10rem;
       }
-      .info-box {
+      .info-box, .newsletter-form {
         margin: 1rem;
+      }
+      .newsletter-form input[type="email"] {
+        width: 60%;
       }
     }
     @supports not (filter: url(#noiseFilter)) {
       .static-overlay {
-        background: rgba(255, 255, 255, 0.2);
-        opacity: 0.25;
+        background: rgba(255, 255, 255, 0.45);
+        opacity: 0.5;
       }
-      .info-box::before {
+      .info-box::before, .newsletter-form::before {
         background: rgba(255, 255, 255, 0.1);
         opacity: 0.15;
       }
@@ -267,7 +326,7 @@
 <body>
   <svg style="position: absolute; width: 0; height: 0;" aria-hidden="true">
     <filter id="noiseFilter">
-      <feTurbulence type="fractalNoise" baseFrequency="1.0" numOctaves="3" stitchTiles="stitch" />
+      <feTurbulence type="fractalNoise" baseFrequency="2.0" numOctaves="3" stitchTiles="stitch" />
       <feColorMatrix type="saturate" values="0" />
       <feBlend mode="multiply" in="SourceGraphic" />
     </filter>
@@ -279,11 +338,17 @@
   </header>
   <section class="hero">
     <p>Whispers in the void. MoistOps awakens hidden protocols. Phantom tools emerge from the fog. Tune in before the veil lifts.</p>
-    <!-- Replace with newsletter form (e.g., Mailchimp) when ready -->
-    <a href="mailto:postalkenny@gmail.com?subject=Access%20the%20Frienduit%20Tactical%20Hub%20Signal" class="cta-button" aria-label="Access the signal">Intercept the Whisper</a>
+    <div class="newsletter-form">
+      <p>Join the Shadow Network. Decoded signals from the ether—cryptic market whispers, phantom tool updates, and unseen ranks’ insights. Subscribe to intercept the pulse of MoistOps’ mission.</p>
+      <!-- Buttondown form -->
+      <form action="https://buttondown.com/api/emails/embedded-form/Frienduit" method="post" target="_blank">
+        <input type="email" name="email" placeholder="Enter your email" required aria-label="Email for newsletter" />
+        <input type="submit" value="Intercept the Whisper" aria-label="Submit newsletter signup" />
+      </form>
+    </div>
     <div class="info-box">
       <h3>Ether Signal: Powell’s Whisper</h3>
-      <p>Signals shift in the void. The Fed’s voice hints at rate cuts as jobs falter. Tariffs stir inflation’s ghost. Markets brace for a storm—gains or losses hang in the balance.</p>
+      <p>Signals flicker. A 73.5% whisper of a 25bps rate cut looms for September. Jobs wane, tariffs haunt. Markets brace for chaos or calm.</p>
     </div>
   </section>
   <section class="projects">
@@ -305,7 +370,7 @@
   </section>
   <footer>
     <p class="donation-message">Fuel the shadows. Your support powers MoistOps’ covert mission to decode the ether and unleash phantom tools like Trevor aka G Money. Send a Shadow to support the unseen ranks shaping the future.</p>
-    <p>&copy; 2025 Frienduit Systems | <a href="https://x.com">Echo on X</a> | <a href="https://www.paypal.com/donate/?hosted_button_id=URB2WF85QAVYE" target="_blank" rel="noopener noreferrer">Send a Shadow</a></p>
+    <p>&copy; 2025 Frienduit Systems | <a href="https://x.com">Echo on X</a> | <a href="https://www.paypal.com/donate/?hosted_button_id=URB2WF85QAVYE" target="_blank" rel="noopener noreferrer">Send a Shadow</a> | <a href="/privacy">Privacy Policy</a></p>
   </footer>
 </body>
 </html>
