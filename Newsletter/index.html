@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Frienduit Newsletters</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #0f172a;
+      color: #f1f5f9;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      height: auto;
+      text-align: center;
+      animation: pulse-background 5s infinite alternate ease-in-out;
+      position: relative;
+      overflow-y: auto;
+    }
+    @keyframes pulse-background {
+      0% {
+        background-color: #0f172a;
+      }
+      100% {
+        background-color: #1a202c;
+      }
+    }
+    .static-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.5);
+      opacity: 0.95;
+      pointer-events: none;
+      z-index: -1;
+      filter: url(#noiseFilter) contrast(1.2);
+      animation: static-noise 0.6s infinite;
+      mix-blend-mode: overlay;
+    }
+    @keyframes static-noise {
+      0% {
+        transform: translate(0, 0);
+      }
+      10% {
+        transform: translate(-10px, 10px);
+      }
+      20% {
+        transform: translate(10px, -10px);
+      }
+      30% {
+        transform: translate(-8px, 8px);
+      }
+      40% {
+        transform: translate(8px, -8px);
+      }
+      50% {
+        transform: translate(-6px, 6px);
+      }
+      60% {
+        transform: translate(6px, -6px);
+      }
+      70% {
+        transform: translate(-4px, 4px);
+      }
+      80% {
+        transform: translate(4px, -4px);
+      }
+      90% {
+        transform: translate(-2px, 2px);
+      }
+      100% {
+        transform: translate(0, 0);
+      }
+    }
+    header {
+      background: transparent;
+      padding: 1rem;
+      position: relative;
+      z-index: 1;
+      min-height: fit-content;
+      overflow: visible;
+    }
+    h1 {
+      font-size: clamp(2rem, 5vw, 2.5rem);
+      margin-bottom: 0.5rem;
+      text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+    }
+    p {
+      font-size: clamp(1rem, 3vw, 1.2rem);
+      max-width: 600px;
+      margin: 0 auto 1.5rem;
+    }
+    .newsletter-archive {
+      padding: 2rem;
+      background: rgba(30, 41, 59, 0.8);
+      width: 100%;
+      position: relative;
+      z-index: 1;
+      min-height: fit-content;
+      overflow: visible;
+    }
+    .newsletter-archive h2 {
+      font-size: clamp(1.5rem, 4vw, 2rem);
+      margin-bottom: 1rem;
+      text-shadow: 0 0 5px rgba(56, 189, 248, 0.3);
+    }
+    .newsletter-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .newsletter-card {
+      background: #0f172a;
+      padding: 1rem;
+      border-radius: 5px;
+      border: 1px solid #38bdf8;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      text-align: left;
+    }
+    .newsletter-card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.5);
+    }
+    .newsletter-card h3 {
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 0 5px rgba(56, 189, 248, 0.3);
+    }
+    .newsletter-card p {
+      font-size: 0.9rem;
+      margin: 0;
+    }
+    .newsletter-card a {
+      color: #38bdf8;
+      text-decoration: none;
+      font-size: 0.9rem;
+      display: inline-block;
+      margin-top: 0.5rem;
+    }
+    .newsletter-card a:hover {
+      text-decoration: underline;
+    }
+    .cta-button {
+      display: inline-block;
+      background: #22c55e;
+      color: #f1f5f9;
+      padding: 0.5rem 1.5rem;
+      border-radius: 5px;
+      text-decoration: none;
+      font-size: 1rem;
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+      margin: 1rem auto;
+      display: block;
+      max-width: 200px;
+    }
+    .cta-button:hover {
+      background: #16a34a;
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+    }
+    footer {
+      padding: 1rem 1rem 11rem;
+      font-size: 0.9rem;
+      color: #94a3b8;
+      position: relative;
+      z-index: 1;
+      min-height: fit-content;
+      overflow: visible;
+    }
+    footer a {
+      color: #38bdf8;
+      text-decoration: none;
+    }
+    footer a:hover {
+      text-decoration: underline;
+    }
+    .donation-message {
+      font-size: 0.8rem;
+      max-width: 600px;
+      margin: 0 auto 0.5rem;
+      color: #e2e8f0;
+      text-shadow: 0 0 5px rgba(56, 189, 248, 0.2);
+    }
+    @media (max-width: 600px) {
+      h1 {
+        font-size: clamp(1.5rem, 4vw, 2rem);
+      }
+      p {
+        font-size: clamp(0.9rem, 2.5vw, 1rem);
+        padding: 0 1rem;
+      }
+      .newsletter-archive {
+        padding: 1rem;
+      }
+      .donation-message {
+        font-size: 0.65rem;
+        padding: 0 1rem;
+      }
+      footer {
+        padding: 1rem 1rem 12rem;
+      }
+    }
+    @supports not (filter: url(#noiseFilter)) {
+      .static-overlay {
+        background: rgba(255, 255, 255, 0.55);
+        opacity: 0.6;
+      }
+    }
+  </style>
+</head>
+<body>
+  <svg style="position: absolute; width: 0; height: 0;" aria-hidden="true">
+    <filter id="noiseFilter">
+      <feTurbulence type="fractalNoise" baseFrequency="2.4" numOctaves="3" stitchTiles="stitch" />
+      <feColorMatrix type="saturate" values="0" />
+      <feBlend mode="multiply" in="SourceGraphic" />
+    </filter>
+  </svg>
+  <div class="static-overlay"></div>
+  <header>
+    <h1>Frienduit Newsletters</h1>
+  </header>
+  <section class="newsletter-archive">
+    <h2>Archived Dispatches</h2>
+    <p>Explore past signals from the Shadow Network. Decoded market whispers and cryptic updates await.</p>
+    <div class="newsletter-grid">
+      <div class="newsletter-card">
+        <h3>Frienduit Pragmatic Dispatch #001</h3>
+        <p>August 26, 2025 | Quantum, Spectrum, and Meme Volatility</p>
+        <a href="/Newsletter/Aug26-25.html" aria-label="Read Frienduit Pragmatic Dispatch Issue #001">Read Dispatch</a>
+      </div>
+    </div>
+    <a href="/" class="cta-button" aria-label="Return to Frienduit Tactical Hub">Back to Tactical Hub</a>
+  </section>
+  <footer>
+    <p class="donation-message">Fuel the shadows. Your support powers MoistOps’ covert mission to decode the ether and unleash phantom tools like Trevor aka G Money. Send a Shadow to support the unseen ranks shaping the future.</p>
+    <p>&copy; 2025 Frienduit Systems | <a href="https://x.com">Echo on X</a> | <a href="https://www.paypal.com/donate/?hosted_button_id=URB2WF85QAVYE" target="_blank" rel="noopener noreferrer">Send a Shadow</a> | <a href="/privacy">Privacy Policy</a></p>
+  </footer>
+</body>
+</html>
