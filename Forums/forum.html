@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThoughtJunkie Beta Forum - Frienduit</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            color: #667eea;
+        }
+
+        .header .subtitle {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
+        .user-section {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .username {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #f0f3ff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .forum-header {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .forum-header h2 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .forum-header p {
+            color: #666;
+        }
+
+        .forum-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .search-box {
+            flex: 1;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .thread-list {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .thread-item {
+            padding: 1.5rem;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .thread-item:hover {
+            background: #f8f9ff;
+        }
+
+        .thread-item:last-child {
+            border-bottom: none;
+        }
+
+        .thread-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
+        .thread-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .thread-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .thread-stats {
+            display: flex;
+            gap: 1.5rem;
+            font-size: 0.85rem;
+            color: #999;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h2 {
+            color: #333;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .category-tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .category-bug { background: #fee; color: #c00; }
+        .category-feature { background: #efe; color: #080; }
+        .category-question { background: #eef; color: #008; }
+        .category-feedback { background: #ffe; color: #880; }
+
+        .post-list {
+            margin-top: 1.5rem;
+        }
+
+        .post-item {
+            background: #f8f9ff;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .post-author {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .post-date {
+            font-size: 0.85rem;
+            color: #999;
+        }
+
+        .post-content {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .login-form {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .forum-actions {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .search-box {
+                max-width: 100%;
+            }
+
+            .thread-header {
+                flex-direction: column;
+            }
+
+            .thread-stats {
+                margin-top: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>ThoughtJunkie Beta Forum</h1>
+            <div class="subtitle">Community discussion and feedback</div>
+        </div>
+        <div class="user-section">
+            <div class="user-info" id="userInfo"></div>
+            <button class="btn btn-primary" id="authBtn">Login</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="forum-header">
+            <h2>Welcome to the Beta Testing Forum</h2>
+            <p>Share your thoughts, report bugs, request features, and connect with other beta testers. Your feedback helps shape ThoughtJunkie!</p>
+        </div>
+
+        <div class="forum-actions">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search discussions...">
+            </div>
+            <button class="btn btn-primary" id="newThreadBtn" style="display: none;">New Discussion</button>
+        </div>
+
+        <div class="thread-list" id="threadList">
+            <div class="empty-state">
+                <div class="empty-state-icon">💬</div>
+                <p>No discussions yet. Login to start the conversation!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Login to Beta Forum</h2>
+                <button class="close-btn" onclick="closeModal('loginModal')">&times;</button>
+            </div>
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- New Thread Modal -->
+    <div class="modal" id="newThreadModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Start New Discussion</h2>
+                <button class="close-btn" onclick="closeModal('newThreadModal')">&times;</button>
+            </div>
+            <form id="newThreadForm">
+                <div class="form-group">
+                    <label for="threadCategory">Category</label>
+                    <select id="threadCategory" required>
+                        <option value="">Select a category</option>
+                        <option value="bug">Bug Report</option>
+                        <option value="feature">Feature Request</option>
+                        <option value="question">Question</option>
+                        <option value="feedback">General Feedback</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="threadTitle">Title</label>
+                    <input type="text" id="threadTitle" required placeholder="Brief description of your topic">
+                </div>
+                <div class="form-group">
+                    <label for="threadContent">Description</label>
+                    <textarea id="threadContent" required placeholder="Provide details about your feedback, bug report, or question..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Post Discussion</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Thread View Modal -->
+    <div class="modal" id="threadModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="threadModalTitle"></h2>
+                <button class="close-btn" onclick="closeModal('threadModal')">&times;</button>
+            </div>
+            <div id="threadModalContent"></div>
+            <div class="post-list" id="postList"></div>
+            <form id="replyForm" style="margin-top: 1.5rem; display: none;">
+                <div class="form-group">
+                    <label for="replyContent">Your Reply</label>
+                    <textarea id="replyContent" required placeholder="Share your thoughts..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Post Reply</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Data storage
+        let currentUser = null;
+        let threads = [];
+        let currentThread = null;
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            setupEventListeners();
+            renderThreads();
+            updateUI();
+        });
+
+        function loadData() {
+            currentUser = JSON.parse(localStorage.getItem('forumUser') || 'null');
+            threads = JSON.parse(localStorage.getItem('forumThreads') || '[]');
+            
+            // Add sample data if empty
+            if (threads.length === 0 && !localStorage.getItem('forumThreads')) {
+                threads = [
+                    {
+                        id: 1,
+                        title: 'Welcome to the ThoughtJunkie Beta Forum!',
+                        content: 'This is a space for beta testers to share feedback, report bugs, and discuss features. We\'re excited to have you here!',
+                        category: 'feedback',
+                        author: 'ThoughtJunkie Team',
+                        date: new Date().toISOString(),
+                        replies: 0,
+                        views: 0,
+                        posts: []
+                    }
+                ];
+                saveData();
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('forumUser', JSON.stringify(currentUser));
+            localStorage.setItem('forumThreads', JSON.stringify(threads));
+        }
+
+        function setupEventListeners() {
+            document.getElementById('authBtn').addEventListener('click', handleAuth);
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('newThreadBtn').addEventListener('click', () => openModal('newThreadModal'));
+            document.getElementById('newThreadForm').addEventListener('submit', handleNewThread);
+            document.getElementById('replyForm').addEventListener('submit', handleReply);
+            document.getElementById('searchInput').addEventListener('input', handleSearch);
+        }
+
+        function handleAuth() {
+            if (currentUser) {
+                if (confirm('Are you sure you want to logout?')) {
+                    currentUser = null;
+                    saveData();
+                    updateUI();
+                    renderThreads();
+                }
+            } else {
+                openModal('loginModal');
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            
+            currentUser = { username, email };
+            saveData();
+            closeModal('loginModal');
+            updateUI();
+            renderThreads();
+            
+            document.getElementById('loginForm').reset();
+        }
+
+        function handleNewThread(e) {
+            e.preventDefault();
+            
+            const thread = {
+                id: Date.now(),
+                title: document.getElementById('threadTitle').value,
+                content: document.getElementById('threadContent').value,
+                category: document.getElementById('threadCategory').value,
+                author: currentUser.username,
+                date: new Date().toISOString(),
+                replies: 0,
+                views: 0,
+                posts: []
+            };
+            
+            threads.unshift(thread);
+            saveData();
+            closeModal('newThreadModal');
+            renderThreads();
+            
+            document.getElementById('newThreadForm').reset();
+        }
+
+        function handleReply(e) {
+            e.preventDefault();
+            
+            const post = {
+                id: Date.now(),
+                author: currentUser.username,
+                content: document.getElementById('replyContent').value,
+                date: new Date().toISOString()
+            };
+            
+            currentThread.posts.push(post);
+            currentThread.replies = currentThread.posts.length;
+            saveData();
+            
+            document.getElementById('replyContent').value = '';
+            renderPosts();
+        }
+
+        function handleSearch(e) {
+            const query = e.target.value.toLowerCase();
+            const filtered = threads.filter(thread => 
+                thread.title.toLowerCase().includes(query) ||
+                thread.content.toLowerCase().includes(query) ||
+                thread.author.toLowerCase().includes(query)
+            );
+            renderThreads(filtered);
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function updateUI() {
+            const userInfo = document.getElementById('userInfo');
+            const authBtn = document.getElementById('authBtn');
+            const newThreadBtn = document.getElementById('newThreadBtn');
+            
+            if (currentUser) {
+                userInfo.innerHTML = `
+                    <div class="username">${currentUser.username}</div>
+                    <span class="badge">Beta Tester</span>
+                `;
+                authBtn.textContent = 'Logout';
+                authBtn.className = 'btn btn-secondary';
+                newThreadBtn.style.display = 'block';
+                document.getElementById('replyForm').style.display = 'block';
+            } else {
+                userInfo.innerHTML = '';
+                authBtn.textContent = 'Login';
+                authBtn.className = 'btn btn-primary';
+                newThreadBtn.style.display = 'none';
+                document.getElementById('replyForm').style.display = 'none';
+            }
+        }
+
+        function renderThreads(threadList = threads) {
+            const container = document.getElementById('threadList');
+            
+            if (threadList.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔍</div>
+                        <p>No discussions found</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = threadList.map(thread => `
+                <div class="thread-item" onclick="viewThread(${thread.id})">
+                    <div class="thread-header">
+                        <div>
+                            <span class="category-tag category-${thread.category}">${thread.category}</span>
+                            <div class="thread-title">${thread.title}</div>
+                            <div class="thread-meta">
+                                <span>by ${thread.author}</span>
+                                <span>${formatDate(thread.date)}</span>
+                            </div>
+                        </div>
+                        <div class="thread-stats">
+                            <div class="stat">
+                                <span>💬</span>
+                                <span>${thread.replies}</span>
+                            </div>
+                            <div class="stat">
+                                <span>👁</span>
+                                <span>${thread.views}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function viewThread(threadId) {
+            currentThread = threads.find(t => t.id === threadId);
+            if (!currentThread) return;
+            
+            currentThread.views++;
+            saveData();
+            
+            document.getElementById('threadModalTitle').textContent = currentThread.title;
+            document.getElementById('threadModalContent').innerHTML = `
+                <div class="post-item">
+                    <div class="post-header">
+                        <span class="post-author">${currentThread.author}</span>
+                        <span class="post-date">${formatDate(currentThread.date)}</span>
+                    </div>
+                    <div class="post-content">${currentThread.content}</div>
+                </div>
+            `;
+            
+            renderPosts();
+            openModal('threadModal');
+        }
+
+        function renderPosts() {
+            const container = document.getElementById('postList');
+            
+            if (currentThread.posts.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #999; margin: 2rem 0;">No replies yet. Be the first to comment!</p>';
+                return;
+            }
+            
+            container.innerHTML = currentThread.posts.map(post => `
+                <div class="post-item">
+                    <div class="post-header">
+                        <span class="post-author">${post.author}</span>
+                        <span class="post-date">${formatDate(post.date)}</span>
+                    </div>
+                    <div class="post-content">${post.content}</div>
+                </div>
+            `).join('');
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+            
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffHours < 24) return `${diffHours}h ago`;
+            if (diffDays < 7) return `${diffDays}d ago`;
+            
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        // Make viewThread available globally
+        window.viewThread = viewThread;
+        window.closeModal = closeModal;
+    </script>
+</body>
+</html>
