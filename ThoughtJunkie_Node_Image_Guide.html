@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ThoughtJunkie – Node Image AI Prompt Guide</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface2: #263348;
+    --border: #334155;
+    --blue: #3b82f6;
+    --teal: #14b8a6;
+    --purple: #8b5cf6;
+    --pink: #ec4899;
+    --amber: #f59e0b;
+    --green: #10b981;
+    --red: #ef4444;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --dim: #64748b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    line-height: 1.6;
+    padding: 0 0 60px;
+  }
+
+  /* ── Header ── */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 40px 32px 32px;
+    text-align: center;
+  }
+  header h1 { font-size: 2rem; letter-spacing: -0.5px; color: #fff; }
+  header h1 span { color: var(--blue); }
+  header p { color: var(--muted); margin-top: 8px; font-size: 0.95rem; }
+  .badge-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 16px; }
+  .badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 4px 14px;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  /* ── Layout ── */
+  main { max-width: 960px; margin: 0 auto; padding: 40px 24px; }
+  section { margin-bottom: 48px; }
+  h2 {
+    font-size: 1.15rem;
+    color: var(--blue);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  h3 { font-size: 0.9rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+  .card p { color: var(--muted); font-size: 0.9rem; margin-top: 6px; }
+  .card strong { color: var(--text); }
+
+  /* ── Grid ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  @media (max-width: 640px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  /* ── Shapes visual ── */
+  .shapes-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 24px 0;
+  }
+  .shape-item { text-align: center; }
+  .shape-item svg { display: block; margin: 0 auto 8px; filter: drop-shadow(0 0 8px rgba(59,130,246,0.5)); }
+  .shape-item .label { font-size: 0.78rem; color: var(--muted); }
+  .shape-item .tip { font-size: 0.72rem; color: var(--dim); margin-top: 2px; }
+
+  /* ── Prompt block ── */
+  .prompt-box {
+    background: #0a0f1a;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 12px 0;
+    font-family: 'Courier New', monospace;
+    font-size: 0.82rem;
+    color: #a5f3fc;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .prompt-box .comment { color: var(--dim); font-style: italic; }
+
+  /* ── Tag pills ── */
+  .tag { display: inline-block; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 3px 10px; font-size: 0.78rem; color: var(--muted); margin: 3px; }
+  .tag.good { border-color: var(--green); color: var(--green); }
+  .tag.bad { border-color: var(--red); color: var(--red); }
+  .tag.blue { border-color: var(--blue); color: var(--blue); }
+  .tag.amber { border-color: var(--amber); color: var(--amber); }
+  .tag.purple { border-color: var(--purple); color: var(--purple); }
+
+  /* ── Size ruler ── */
+  .size-ruler {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    display: flex;
+    align-items: flex-end;
+    gap: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .size-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .size-node .circle {
+    background: radial-gradient(circle at 40% 35%, #5b93f8, #1d4ed8);
+    border-radius: 50%;
+    box-shadow: 0 0 12px rgba(59,130,246,0.5);
+  }
+  .size-node .sz-label { font-size: 0.72rem; color: var(--muted); }
+  .size-node .sz-desc { font-size: 0.68rem; color: var(--dim); }
+
+  /* ── Table ── */
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: var(--surface2); color: var(--muted); text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid #1e293b; color: var(--text); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  td .sub { color: var(--dim); font-size: 0.78rem; }
+
+  /* ── Do / Don't ── */
+  .do-dont { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 560px) { .do-dont { grid-template-columns: 1fr; } }
+  .do-box { background: #052e16; border: 1px solid #166534; border-radius: 8px; padding: 16px; }
+  .do-box h4 { color: var(--green); font-size: 0.82rem; margin-bottom: 10px; }
+  .dont-box { background: #1c0707; border: 1px solid #7f1d1d; border-radius: 8px; padding: 16px; }
+  .dont-box h4 { color: var(--red); font-size: 0.82rem; margin-bottom: 10px; }
+  .do-box li, .dont-box li { font-size: 0.82rem; color: var(--muted); margin-left: 16px; margin-bottom: 5px; }
+
+  /* ── Example prompts section ── */
+  .example-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .example-card .ec-header {
+    background: var(--surface2);
+    padding: 12px 20px;
+    font-size: 0.8rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .example-card .ec-header strong { color: var(--text); }
+  .example-card .ec-body { padding: 0; }
+  .example-card .prompt-box { margin: 0; border-radius: 0; border: none; border-left: none; }
+
+  /* ── Color palette ── */
+  .palette { display: flex; gap: 10px; flex-wrap: wrap; }
+  .swatch { width: 40px; height: 40px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); position: relative; cursor: default; }
+  .swatch:hover::after {
+    content: attr(data-label);
+    position: absolute;
+    bottom: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.65rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* ── Checklist ── */
+  .checklist li { display: flex; align-items: flex-start; gap: 10px; font-size: 0.88rem; color: var(--muted); padding: 7px 0; border-bottom: 1px solid #1e293b; list-style: none; }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist li .icon { flex-shrink: 0; font-size: 1rem; }
+  .checklist li strong { color: var(--text); }
+
+  /* ── Callout ── */
+  .callout {
+    background: #172033;
+    border: 1px solid #2d4a7a;
+    border-left: 4px solid var(--blue);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 0.86rem;
+    color: var(--muted);
+    margin: 16px 0;
+  }
+  .callout strong { color: var(--blue); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🧠 <span>ThoughtJunkie</span> Node Image Prompt Guide</h1>
+  <p>Everything you need to generate the perfect AI image for any node</p>
+  <div class="badge-row">
+    <span class="badge">🎨 Shape-Aware</span>
+    <span class="badge">📐 Exact Parameters</span>
+    <span class="badge">🤖 Copy-Paste Prompts</span>
+    <span class="badge">🌑 Dark-Theme Optimized</span>
+  </div>
+</header>
+
+<main>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>📐 Core Technical Parameters</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Parameter</th>
+        <th>Value / Range</th>
+        <th>What It Means for Your Image</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Canvas Shape</strong></td>
+        <td><span class="tag blue">1 : 1 Square</span></td>
+        <td>Always generate a <strong>square image</strong> — the app crops it to the node shape internally.</td>
+      </tr>
+      <tr>
+        <td><strong>Recommended Resolution</strong></td>
+        <td><span class="tag amber">512 × 512</span> or <span class="tag amber">1024 × 1024</span></td>
+        <td>App auto-downsizes to 800 px max on load. Higher = crisper at big node sizes.</td>
+      </tr>
+      <tr>
+        <td><strong>Node Size Range</strong></td>
+        <td>60 px → 600 px <span class="sub">(drag-resize)</span></td>
+        <td>Image scales to fill whatever size the node is dragged to. Avoid tiny text in the image.</td>
+      </tr>
+      <tr>
+        <td><strong>Scaling Method</strong></td>
+        <td><code>KeepAspectRatioByExpanding</code></td>
+        <td><strong>Cover / fill</strong> — image is cropped to fill the shape. Center-weighted subject matter wins.</td>
+      </tr>
+      <tr>
+        <td><strong>Clip Mask</strong></td>
+        <td>Set by node <strong>shape</strong></td>
+        <td>Edges are hard-clipped. Anything outside the shape silhouette is invisible.</td>
+      </tr>
+      <tr>
+        <td><strong>Supported Formats</strong></td>
+        <td>.png .jpg .jpeg .gif .bmp .webp</td>
+        <td><strong>PNG recommended</strong> — supports transparency where desired.</td>
+      </tr>
+      <tr>
+        <td><strong>Background Context</strong></td>
+        <td>Dark navy <code>#0f172a</code></td>
+        <td>The app canvas is very dark. Images with bright or transparent borders can look floaty.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>⬡ The 5 Node Shapes — Composition Rules</h2>
+
+  <div class="shapes-row">
+    <!-- Circle -->
+    <div class="shape-item">
+      <svg width="80" height="80" viewBox="0 0 80 80">
+        <circle cx="40" cy="40" r="38" fill="#1d3f7a" stroke="#3b82f6" stroke-width="2"/>
+        <circle cx="40" cy="40" r="38" fill="url(#cg)" opacity="0.6"/>
+        <defs><radialGradient id="cg" cx="40%" cy="35%"><stop offset="0%" stop-color="#60a5fa"/><stop offset="100%" stop-color="transparent"/></radialGradient></defs>
+      </svg>
+      <div class="label">⚫ Circle</div>
+      <div class="tip">Round crop</div>
+    </div>
+    <!-- Square -->
+    <div class="shape-item">
+      <svg width="80" height="80" viewBox="0 0 80 80">
+        <rect x="2" y="2" width="76" height="76" rx="6" fill="#1d3f7a" stroke="#3b82f6" stroke-width="2"/>
+      </svg>
+      <div class="label">⬛ Square</div>
+      <div class="tip">Full image shown</div>
+    </div>
+    <!-- Diamond -->
+    <div class="shape-item">
+      <svg width="80" height="80" viewBox="0 0 80 80">
+        <polygon points="40,2 78,40 40,78 2,40" fill="#1d3f7a" stroke="#3b82f6" stroke-width="2"/>
+      </svg>
+      <div class="label">🔷 Diamond</div>
+      <div class="tip">Rotated 45° crop</div>
+    </div>
+    <!-- Hexagon -->
+    <div class="shape-item">
+      <svg width="80" height="88" viewBox="0 0 80 88">
+        <polygon points="40,2 76,21 76,67 40,86 4,67 4,21" fill="#1d3f7a" stroke="#3b82f6" stroke-width="2"/>
+      </svg>
+      <div class="label">⬡ Hexagon</div>
+      <div class="tip">Hex crop</div>
+    </div>
+    <!-- Heart -->
+    <div class="shape-item">
+      <svg width="80" height="80" viewBox="0 0 80 80">
+        <path d="M40 70 C40 70 5 45 5 22 C5 10 15 2 27 2 C33 2 38 6 40 10 C42 6 47 2 53 2 C65 2 75 10 75 22 C75 45 40 70 40 70Z" fill="#1d3f7a" stroke="#3b82f6" stroke-width="2"/>
+      </svg>
+      <div class="label">❤ Heart</div>
+      <div class="tip">Center focus critical</div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>Shape</th><th>Crop Behavior</th><th>Composition Advice</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>⚫ Circle</td>
+        <td>Circular mask, corners removed</td>
+        <td>Keep main subject centered. Radial / vignette designs work perfectly. Avoid portraits where face is off-center.</td>
+      </tr>
+      <tr>
+        <td>⬛ Square</td>
+        <td>Full image visible (rounded corners)</td>
+        <td>Most forgiving — entire canvas used. Great for detailed scenes or icons.</td>
+      </tr>
+      <tr>
+        <td>🔷 Diamond</td>
+        <td>45° rotated square mask</td>
+        <td>Subject should be dead-center. Think of it as a circle but with diagonal corners. Symmetrical designs shine.</td>
+      </tr>
+      <tr>
+        <td>⬡ Hexagon</td>
+        <td>Six-sided mask</td>
+        <td>Center focus. Works beautifully with honeycomb patterns, icons, and mandala-style art.</td>
+      </tr>
+      <tr>
+        <td>❤ Heart</td>
+        <td>Heart silhouette — bottom point is narrow</td>
+        <td>Keep subject in the upper-center. Bottom third of image disappears to a point. Gradient / soft backgrounds best.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>📏 Node Size — What Changes as You Resize</h2>
+
+  <div class="size-ruler">
+    <div class="size-node">
+      <div class="circle" style="width:36px;height:36px;"></div>
+      <div class="sz-label">60 px</div>
+      <div class="sz-desc">Minimum</div>
+    </div>
+    <div class="size-node">
+      <div class="circle" style="width:60px;height:60px;"></div>
+      <div class="sz-label">100 px</div>
+      <div class="sz-desc">Default</div>
+    </div>
+    <div class="size-node">
+      <div class="circle" style="width:90px;height:90px;"></div>
+      <div class="sz-label">150 px</div>
+      <div class="sz-desc">Medium</div>
+    </div>
+    <div class="size-node">
+      <div class="circle" style="width:130px;height:130px;"></div>
+      <div class="sz-label">220 px</div>
+      <div class="sz-desc">Large</div>
+    </div>
+    <div class="size-node">
+      <div class="circle" style="width:180px;height:180px;"></div>
+      <div class="sz-label">300 px</div>
+      <div class="sz-desc">Hero</div>
+    </div>
+    <div class="size-node">
+      <div class="circle" style="width:240px;height:240px;"></div>
+      <div class="sz-label">600 px</div>
+      <div class="sz-desc">Maximum</div>
+    </div>
+  </div>
+
+  <div class="callout" style="margin-top:16px;">
+    <strong>Implication:</strong> Generate at <strong>1024 × 1024</strong>. The image will always look sharp whether the user keeps the node small or drags it to full 600 px. Avoid generating at tiny resolution — scaling up later introduces blurriness.
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>🎨 ThoughtJunkie Visual Aesthetic</h2>
+  <p style="color:var(--muted);font-size:0.88rem;margin-bottom:16px;">Images that feel <em>native</em> to the dark, glowing, sci-fi mind-map environment look best in-app.</p>
+
+  <div class="card">
+    <h3>App Color Palette (for tonal matching)</h3>
+    <div class="palette" style="margin-top:12px;">
+      <div class="swatch" style="background:#0f172a;" data-label="#0f172a Canvas"></div>
+      <div class="swatch" style="background:#1e293b;" data-label="#1e293b Surface"></div>
+      <div class="swatch" style="background:#334155;" data-label="#334155 Border"></div>
+      <div class="swatch" style="background:#3b82f6;" data-label="#3b82f6 Blue"></div>
+      <div class="swatch" style="background:#10b981;" data-label="#10b981 Green"></div>
+      <div class="swatch" style="background:#8b5cf6;" data-label="#8b5cf6 Purple"></div>
+      <div class="swatch" style="background:#ec4899;" data-label="#ec4899 Pink"></div>
+      <div class="swatch" style="background:#f59e0b;" data-label="#f59e0b Amber"></div>
+      <div class="swatch" style="background:#ef4444;" data-label="#ef4444 Red"></div>
+      <div class="swatch" style="background:#14b8a6;" data-label="#14b8a6 Teal"></div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-top:16px;">
+    <div class="card">
+      <strong>✅ Styles That Work Great</strong>
+      <p>Glowing neon on dark, cinematic concept art, cosmic/space scenes, cel-shaded icons, bokeh light effects, watercolor on dark paper, synthwave aesthetics, holographic / iridescent, minimalist icons with transparency, flat-design illustrations.</p>
+    </div>
+    <div class="card">
+      <strong>⚠️ Styles to Use Carefully</strong>
+      <p>Bright white / stark white backgrounds (will conflict with dark canvas), photorealistic photos with cluttered backgrounds (details lost at small node sizes), light pastel palettes (can look washed out against dark backgrounds), dense text or small labels in the image.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>🤖 Universal Prompt Template</h2>
+
+  <p style="color:var(--muted);font-size:0.88rem;margin-bottom:12px;">Use this as your base. Replace <code>[SUBJECT]</code>, <code>[SHAPE]</code>, and <code>[STYLE]</code>.</p>
+
+  <div class="prompt-box">[SUBJECT], [STYLE aesthetic], centered composition, square 1:1 format, dark background (#0f172a deep navy), subject fills center 80% of canvas, soft glowing edges, no text, no UI, no borders, no watermarks, high detail, 1024x1024</div>
+
+  <div class="callout">
+    <strong>Shape modifier to append:</strong>
+    <br>• Circle nodes → add: <code>, circular composition, radial symmetry, vignette edges</code>
+    <br>• Diamond nodes → add: <code>, diamond/rhombus symmetry, strong diagonal lines, centered focal point</code>
+    <br>• Hexagon nodes → add: <code>, hexagonal framing, honeycomb aesthetic, centered focal point</code>
+    <br>• Heart nodes → add: <code>, subject in upper center, tapered bottom, warm soft glow</code>
+    <br>• Square nodes → add: <code>, full-frame composition, corner-to-corner coverage</code>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>💡 Ready-to-Use Example Prompts</h2>
+
+  <div class="example-card">
+    <div class="ec-header">⚫ Circle | <strong>Journal / Daily Entry Node</strong> | Style: Watercolor</div>
+    <div class="ec-body">
+      <div class="prompt-box">A single open journal book with glowing golden pages, watercolor painting style, dark navy background, centered radial composition, soft ink splash effect around the book, warm amber and teal tones, circular vignette, no text, square 1024x1024</div>
+    </div>
+  </div>
+
+  <div class="example-card">
+    <div class="ec-header">🔷 Diamond | <strong>Important / Warning Node</strong> | Style: Glowing Icon</div>
+    <div class="ec-body">
+      <div class="prompt-box">A glowing red warning shield icon, centered on deep black background, neon red glow radiating outward, diamond-symmetrical composition, strong diagonal emphasis, clean vector-art style, no text, 1024x1024 square</div>
+    </div>
+  </div>
+
+  <div class="example-card">
+    <div class="ec-header">⬡ Hexagon | <strong>Idea / Brainstorm Node</strong> | Style: Neon Synthwave</div>
+    <div class="ec-body">
+      <div class="prompt-box">A glowing lightbulb filled with swirling galaxy nebula colors, synthwave neon aesthetic, purple and cyan tones, centered hexagonal composition, dark cosmic background, electric glow particles around bulb, no text, square 1024x1024</div>
+    </div>
+  </div>
+
+  <div class="example-card">
+    <div class="ec-header">⬛ Square | <strong>Project / Map Node</strong> | Style: Cinematic</div>
+    <div class="ec-body">
+      <div class="prompt-box">An aerial isometric city blueprint glowing in blue neon lines on dark background, cinematic concept art, full-frame grid composition, holographic teal and blue tones, no text, 1024x1024 square</div>
+    </div>
+  </div>
+
+  <div class="example-card">
+    <div class="ec-header">❤ Heart | <strong>Mood / Feeling Node</strong> | Style: Soft Glow</div>
+    <div class="ec-body">
+      <div class="prompt-box">A glowing heart made of stardust and aurora light, subject in upper center of frame, tapered soft glow at bottom, dark navy background, pink and violet bokeh particles, dreamy romantic aesthetic, no text, square 1024x1024</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>✅ Checklist Before Prompting</h2>
+  <ul class="checklist">
+    <li><span class="icon">📐</span><span><strong>Square format specified?</strong> Always say "square", "1:1", or "1024x1024" (or both). Never let the AI pick an aspect ratio.</span></li>
+    <li><span class="icon">🎯</span><span><strong>Subject centered?</strong> The app uses cover-fill scaling. Off-center subjects get cropped out.</span></li>
+    <li><span class="icon">🔵</span><span><strong>Shape composition modifier added?</strong> Circle/diamond/hexagon/heart each need their own composition hint.</span></li>
+    <li><span class="icon">🌑</span><span><strong>Dark background specified?</strong> Say "dark navy background", "#0f172a background", or "deep black background".</span></li>
+    <li><span class="icon">🚫</span><span><strong>No text / no UI / no borders specified?</strong> Prevents the AI from adding unreadable labels or frames.</span></li>
+    <li><span class="icon">🖼️</span><span><strong>Resolution at 512+ ?</strong> At minimum 512 × 512. 1024 × 1024 is ideal for large nodes.</span></li>
+    <li><span class="icon">💾</span><span><strong>Saving as PNG?</strong> Preserves quality, supports transparency. Prefer over JPEG for icons/illustrations.</span></li>
+    <li><span class="icon">🎨</span><span><strong>Color matches node intent?</strong> Optionally match image tones to the node's glow color for cohesive look.</span></li>
+  </ul>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>⚡ Do's and Don'ts</h2>
+  <div class="do-dont">
+    <div class="do-box">
+      <h4>✅ DO</h4>
+      <ul>
+        <li>Center your main subject in all cases</li>
+        <li>Use dark or transparent backgrounds</li>
+        <li>Generate square images (1:1)</li>
+        <li>Include "no text, no watermarks, no borders"</li>
+        <li>Match the image's glow color to node color</li>
+        <li>Use high contrast between subject and background</li>
+        <li>Save as PNG for illustrations/icons</li>
+        <li>Think about what the image looks like at tiny sizes (60px node)</li>
+        <li>Add soft vignette or feathered edges for shapes that clip</li>
+      </ul>
+    </div>
+    <div class="dont-box">
+      <h4>❌ DON'T</h4>
+      <ul>
+        <li>Use white/bright backgrounds — clashes with dark canvas</li>
+        <li>Put important content in corners — gets clipped on circles/hearts/diamonds</li>
+        <li>Include tiny text — illegible at small node sizes</li>
+        <li>Use portrait/landscape aspect ratios — will be cropped asymmetrically</li>
+        <li>Generate low resolution (under 256px)</li>
+        <li>Use complex scenes with many competing focal points</li>
+        <li>Rely on the bottom-third for heart shapes</li>
+        <li>Forget that nodes can glow — high-saturation images can clash with intense glow effects</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>🌟 Bonus: Matching Image to Glow Intensity</h2>
+  <p style="color:var(--muted);font-size:0.88rem;margin-bottom:16px;">ThoughtJunkie nodes have a glow intensity from 0–5. Images look best when the color palette cooperates with the glow color.</p>
+
+  <table>
+    <thead>
+      <tr><th>Intensity Level</th><th>Glow Behavior</th><th>Best Image Style</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>0 – None</td><td>No glow, flat node</td><td>Any image works. Clean icons, flat illustrations.</td></tr>
+      <tr><td>1–2 – Subtle</td><td>Soft halo</td><td>Dark or muted backgrounds with centered subject.</td></tr>
+      <tr><td>3 – Medium</td><td>Visible pulsing halo</td><td>Glowing or luminous subjects. Neon / bioluminescent themes.</td></tr>
+      <tr><td>4–5 – Intense</td><td>Bright pulsing, color-boosted node</td><td>High-contrast dark images. Cosmic, neon, plasma aesthetics. Node color becomes very bright — use complementary or neutral image tones.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<section>
+  <h2>📋 Quick-Reference Cheat Sheet</h2>
+  <div class="card">
+    <div class="prompt-box"><span class="comment">// Core parameters — always include these</span>
+square 1:1 format
+1024x1024 resolution
+centered composition
+dark navy background (#0f172a)
+no text, no UI, no watermarks, no borders
+subject fills center 70–80% of canvas
+
+<span class="comment">// Shape modifiers — add the one that matches your node</span>
+circle  → radial symmetry, circular vignette
+square  → full-frame coverage, corner-to-corner
+diamond → diagonal symmetry, centered focal point
+hexagon → hexagonal framing, centered subject
+heart   → subject in upper-center, soft tapered bottom
+
+<span class="comment">// Style keywords that work great in ThoughtJunkie</span>
+glowing neon | synthwave | cosmic | cinematic concept art
+watercolor dark | cel-shaded | holographic | bioluminescent
+isometric icon | flat design | bokeh glow | crystalline</div>
+  </div>
+</section>
+
+</main>
+</body>
+</html>
