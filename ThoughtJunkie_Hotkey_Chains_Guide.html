@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mastering Hotkey Chains · ThoughtJunkie</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Syne:wght@400;600;700;800&display=swap');
+
+:root {
+  --bg:       #080d17;
+  --bg2:      #0d1627;
+  --surface:  #111c2e;
+  --surface2: #172035;
+  --border:   #1e2d45;
+  --border2:  #263652;
+  --purple:   #7c3aed;
+  --purple2:  #a78bfa;
+  --pink:     #ec4899;
+  --pink2:    #f9a8d4;
+  --teal:     #14b8a6;
+  --amber:    #f59e0b;
+  --green:    #10b981;
+  --red:      #ef4444;
+  --blue:     #3b82f6;
+  --text:     #e2e8f0;
+  --muted:    #94a3b8;
+  --dim:      #475569;
+  --mono:     'JetBrains Mono', monospace;
+  --sans:     'Syne', system-ui, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Animated background grid ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(rgba(124,58,237,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124,58,237,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+body::after {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% -20%, rgba(124,58,237,0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ── Layout ── */
+.page { position: relative; z-index: 1; }
+
+/* ─────────── HERO ─────────── */
+.hero {
+  padding: 80px 40px 60px;
+  text-align: center;
+  position: relative;
+  border-bottom: 1px solid var(--border);
+}
+.hero-back {
+  display: inline-flex; align-items: center; gap: 6px;
+  text-decoration: none; color: var(--dim); font-size: 12px;
+  letter-spacing: 1px; text-transform: uppercase; font-weight: 700;
+  margin-bottom: 40px; transition: color 0.2s;
+}
+.hero-back:hover { color: var(--purple2); }
+.hero-back svg { width: 14px; height: 14px; }
+
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.35);
+  border-radius: 999px; padding: 6px 18px;
+  font-size: 11px; font-weight: 700; color: var(--purple2);
+  letter-spacing: 2px; text-transform: uppercase; margin-bottom: 28px;
+}
+.hero-eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--purple); animation: dot-pulse 2s infinite; }
+@keyframes dot-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
+
+.hero h1 {
+  font-size: clamp(38px, 7vw, 72px);
+  font-weight: 800; line-height: 1.05;
+  letter-spacing: -2px; margin-bottom: 10px;
+  color: #fff;
+}
+.hero h1 em {
+  font-style: normal;
+  background: linear-gradient(135deg, #a78bfa 0%, #ec4899 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.hero-sub {
+  font-size: clamp(16px, 2.5vw, 22px); color: var(--muted);
+  max-width: 600px; margin: 18px auto 0; line-height: 1.6; font-weight: 400;
+}
+
+/* speed stat strip */
+.speed-strip {
+  display: flex; justify-content: center; gap: 0;
+  margin: 50px auto 0; max-width: 700px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; overflow: hidden;
+}
+.speed-stat {
+  flex: 1; padding: 22px 20px; text-align: center;
+  border-right: 1px solid var(--border);
+  position: relative;
+}
+.speed-stat:last-child { border-right: none; }
+.speed-stat .val {
+  font-family: var(--mono); font-size: 32px; font-weight: 800;
+  line-height: 1; display: block; margin-bottom: 6px;
+}
+.speed-stat .val.purple { color: var(--purple2); }
+.speed-stat .val.teal   { color: var(--teal); }
+.speed-stat .val.amber  { color: var(--amber); }
+.speed-stat .label { font-size: 11px; color: var(--dim); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+
+/* ─────────── MAIN ─────────── */
+main {
+  max-width: 1060px; margin: 0 auto; padding: 64px 32px 100px;
+  display: flex; flex-direction: column; gap: 72px;
+}
+
+/* Section header style */
+.sec-header { margin-bottom: 28px; }
+.sec-eyebrow {
+  font-size: 11px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--dim); margin-bottom: 10px;
+}
+.sec-title { font-size: clamp(22px, 3.5vw, 32px); font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+.sec-title em { font-style: normal; color: var(--purple2); }
+.sec-body { font-size: 15px; color: var(--muted); line-height: 1.7; margin-top: 10px; max-width: 640px; }
+
+/* ─────────── SPEED MANIFESTO ─────────── */
+.manifesto-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media(max-width:680px) { .manifesto-grid { grid-template-columns: 1fr; } }
+
+.manifesto-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 24px 26px;
+  position: relative; overflow: hidden;
+  transition: border-color 0.25s, transform 0.25s;
+}
+.manifesto-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+.manifesto-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--purple), var(--pink));
+  opacity: 0; transition: opacity 0.25s;
+}
+.manifesto-card:hover::before { opacity: 1; }
+.mc-num {
+  font-family: var(--mono); font-size: 11px; font-weight: 700;
+  color: var(--dim); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px;
+}
+.mc-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+.mc-body { font-size: 13px; color: var(--muted); line-height: 1.65; }
+
+/* the big before/after comparison */
+.compare-wrap {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden;
+}
+.compare-header {
+  display: grid; grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid var(--border);
+}
+.compare-col {
+  padding: 14px 20px;
+  font-size: 11px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;
+  display: flex; align-items: center; gap: 8px;
+}
+.compare-col.slow { color: var(--red); border-right: 1px solid var(--border); }
+.compare-col.fast { color: var(--green); }
+.compare-body { display: grid; grid-template-columns: 1fr 1fr; }
+.compare-steps {
+  padding: 20px; border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.compare-steps:last-child { border-right: none; }
+.step-pill {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px 14px;
+  font-size: 12px; color: var(--muted); border: 1px solid var(--border);
+}
+.step-pill .n {
+  font-family: var(--mono); font-size: 10px; font-weight: 800;
+  width: 20px; height: 20px; border-radius: 5px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.step-pill.slow-step .n { background: rgba(239,68,68,0.15); color: var(--red); }
+.step-pill.fast-step .n { background: rgba(16,185,129,0.15); color: var(--green); }
+.step-pill strong { color: var(--text); }
+.compare-verdict {
+  grid-column: 1 / -1; border-top: 1px solid var(--border);
+  display: grid; grid-template-columns: 1fr 1fr;
+}
+.verdict-cell {
+  padding: 14px 20px; font-family: var(--mono); font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; gap: 8px;
+}
+.verdict-cell.slow-v { color: var(--red); border-right: 1px solid var(--border); }
+.verdict-cell.fast-v { color: var(--green); }
+
+/* ─────────── HOW IT WORKS ─────────── */
+.anatomy-box {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+  overflow: hidden; margin-bottom: 28px;
+}
+.anatomy-header {
+  background: var(--surface2); padding: 14px 20px; border-bottom: 1px solid var(--border);
+  font-size: 11px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--dim);
+  display: flex; align-items: center; gap: 8px;
+}
+.anatomy-body { padding: 24px; }
+
+/* chain flow diagram */
+.chain-flow {
+  display: flex; align-items: center; gap: 0;
+  flex-wrap: wrap; gap: 4px;
+}
+.chain-key {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, rgba(124,58,237,0.25), rgba(236,72,153,0.15));
+  border: 1px solid rgba(124,58,237,0.5); border-radius: 8px;
+  padding: 8px 16px; font-family: var(--mono); font-weight: 800; font-size: 15px;
+  color: var(--purple2);
+  box-shadow: 0 0 16px rgba(124,58,237,0.2);
+}
+.chain-arrow {
+  font-size: 18px; color: var(--dim); margin: 0 4px; flex-shrink: 0;
+}
+.chain-action {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 7px 13px;
+  font-size: 12px; font-weight: 700; color: var(--text);
+}
+.chain-action .a-num {
+  font-family: var(--mono); font-size: 10px; font-weight: 800;
+  background: rgba(124,58,237,0.2); border-radius: 4px;
+  padding: 1px 6px; color: var(--purple2);
+}
+.chain-label {
+  font-size: 11px; color: var(--dim); margin-top: 14px; font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* ─────────── ACTION TYPES ─────────── */
+.action-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;
+}
+.action-item {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 12px 14px; transition: border-color 0.2s;
+}
+.action-item:hover { border-color: var(--border2); }
+.ai-top { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+.ai-icon { font-size: 15px; }
+.ai-name { font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--purple2); }
+.ai-badge {
+  margin-left: auto; font-size: 9px; font-weight: 800; padding: 2px 7px;
+  border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.badge-create { background: rgba(16,185,129,0.15); color: var(--green); }
+.badge-style  { background: rgba(124,58,237,0.15); color: var(--purple2); }
+.badge-font   { background: rgba(20,184,166,0.15); color: var(--teal); }
+.badge-flow   { background: rgba(245,158,11,0.15); color: var(--amber); }
+.badge-util   { background: rgba(100,116,139,0.2); color: var(--muted); }
+.ai-desc { font-size: 11px; color: var(--dim); line-height: 1.5; }
+
+/* ─────────── BUILT-IN CHAINS ─────────── */
+.chain-cards { display: flex; flex-direction: column; gap: 14px; }
+.chain-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; overflow: hidden;
+}
+.cc-header {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+}
+.cc-kbd {
+  font-family: var(--mono); font-size: 13px; font-weight: 800;
+  background: rgba(124,58,237,0.2); border: 1px solid rgba(124,58,237,0.4);
+  border-radius: 8px; padding: 5px 12px; color: var(--purple2);
+  box-shadow: 0 0 12px rgba(124,58,237,0.15); flex-shrink: 0;
+}
+.cc-meta { flex: 1; }
+.cc-name { font-size: 14px; font-weight: 700; color: #fff; }
+.cc-desc { font-size: 11px; color: var(--dim); margin-top: 2px; }
+.cc-count {
+  font-family: var(--mono); font-size: 11px; font-weight: 700;
+  padding: 4px 10px; border-radius: 999px;
+  background: rgba(30,41,59,0.8); border: 1px solid var(--border2); color: var(--muted);
+}
+.cc-body { padding: 16px 20px; }
+.cc-steps { display: flex; flex-direction: column; gap: 6px; }
+.cc-step {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 12px; color: var(--muted);
+}
+.cc-step .sn {
+  font-family: var(--mono); font-size: 10px; font-weight: 800;
+  width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.cc-step strong { color: var(--text); }
+
+/* node preview mini */
+.node-preview {
+  float: right; margin: 0 0 8px 16px;
+  width: 56px; height: 56px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800; color: white; text-align: center;
+}
+.np-circle  { border-radius: 50%; }
+.np-square  { border-radius: 8px; }
+.np-diamond { transform: rotate(45deg); border-radius: 6px; }
+.np-diamond span { display: block; transform: rotate(-45deg); }
+.np-hex     { clip-path: polygon(50% 0%,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%); border-radius: 4px; }
+
+/* ─────────── BUILD YOUR OWN ─────────── */
+.steps-list { display: flex; flex-direction: column; gap: 0; counter-reset: steps; }
+.build-step {
+  display: flex; gap: 20px; padding: 24px 0;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.build-step:last-child { border-bottom: none; }
+.bs-num {
+  font-family: var(--mono); font-size: 11px; font-weight: 800; color: var(--purple2);
+  width: 32px; height: 32px; border-radius: 10px; flex-shrink: 0;
+  background: rgba(124,58,237,0.15); border: 1px solid rgba(124,58,237,0.3);
+  display: flex; align-items: center; justify-content: center;
+  margin-top: 2px;
+}
+.bs-content { flex: 1; }
+.bs-title { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+.bs-body { font-size: 13px; color: var(--muted); line-height: 1.65; }
+.bs-tip {
+  margin-top: 12px; padding: 10px 14px;
+  background: rgba(124,58,237,0.06); border: 1px solid rgba(124,58,237,0.2);
+  border-radius: 8px; font-size: 12px; color: var(--muted);
+}
+.bs-tip strong { color: var(--purple2); }
+.bs-ui {
+  margin-top: 14px; background: #060c18; border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden;
+}
+.bs-ui-header {
+  background: var(--surface2); padding: 8px 14px; border-bottom: 1px solid var(--border);
+  font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--dim);
+  display: flex; align-items: center; gap: 6px;
+}
+.bs-ui-dots { display: flex; gap: 4px; }
+.bs-ui-dots span { width: 8px; height: 8px; border-radius: 50%; }
+.bs-ui-body { padding: 14px; font-family: var(--mono); font-size: 11px; color: var(--muted); line-height: 1.8; }
+.bs-ui-body .hl-key   { color: var(--purple2); }
+.bs-ui-body .hl-val   { color: var(--teal); }
+.bs-ui-body .hl-str   { color: var(--amber); }
+.bs-ui-body .hl-com   { color: var(--dim); }
+.bs-ui-body .hl-green { color: var(--green); }
+
+/* ─────────── RECIPES ─────────── */
+.recipe-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+}
+@media(max-width:700px) { .recipe-grid { grid-template-columns: 1fr; } }
+
+.recipe-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; overflow: hidden;
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+.recipe-card:hover { border-color: var(--border2); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+.rc-header {
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; gap: 12px;
+}
+.rc-emoji { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+.rc-meta { flex: 1; }
+.rc-name { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+.rc-scenario { font-size: 11px; color: var(--dim); }
+.rc-kbd {
+  font-family: var(--mono); font-size: 13px; font-weight: 800;
+  background: rgba(124,58,237,0.15); border: 1px solid rgba(124,58,237,0.3);
+  border-radius: 7px; padding: 4px 10px; color: var(--purple2); flex-shrink: 0;
+}
+.rc-body { padding: 12px 18px; }
+.rc-step {
+  display: flex; align-items: baseline; gap: 8px;
+  font-size: 12px; color: var(--muted); padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.rc-step:last-child { border-bottom: none; }
+.rc-step .rn {
+  font-family: var(--mono); font-size: 9px; font-weight: 800; color: var(--dim);
+  width: 16px; flex-shrink: 0; text-align: right;
+}
+.rc-step strong { color: var(--text); }
+.rc-payoff {
+  margin: 10px 18px 14px;
+  padding: 9px 12px; background: rgba(16,185,129,0.08);
+  border: 1px solid rgba(16,185,129,0.2); border-radius: 8px;
+  font-size: 11px; color: var(--green); font-weight: 600;
+}
+
+/* ─────────── PRO TIPS ─────────── */
+.tips-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+@media(max-width:760px) { .tips-grid { grid-template-columns: 1fr 1fr; } }
+@media(max-width:480px) { .tips-grid { grid-template-columns: 1fr; } }
+
+.tip-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px;
+  transition: border-color 0.2s;
+}
+.tip-card:hover { border-color: var(--border2); }
+.tip-icon { font-size: 20px; margin-bottom: 10px; }
+.tip-title { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+.tip-body { font-size: 12px; color: var(--muted); line-height: 1.6; }
+.tip-body code {
+  font-family: var(--mono); font-size: 11px;
+  background: rgba(124,58,237,0.12); color: var(--purple2);
+  padding: 1px 5px; border-radius: 4px;
+}
+
+/* ─────────── SPEED CHEAT SHEET ─────────── */
+.cheatsheet {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden;
+}
+.cs-header {
+  background: linear-gradient(90deg, rgba(124,58,237,0.2), rgba(236,72,153,0.1));
+  border-bottom: 1px solid var(--border);
+  padding: 16px 24px; display: flex; align-items: center; gap: 10px;
+}
+.cs-header h3 { font-size: 14px; font-weight: 800; color: #fff; }
+.cs-header span { font-size: 11px; color: var(--dim); margin-left: auto; font-weight: 600; }
+.cs-table { width: 100%; border-collapse: collapse; }
+.cs-table th {
+  font-size: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--dim); padding: 10px 20px; text-align: left;
+  background: var(--surface2); border-bottom: 1px solid var(--border);
+}
+.cs-table td {
+  padding: 10px 20px; font-size: 12px; color: var(--muted);
+  border-bottom: 1px solid rgba(255,255,255,0.03); vertical-align: middle;
+}
+.cs-table tr:last-child td { border-bottom: none; }
+.cs-table tr:hover td { background: rgba(255,255,255,0.02); }
+.cs-table td strong { color: var(--text); }
+.cs-table td .kbd {
+  font-family: var(--mono); font-size: 12px; font-weight: 800;
+  background: rgba(124,58,237,0.15); border: 1px solid rgba(124,58,237,0.3);
+  border-radius: 6px; padding: 3px 9px; color: var(--purple2); white-space: nowrap;
+}
+.result-node {
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.rn-dot {
+  width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;
+  box-shadow: 0 0 6px currentColor;
+}
+.rn-square { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+.rn-diamond { width: 10px; height: 10px; transform: rotate(45deg); flex-shrink: 0; border-radius: 2px; }
+
+/* ─────────── FOOTER ─────────── */
+.page-footer {
+  position: relative; z-index: 1;
+  border-top: 1px solid var(--border); padding: 32px 40px;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: gap;
+  gap: 16px;
+}
+.footer-brand { display: flex; align-items: center; gap: 10px; }
+.footer-brand .brand-name { font-size: 16px; font-weight: 800; color: var(--purple2); }
+.footer-brand .brand-sep { color: var(--dim); }
+.footer-brand .brand-doc { font-size: 13px; color: var(--dim); }
+.footer-links { display: flex; gap: 20px; }
+.footer-links a { font-size: 12px; color: var(--dim); text-decoration: none; transition: color 0.2s; }
+.footer-links a:hover { color: var(--purple2); }
+
+/* ─────────── UTIL ─────────── */
+.callout {
+  background: rgba(124,58,237,0.06); border: 1px solid rgba(124,58,237,0.2);
+  border-left: 3px solid var(--purple); border-radius: 10px;
+  padding: 14px 18px; font-size: 13px; color: var(--muted); line-height: 1.6;
+}
+.callout strong { color: var(--purple2); }
+.callout.green { background: rgba(16,185,129,0.06); border-color: rgba(16,185,129,0.2); border-left-color: var(--green); }
+.callout.green strong { color: var(--green); }
+
+@media(max-width:680px) { main { padding: 40px 20px 80px; } .hero { padding: 50px 20px 40px; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ════════════ HERO ════════════ -->
+<header class="hero">
+  <a href="index.html" class="hero-back">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+    Back to ThoughtJunkie
+  </a>
+
+  <div class="hero-eyebrow"><span class="dot"></span> Power User Guide</div>
+
+  <h1>Mastering<br><em>Hotkey Chains</em></h1>
+
+  <p class="hero-sub">
+    Stop clicking through menus. Wire a single keystroke to spawn a fully styled, named, 
+    sized, colored, glowing node — instantly. This is speed mapping.
+  </p>
+
+  <div class="speed-strip">
+    <div class="speed-stat">
+      <span class="val purple">1</span>
+      <span class="label">Keypress</span>
+    </div>
+    <div class="speed-stat">
+      <span class="val teal">19</span>
+      <span class="label">Available Actions</span>
+    </div>
+    <div class="speed-stat">
+      <span class="val amber">∞</span>
+      <span class="label">Custom Chains</span>
+    </div>
+  </div>
+</header>
+
+<!-- ════════════ MAIN ════════════ -->
+<main>
+
+  <!-- ── 1. WHY SPEED MAPPING ── -->
+  <section>
+    <div class="sec-header">
+      <div class="sec-eyebrow">01 · The Case for Speed</div>
+      <h2 class="sec-title">Thought moves faster <em>than your mouse</em></h2>
+      <p class="sec-body">
+        Every time you reach for a menu, you break the thread. A half-formed idea waits while you
+        navigate sub-menus, pick a color, choose a shape, adjust the size. By the time the node
+        looks right, three other thoughts have slipped away. Hotkey Chains collapse that entire 
+        sequence to a single keystroke fired at the speed of thought.
+      </p>
+    </div>
+
+    <div class="manifesto-grid" style="margin-bottom:28px;">
+      <div class="manifesto-card">
+        <div class="mc-num">01 · The Problem</div>
+        <div class="mc-title">The Menu Tax</div>
+        <div class="mc-body">Every styled node you create without hotkeys costs you 6–12 individual clicks and 3–5 seconds. Across a focused 30-minute session, that's hundreds of lost seconds — and hundreds of micro-interruptions to your flow state.</div>
+      </div>
+      <div class="manifesto-card">
+        <div class="mc-num">02 · The Solution</div>
+        <div class="mc-title">Chains Eliminate the Tax</div>
+        <div class="mc-body">A hotkey chain bundles every action — create, name, color, shape, size, glow — into one press. You stay in the map. Your hands stay on the keyboard. Your thoughts keep moving forward without waiting for the interface to catch up.</div>
+      </div>
+      <div class="manifesto-card">
+        <div class="mc-num">03 · The Muscle Memory</div>
+        <div class="mc-title">Your Fingers Learn Your Workflow</div>
+        <div class="mc-body">After a few sessions, chains stop feeling like shortcuts and start feeling like instincts. <em>Ctrl+T</em> means "task" the same way Ctrl+S means "save." Your brain maps the key to the concept, not to the sequence of actions.</div>
+      </div>
+      <div class="manifesto-card">
+        <div class="mc-num">04 · The Compounding Effect</div>
+        <div class="mc-title">Templates for Your Thinking Style</div>
+        <div class="mc-body">Build a library of chains that matches <em>how you think</em>. Quick idea nodes, urgent alerts, project milestones, journal moods — each as a single key. Over time your whole mapping vocabulary becomes available at your fingertips.</div>
+      </div>
+    </div>
+
+    <!-- Before / After comparison -->
+    <div class="compare-wrap">
+      <div class="compare-header">
+        <div class="compare-col slow">
+          <span>🐌</span> Without Hotkey Chains
+        </div>
+        <div class="compare-col fast">
+          <span>⚡</span> With a Hotkey Chain
+        </div>
+      </div>
+      <div class="compare-body">
+        <div class="compare-steps">
+          <div class="step-pill slow-step"><span class="n">1</span> Right-click → Add Child Node</div>
+          <div class="step-pill slow-step"><span class="n">2</span> Double-click to edit text</div>
+          <div class="step-pill slow-step"><span class="n">3</span> Type "⚠️ Important"</div>
+          <div class="step-pill slow-step"><span class="n">4</span> Open Color Picker → choose Red</div>
+          <div class="step-pill slow-step"><span class="n">5</span> Open Shape Dialog → select Diamond</div>
+          <div class="step-pill slow-step"><span class="n">6</span> Drag resize handle to 120px</div>
+          <div class="step-pill slow-step"><span class="n">7</span> Open Intensity → set to 5</div>
+          <div class="step-pill slow-step"><span class="n">8</span> Click away to deselect</div>
+        </div>
+        <div class="compare-steps">
+          <div class="step-pill fast-step"><span class="n">1</span> Press <strong>Ctrl+1</strong></div>
+        </div>
+      </div>
+      <div class="compare-verdict">
+        <div class="verdict-cell slow-v">⏱ ~8 actions · 6–10 seconds</div>
+        <div class="verdict-cell fast-v">⚡ 1 keypress · &lt;0.1 second</div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ── 2. HOW CHAINS WORK ── -->
+  <section>
+    <div class="sec-header">
+      <div class="sec-eyebrow">02 · Under the Hood</div>
+      <h2 class="sec-title">What a chain <em>actually is</em></h2>
+      <p class="sec-body">
+        A hotkey chain is a named list of actions saved to a JSON config file and bound to a keyboard 
+        shortcut. When you press the key, ThoughtJunkie runs every action in sequence against the 
+        currently selected node — in order, instantly, without user input for each step.
+      </p>
+    </div>
+
+    <div class="anatomy-box" style="margin-bottom:20px;">
+      <div class="anatomy-header">
+        <span>⚙️</span> ANATOMY OF A CHAIN — "Important Node" (Ctrl+1)
+      </div>
+      <div class="anatomy-body">
+        <div class="chain-flow">
+          <div class="chain-key">Ctrl+1</div>
+          <div class="chain-arrow">→</div>
+          <div class="chain-action"><span class="a-num">1</span> add_node "⚠️ Important"</div>
+          <div class="chain-arrow">→</div>
+          <div class="chain-action"><span class="a-num">2</span> set_shape diamond</div>
+          <div class="chain-arrow">→</div>
+          <div class="chain-action"><span class="a-num">3</span> set_color #ef4444</div>
+          <div class="chain-arrow">→</div>
+          <div class="chain-action"><span class="a-num">4</span> set_intensity 5</div>
+          <div class="chain-arrow">→</div>
+          <div class="chain-action"><span class="a-num">5</span> set_size 120</div>
+        </div>
+        <div class="chain-label">5 actions · executed in ~8ms · stored in hotkeys.json</div>
+      </div>
+    </div>
+
+    <div class="anatomy-box">
+      <div class="anatomy-header">
+        <span>📄</span> HOW IT LOOKS IN hotkeys.json
+      </div>
+      <div class="anatomy-body">
+        <div class="bs-ui-body" style="padding:0;font-size:12px;">
+<span class="hl-com">// Each chain is keyed by its shortcut</span>
+<span class="hl-key">"Ctrl+1"</span>: {
+  <span class="hl-key">"name"</span>: <span class="hl-str">"Important Node"</span>,
+  <span class="hl-key">"description"</span>: <span class="hl-str">"Create important/urgent node"</span>,
+  <span class="hl-key">"actions"</span>: [
+    { <span class="hl-key">"action_type"</span>: <span class="hl-str">"add_node"</span>,      <span class="hl-key">"params"</span>: { <span class="hl-key">"text"</span>: <span class="hl-str">"⚠️ Important"</span> } },
+    { <span class="hl-key">"action_type"</span>: <span class="hl-str">"set_shape"</span>,     <span class="hl-key">"params"</span>: { <span class="hl-key">"shape"</span>: <span class="hl-str">"diamond"</span> } },
+    { <span class="hl-key">"action_type"</span>: <span class="hl-str">"set_color"</span>,     <span class="hl-key">"params"</span>: { <span class="hl-key">"color"</span>: <span class="hl-str">"#ef4444"</span> } },
+    { <span class="hl-key">"action_type"</span>: <span class="hl-str">"set_intensity"</span>,  <span class="hl-key">"params"</span>: { <span class="hl-key">"intensity"</span>: <span class="hl-val">5</span> } },
+    { <span class="hl-key">"action_type"</span>: <span class="hl-str">"set_size"</span>,      <span class="hl-key">"params"</span>: { <span class="hl-key">"size"</span>: <span class="hl-val">120</span> } }
+  ]
+}
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ── 3. ACTION TYPES ── -->
+  <section>
+    <div class="sec-header">
+      <div class="sec-eyebrow">03 · The Building Blocks</div>
+      <h2 class="sec-title">All <em>19 action types</em></h2>
+      <p class="sec-body">
+        Every action in the Action Editor maps to one of these. Mix and match them in any order to 
+        build exactly the node type your workflow needs.
+      </p>
+    </div>
+    <div class="action-grid">
+
+      <div class="action-item">
+        <div class="ai-top">
+          <span class="ai-icon">➕</span>
+          <span class="ai-name">add_node</span>
+          <span class="ai-badge badge-create">Create</span>
+        </div>
+        <div class="ai-desc">Adds a child node to the selected node. Optionally pre-fills the label text.</div>
+      </div>
+
+      <div class="action-item">
+        <div class="ai-top">
+          <span class="ai-icon">↔️</span>
+          <span class="ai-name">add_sibling</span>
+          <span class="ai-badge badge-create">Create</span>
+        </div>
+        <div class="ai-desc">Adds a node at the same level as the selected node, under the same parent.</div>
+      </div>
+
+      <div class="action-item">
+        <div class="ai-top">
+          <span class="ai-icon">✏️</span>
+          <span class="ai-name">set_text</span>
+          <span class="ai-badge badge-style">Style</span>
+        </div>
+        <div class="ai-desc">Replaces the selected node's label with a specified string.</div>
+      </div>
+
+      <div class="action-item">
+        <div class="ai-top">
+          <span class="ai-icon">🎨</span>
+          <span class="ai-name">set_color</span>
+          <span class="ai-badge badge-style">Style</span>
+        </div>
+        <div class="ai-desc">Sets the node's fill and glow color using any hex value (e.g. #ef4444).</div>
+      </div>
+
+      <div class="action-item">
+        <div class="ai-top">
+          <span class="ai-icon">🔤</span>
+          <span class="ai-name">set_text_color</span>
+          <span class="ai-badge badge-font">Font</span>
+        </div>
+        <div class="ai-desc">Sets the color of the text label independently from the node fill color.</div>
+      </div>
+
+      <div class="action-item">
+        <div class="ai-top">
+          <span class="ai-icon">🔡</span>
+          <span class="ai-name">set_font_family</span>
+          <span class="ai-badge badge-font">Font</span>
+        </div>
+        <div class="ai-desc">Changes the label font to any installed font family.</div>
+      </div>
+
+      <div class="action-item">
+        <div class="ai-top">
+          <span class="ai-icon">🔢</span>
+          <span class="ai-name">set_font_size</span>
+          <span class="ai-badge badge-font">Font</span>
+        </div>
+        <div class="ai-desc">Sets label font size in points. Works independently from node size.</div>
+      </div>
+
+      <div class="action-item">
+        <div class="ai-top">
+          <span class="ai-icon">𝐁</span>
+          <span class="ai-name">set_bold</span>
+          <span class="ai-badge badge-font">Font</span>
+        </div>
+        <div class="ai-desc">Toggles bold on the label. Pass bold: true to force on, or omit to toggle.</div>
+      </div>
+
+      <div class="action-item">
+        <div class="ai-top">
+          <span class="ai-icon">◇</span>
+          <span class="ai-name">set_shape</span>
+          <span class="ai-badge badge-style">Style</span>
+        </div>
+        <div class="ai-desc">Sets the node shape. Options: circle · square · diamond · hexagon · heart.</div>
+      </div>
+
+      <div class="action-item">
+        <div class="ai-top">
+          <span class="ai-icon">📐</span>
+          <span class="ai-name">set_size</span>
+          <span class="ai-badge badge-style">Style</span>
+        </div>
+        <div class="ai-desc">Sets the node diameter in pixels. Range: 60 (minimum) → 600 (maximum).</div>
+      </div>
+
+      <div class="action-item">
+        <div class="ai-top">
+          <span class="ai-icon">✨</span>
+          <span class="ai-name">set_intensity</span>
+          <span class="ai-badge badge-style">Style</span>
+        </div>
+        <div class="ai-desc">Sets the glow intensity (0 = none, 5 = max pulsing glow). Stacks with node color.</div>
+      </div>
+
+      <div class="action-item">
+        <div class="ai-top">
+          <span class="ai-icon">🖼️</span>
+          <span class="ai-name">set_image</span>
+          <span class="ai-badge badge-style">Style</span>
+        </div>
+        <div class="ai-desc">Loads an image from a file path and fills the node with it.</div>
+      </div>
+
+      <div class="action-item">
+        <div class="ai-top">
+          <span class="ai-icon">📋</span>
+          <span class="ai-name">quick_image</span>
+          <span class="ai-badge badge-style">Style</span>
+        </div>
+        <div class="ai-desc">Grabs whatever image is on your clipboard and applies it to the node immediately.</div>
+      </div>
+
+      <div class="action-item">
+        <div class="ai-top">
+          <span class="ai-icon">😊</span>
+          <span class="ai-name">set_mood</span>
+          <span class="ai-badge badge-style">Style</span>
+        </div>
+        <div class="ai-desc">Tags the node with a mood (Hopeful, Anxious, Inspired, etc.) which also sets color and intensity.</div>
+      </div>
+
+      <div class="action-item">
+        <div class="ai-top">
+          <span class="ai-icon">🔄</span>
+          <span class="ai-name">auto_arrange</span>
+          <span class="ai-badge badge-flow">Flow</span>
+        </div>
+        <div class="ai-desc">Radially arranges all children of the selected node. Set the radius (default 200px).</div>
+      </div>
+
+      <div class="action-item">
+        <div class="ai-top">
+          <span class="ai-icon">🎯</span>
+          <span class="ai-name">focus_node</span>
+          <span class="ai-badge badge-flow">Flow</span>
+        </div>
+        <div class="ai-desc">Centers and zooms the view to the selected node. Great at the end of a chain.</div>
+      </div>
+
+      <div class="action-item">
+        <div class="ai-top">
+          <span class="ai-icon">💾</span>
+          <span class="ai-name">save</span>
+          <span class="ai-badge badge-util">Util</span>
+        </div>
+        <div class="ai-desc">Triggers an immediate save of the current tab's data.</div>
+      </div>
+
+      <div class="action-item">
+        <div class="ai-top">
+          <span class="ai-icon">🗑️</span>
+          <span class="ai-name">delete_node</span>
+          <span class="ai-badge badge-util">Util</span>
+        </div>
+        <div class="ai-desc">Deletes the currently selected node. Use with caution in chains.</div>
+      </div>
+
+      <div class="action-item">
+        <div class="ai-top">
+          <span class="ai-icon">📝</span>
+          <span class="ai-name">edit_node</span>
+          <span class="ai-badge badge-util">Util</span>
+        </div>
+        <div class="ai-desc">Opens the text edit dialog for the selected node. Useful as the final action to prompt immediate labeling.</div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ── 4. BUILT-IN DEFAULTS ── -->
+  <section>
+    <div class="sec-header">
+      <div class="sec-eyebrow">04 · Batteries Included</div>
+      <h2 class="sec-title">The <em>default chains</em> — ready on day one</h2>
+      <p class="sec-body">
+        ThoughtJunkie ships with these production-ready chains. Use them as-is, or study them as 
+        templates to understand how to build your own.
+      </p>
+    </div>
+    <div class="chain-cards">
+
+      <!-- Task Node -->
+      <div class="chain-card">
+        <div class="cc-header">
+          <div class="cc-kbd">Ctrl+T</div>
+          <div class="cc-meta">
+            <div class="cc-name">Task Node</div>
+            <div class="cc-desc">A square amber node with a subtle glow — instantly identifiable as an action item</div>
+          </div>
+          <div class="cc-count">4 actions</div>
+        </div>
+        <div class="cc-body">
+          <div style="overflow:hidden;">
+            <div class="node-preview np-square" style="background:linear-gradient(135deg,#f59e0b,#d97706);box-shadow:0 0 14px rgba(245,158,11,0.5);">
+              <span>Task</span>
+            </div>
+          </div>
+          <div class="cc-steps">
+            <div class="cc-step"><span class="sn" style="background:rgba(16,185,129,0.15);color:#10b981;">1</span> <strong>add_node</strong> → text: "Task"</div>
+            <div class="cc-step"><span class="sn" style="background:rgba(124,58,237,0.15);color:#a78bfa;">2</span> <strong>set_shape</strong> → square</div>
+            <div class="cc-step"><span class="sn" style="background:rgba(124,58,237,0.15);color:#a78bfa;">3</span> <strong>set_color</strong> → #f59e0b (amber)</div>
+            <div class="cc-step"><span class="sn" style="background:rgba(124,58,237,0.15);color:#a78bfa;">4</span> <strong>set_intensity</strong> → 2 (subtle glow)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Idea Node -->
+      <div class="chain-card">
+        <div class="cc-header">
+          <div class="cc-kbd">Ctrl+I</div>
+          <div class="cc-meta">
+            <div class="cc-name">Idea Node</div>
+            <div class="cc-desc">A glowing golden circle for capturing sparks of inspiration at full intensity</div>
+          </div>
+          <div class="cc-count">4 actions</div>
+        </div>
+        <div class="cc-body">
+          <div style="overflow:hidden;">
+            <div class="node-preview np-circle" style="background:linear-gradient(135deg,#fbbf24,#f59e0b);box-shadow:0 0 20px rgba(251,191,36,0.6);">
+              <span>💡</span>
+            </div>
+          </div>
+          <div class="cc-steps">
+            <div class="cc-step"><span class="sn" style="background:rgba(16,185,129,0.15);color:#10b981;">1</span> <strong>add_node</strong> → text: "💡 Idea"</div>
+            <div class="cc-step"><span class="sn" style="background:rgba(124,58,237,0.15);color:#a78bfa;">2</span> <strong>set_shape</strong> → circle</div>
+            <div class="cc-step"><span class="sn" style="background:rgba(124,58,237,0.15);color:#a78bfa;">3</span> <strong>set_color</strong> → #fbbf24 (gold)</div>
+            <div class="cc-step"><span class="sn" style="background:rgba(124,58,237,0.15);color:#a78bfa;">4</span> <strong>set_intensity</strong> → 4 (strong glow)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Important Node -->
+      <div class="chain-card">
+        <div class="cc-header">
+          <div class="cc-kbd">Ctrl+1</div>
+          <div class="cc-meta">
+            <div class="cc-name">Important Node</div>
+            <div class="cc-desc">Large red diamond with maximum glow — impossible to miss in any map</div>
+          </div>
+          <div class="cc-count">5 actions</div>
+        </div>
+        <div class="cc-body">
+          <div style="overflow:hidden;">
+            <div class="node-preview np-diamond" style="background:linear-gradient(135deg,#ef4444,#b91c1c);box-shadow:0 0 20px rgba(239,68,68,0.7);">
+              <span>⚠️</span>
+            </div>
+          </div>
+          <div class="cc-steps">
+            <div class="cc-step"><span class="sn" style="background:rgba(16,185,129,0.15);color:#10b981;">1</span> <strong>add_node</strong> → text: "⚠️ Important"</div>
+            <div class="cc-step"><span class="sn" style="background:rgba(124,58,237,0.15);color:#a78bfa;">2</span> <strong>set_shape</strong> → diamond</div>
+            <div class="cc-step"><span class="sn" style="background:rgba(124,58,237,0.15);color:#a78bfa;">3</span> <strong>set_color</strong> → #ef4444 (red)</div>
+            <div class="cc-step"><span class="sn" style="background:rgba(124,58,237,0.15);color:#a78bfa;">4</span> <strong>set_intensity</strong> → 5 (max glow)</div>
+            <div class="cc-step"><span class="sn" style="background:rgba(124,58,237,0.15);color:#a78bfa;">5</span> <strong>set_size</strong> → 120px (prominent)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Question Node -->
+      <div class="chain-card">
+        <div class="cc-header">
+          <div class="cc-kbd">Ctrl+Q</div>
+          <div class="cc-meta">
+            <div class="cc-name">Question Node</div>
+            <div class="cc-desc">A purple hexagon for open questions, uncertainties, and things to research</div>
+          </div>
+          <div class="cc-count">3 actions</div>
+        </div>
+        <div class="cc-body">
+          <div style="overflow:hidden;">
+            <div class="node-preview np-hex" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);box-shadow:0 0 16px rgba(139,92,246,0.5);">
+              <span>❓</span>
+            </div>
+          </div>
+          <div class="cc-steps">
+            <div class="cc-step"><span class="sn" style="background:rgba(16,185,129,0.15);color:#10b981;">1</span> <strong>add_node</strong> → text: "❓"</div>
+            <div class="cc-step"><span class="sn" style="background:rgba(124,58,237,0.15);color:#a78bfa;">2</span> <strong>set_shape</strong> → hexagon</div>
+            <div class="cc-step"><span class="sn" style="background:rgba(124,58,237,0.15);color:#a78bfa;">3</span> <strong>set_color</strong> → #8b5cf6 (purple)</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="callout green" style="margin-top:16px;">
+      <strong>Tip:</strong> The default chains are saved to <code style="font-family:var(--mono);font-size:11px;background:rgba(16,185,129,0.1);padding:1px 5px;border-radius:4px;">data/hotkeys.json</code>. You can edit that file directly, or use the Hotkey Dialog in-app to modify them. A backup is auto-created at <code style="font-family:var(--mono);font-size:11px;background:rgba(16,185,129,0.1);padding:1px 5px;border-radius:4px;">hotkeys_backup.json</code> on every save.
+    </div>
+  </section>
+
+
+  <!-- ── 5. BUILD YOUR OWN ── -->
+  <section>
+    <div class="sec-header">
+      <div class="sec-eyebrow">05 · Step-by-Step</div>
+      <h2 class="sec-title">Build your <em>first custom chain</em></h2>
+      <p class="sec-body">
+        We'll build a "Journal Entry" chain from scratch — a teal heart node with your name and a soft glow, spawned instantly while journaling.
+      </p>
+    </div>
+
+    <div class="steps-list">
+
+      <div class="build-step">
+        <div class="bs-num">01</div>
+        <div class="bs-content">
+          <div class="bs-title">Open the Hotkey Dialog</div>
+          <div class="bs-body">In the app, press <strong>Ctrl+H</strong> or navigate to <strong>Tools → Hotkey Manager</strong>. The dialog shows your existing chains on the left panel and the action editor on the right. This is your chain-building workbench.</div>
+        </div>
+      </div>
+
+      <div class="build-step">
+        <div class="bs-num">02</div>
+        <div class="bs-content">
+          <div class="bs-title">Create a New Chain</div>
+          <div class="bs-body">Click <strong>"+ New Chain"</strong>. A blank chain appears with placeholder fields. Give it a name ("Journal Feeling"), a description ("Mood node for daily journal"), and click the key capture field — then press your desired hotkey combination. For this example, use <strong>Ctrl+J</strong>.</div>
+          <div class="bs-tip">
+            <strong>Key Combinations:</strong> Single keys (G, H, 3), Ctrl combos (Ctrl+J), Ctrl+Shift combos (Ctrl+Shift+J), and function keys (F3, F4) are all valid. Avoid Ctrl+Z (undo), Ctrl+S (save), and Ctrl+C/V/X (clipboard) as they're reserved.
+          </div>
+        </div>
+      </div>
+
+      <div class="build-step">
+        <div class="bs-num">03</div>
+        <div class="bs-content">
+          <div class="bs-title">Add Your First Action: Create the Node</div>
+          <div class="bs-body">Click <strong>"+ Add Action"</strong>. In the Action Editor, select <code style="font-family:var(--mono);font-size:12px;background:rgba(124,58,237,0.12);color:#a78bfa;padding:1px 5px;border-radius:4px;">add_node</code> from the dropdown. Enter "😊 Feeling" in the text field. Click Save Action. This is step 1 of your chain — it creates the node with a pre-filled label.</div>
+        </div>
+      </div>
+
+      <div class="build-step">
+        <div class="bs-num">04</div>
+        <div class="bs-content">
+          <div class="bs-title">Stack More Actions</div>
+          <div class="bs-body">Add these actions one by one using the same "+ Add Action" workflow. Each gets added to the numbered list in sequence.</div>
+          <div class="bs-ui">
+            <div class="bs-ui-header">
+              <div class="bs-ui-dots"><span style="background:#ef4444"></span><span style="background:#f59e0b"></span><span style="background:#10b981"></span></div>
+              Action sequence — "Journal Feeling" chain
+            </div>
+            <div class="bs-ui-body">
+<span class="hl-com">1. add_node       → text: "😊 Feeling"</span>
+<span class="hl-green">2. set_shape      → heart</span>
+<span class="hl-green">3. set_color      → #14b8a6   (teal)</span>
+<span class="hl-green">4. set_intensity  → 2         (soft glow)</span>
+<span class="hl-green">5. set_size       → 90        (medium)</span>
+<span class="hl-green">6. set_mood       → 😌 Peaceful</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="build-step">
+        <div class="bs-num">05</div>
+        <div class="bs-content">
+          <div class="bs-title">Reorder if Needed</div>
+          <div class="bs-body">Actions execute top-to-bottom. Use the <strong>▲ / ▼ buttons</strong> next to each action to reorder them. The only hard rule: <code style="font-family:var(--mono);font-size:12px;background:rgba(124,58,237,0.12);color:#a78bfa;padding:1px 5px;border-radius:4px;">add_node</code> or <code style="font-family:var(--mono);font-size:12px;background:rgba(124,58,237,0.12);color:#a78bfa;padding:1px 5px;border-radius:4px;">add_sibling</code> must come first if you want to style a new node. Styling actions on an existing selection can go in any order.</div>
+          <div class="bs-tip">
+            <strong>Order matters for edit_node:</strong> If you end your chain with <code style="font-family:var(--mono);font-size:12px;background:rgba(124,58,237,0.12);color:#a78bfa;padding:1px 5px;border-radius:4px;">edit_node</code>, it will open the text editor immediately after the chain fires — perfect for chains that need custom labels every time.
+          </div>
+        </div>
+      </div>
+
+      <div class="build-step">
+        <div class="bs-num">06</div>
+        <div class="bs-content">
+          <div class="bs-title">Test It Live</div>
+          <div class="bs-body">With a node selected in your map, click <strong>"🧪 Test Chain"</strong> in the dialog. The chain fires on your selected node immediately so you can see the result without leaving the dialog. If something's wrong, edit the action, test again.</div>
+        </div>
+      </div>
+
+      <div class="build-step">
+        <div class="bs-num">07</div>
+        <div class="bs-content">
+          <div class="bs-title">Save and Use It</div>
+          <div class="bs-body">Click <strong>"💾 Save Chain"</strong>. The chain is written to <code style="font-family:var(--mono);font-size:12px;background:rgba(124,58,237,0.12);color:#a78bfa;padding:1px 5px;border-radius:4px;">hotkeys.json</code> and the shortcut is registered immediately — no restart required. Select any node and press <strong>Ctrl+J</strong>. Watch all 6 actions execute at once.</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ── 6. CHAIN RECIPES ── -->
+  <section>
+    <div class="sec-header">
+      <div class="sec-eyebrow">06 · Inspiration</div>
+      <h2 class="sec-title">Chain <em>recipes</em> for common workflows</h2>
+      <p class="sec-body">Copy these directly into your Hotkey Dialog, or use them as a starting point for your own.</p>
+    </div>
+    <div class="recipe-grid">
+
+      <div class="recipe-card">
+        <div class="rc-header">
+          <span class="rc-emoji">📅</span>
+          <div class="rc-meta">
+            <div class="rc-name">Daily Journal Anchor</div>
+            <div class="rc-scenario">Start of every journaling session — plant the root node</div>
+          </div>
+          <span class="rc-kbd">Ctrl+D</span>
+        </div>
+        <div class="rc-body">
+          <div class="rc-step"><span class="rn">1</span> <strong>add_node</strong> → "📅 Today"</div>
+          <div class="rc-step"><span class="rn">2</span> <strong>set_shape</strong> → hexagon</div>
+          <div class="rc-step"><span class="rn">3</span> <strong>set_color</strong> → #3b82f6 (blue)</div>
+          <div class="rc-step"><span class="rn">4</span> <strong>set_intensity</strong> → 3</div>
+          <div class="rc-step"><span class="rn">5</span> <strong>set_size</strong> → 140</div>
+          <div class="rc-step"><span class="rn">6</span> <strong>auto_arrange</strong> → radius 220</div>
+          <div class="rc-step"><span class="rn">7</span> <strong>focus_node</strong></div>
+        </div>
+        <div class="rc-payoff">✦ One press creates your day's hub, arranges space for children, and zooms in.</div>
+      </div>
+
+      <div class="recipe-card">
+        <div class="rc-header">
+          <span class="rc-emoji">🔥</span>
+          <div class="rc-meta">
+            <div class="rc-name">Urgent Blocker</div>
+            <div class="rc-scenario">Something must happen before you can move on</div>
+          </div>
+          <span class="rc-kbd">Ctrl+U</span>
+        </div>
+        <div class="rc-body">
+          <div class="rc-step"><span class="rn">1</span> <strong>add_node</strong> → "🔥 BLOCKER"</div>
+          <div class="rc-step"><span class="rn">2</span> <strong>set_shape</strong> → diamond</div>
+          <div class="rc-step"><span class="rn">3</span> <strong>set_color</strong> → #ef4444</div>
+          <div class="rc-step"><span class="rn">4</span> <strong>set_intensity</strong> → 5</div>
+          <div class="rc-step"><span class="rn">5</span> <strong>set_size</strong> → 130</div>
+          <div class="rc-step"><span class="rn">6</span> <strong>set_bold</strong> → true</div>
+          <div class="rc-step"><span class="rn">7</span> <strong>edit_node</strong> (opens label editor)</div>
+        </div>
+        <div class="rc-payoff">✦ Creates a max-glow red diamond then immediately lets you type what the blocker is.</div>
+      </div>
+
+      <div class="recipe-card">
+        <div class="rc-header">
+          <span class="rc-emoji">💡</span>
+          <div class="rc-meta">
+            <div class="rc-name">Quick Insight Capture</div>
+            <div class="rc-scenario">An idea just hit — capture it before it disappears</div>
+          </div>
+          <span class="rc-kbd">Ctrl+Space</span>
+        </div>
+        <div class="rc-body">
+          <div class="rc-step"><span class="rn">1</span> <strong>add_node</strong> → "💡"</div>
+          <div class="rc-step"><span class="rn">2</span> <strong>set_shape</strong> → circle</div>
+          <div class="rc-step"><span class="rn">3</span> <strong>set_color</strong> → #fbbf24</div>
+          <div class="rc-step"><span class="rn">4</span> <strong>set_intensity</strong> → 4</div>
+          <div class="rc-step"><span class="rn">5</span> <strong>edit_node</strong></div>
+        </div>
+        <div class="rc-payoff">✦ Minimal chain — drops a glowing bulb and immediately opens the editor. Zero friction.</div>
+      </div>
+
+      <div class="recipe-card">
+        <div class="rc-header">
+          <span class="rc-emoji">🌿</span>
+          <div class="rc-meta">
+            <div class="rc-name">Mood Check-In</div>
+            <div class="rc-scenario">Log how you're feeling right now in the journal</div>
+          </div>
+          <span class="rc-kbd">Ctrl+M</span>
+        </div>
+        <div class="rc-body">
+          <div class="rc-step"><span class="rn">1</span> <strong>add_node</strong> → "🌿 Feeling"</div>
+          <div class="rc-step"><span class="rn">2</span> <strong>set_shape</strong> → heart</div>
+          <div class="rc-step"><span class="rn">3</span> <strong>set_color</strong> → #10b981</div>
+          <div class="rc-step"><span class="rn">4</span> <strong>set_mood</strong> → 🌿 Grounded</div>
+          <div class="rc-step"><span class="rn">5</span> <strong>set_intensity</strong> → 2</div>
+        </div>
+        <div class="rc-payoff">✦ Instantly logs a mood node tagged to the current date — builds your mood timeline over time.</div>
+      </div>
+
+      <div class="recipe-card">
+        <div class="rc-header">
+          <span class="rc-emoji">🧩</span>
+          <div class="rc-meta">
+            <div class="rc-name">Project Milestone</div>
+            <div class="rc-scenario">Mark a meaningful step forward in any project</div>
+          </div>
+          <span class="rc-kbd">Ctrl+Shift+M</span>
+        </div>
+        <div class="rc-body">
+          <div class="rc-step"><span class="rn">1</span> <strong>add_node</strong> → "🧩 Milestone"</div>
+          <div class="rc-step"><span class="rn">2</span> <strong>set_shape</strong> → square</div>
+          <div class="rc-step"><span class="rn">3</span> <strong>set_color</strong> → #8b5cf6</div>
+          <div class="rc-step"><span class="rn">4</span> <strong>set_intensity</strong> → 3</div>
+          <div class="rc-step"><span class="rn">5</span> <strong>set_size</strong> → 100</div>
+          <div class="rc-step"><span class="rn">6</span> <strong>set_font_size</strong> → 10</div>
+          <div class="rc-step"><span class="rn">7</span> <strong>edit_node</strong></div>
+        </div>
+        <div class="rc-payoff">✦ A consistent visual language for milestones makes project maps instantly scannable.</div>
+      </div>
+
+      <div class="recipe-card">
+        <div class="rc-header">
+          <span class="rc-emoji">❓</span>
+          <div class="rc-meta">
+            <div class="rc-name">Research Thread</div>
+            <div class="rc-scenario">A question that needs investigation — don't lose it</div>
+          </div>
+          <span class="rc-kbd">Ctrl+R</span>
+        </div>
+        <div class="rc-body">
+          <div class="rc-step"><span class="rn">1</span> <strong>add_node</strong> → "❓ Research"</div>
+          <div class="rc-step"><span class="rn">2</span> <strong>set_shape</strong> → hexagon</div>
+          <div class="rc-step"><span class="rn">3</span> <strong>set_color</strong> → #6366f1</div>
+          <div class="rc-step"><span class="rn">4</span> <strong>set_intensity</strong> → 2</div>
+          <div class="rc-step"><span class="rn">5</span> <strong>set_text_color</strong> → #e0e7ff</div>
+          <div class="rc-step"><span class="rn">6</span> <strong>edit_node</strong></div>
+        </div>
+        <div class="rc-payoff">✦ Purple hexagons stand out as "open threads" — easy to spot and chase down later.</div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ── 7. PRO TIPS ── -->
+  <section>
+    <div class="sec-header">
+      <div class="sec-eyebrow">07 · Go Deeper</div>
+      <h2 class="sec-title">Pro tips for <em>power mappers</em></h2>
+    </div>
+    <div class="tips-grid">
+
+      <div class="tip-card">
+        <div class="tip-icon">🗂️</div>
+        <div class="tip-title">Build a Vocabulary</div>
+        <div class="tip-body">Design your chains as a visual language. Red diamonds = blockers. Gold circles = ideas. Teal hearts = moods. Once consistent, your maps become scannable at a glance without reading a single label.</div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">⚡</div>
+        <div class="tip-title">End with edit_node</div>
+        <div class="tip-body">Any chain that creates a node benefits from <code>edit_node</code> as the final action. The node spawns fully styled, then the editor opens immediately — you fill in the specific label without extra clicks.</div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">📐</div>
+        <div class="tip-title">Use Size to Signal Priority</div>
+        <div class="tip-body">Map <code>set_size</code> to urgency: 80px for minor notes, 100px for normal, 120px for important, 150px for critical. Combine with intensity for a full visual hierarchy system.</div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">🔄</div>
+        <div class="tip-title">Styling-Only Chains</div>
+        <div class="tip-body">Chains don't have to create nodes. A chain of just <code>set_color</code> + <code>set_intensity</code> + <code>set_size</code> fires on the selected node — instantly restyling it. Use single letters (G, R, P) for quick recoloring.</div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">🖼️</div>
+        <div class="tip-title">Image + Style in One</div>
+        <div class="tip-body">Combine <code>add_node</code> + <code>quick_image</code> into a single chain. Copy an image to clipboard first, then fire the chain — the node spawns and the clipboard image fills it automatically.</div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">💾</div>
+        <div class="tip-title">Auto-Save at End</div>
+        <div class="tip-body">Add <code>save</code> as the last action on chains you use frequently. Any important node you spawn is immediately persisted. Zero chance of losing it to an unexpected close.</div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">🌀</div>
+        <div class="tip-title">Arrange + Focus</div>
+        <div class="tip-body">End hub-creating chains with <code>auto_arrange</code> → <code>focus_node</code>. The children spread into a clean radial layout and the view zooms in — your map organizes itself as you build.</div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">🔑</div>
+        <div class="tip-title">Key Grouping by Context</div>
+        <div class="tip-body">Group related chains under a modifier prefix: all <code>Ctrl+Shift+*</code> for project chains, all single-letter keys for quick restyling, <code>Ctrl+*</code> for creation chains. Your fingers learn the zones.</div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">🧪</div>
+        <div class="tip-title">Test Before You Map</div>
+        <div class="tip-body">Always use the <strong>🧪 Test Chain</strong> button before saving. It fires on your currently selected node live in the map so you see the exact output. Saves you from discovering a color is wrong after 20 nodes.</div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ── 8. CHEAT SHEET ── -->
+  <section>
+    <div class="sec-header">
+      <div class="sec-eyebrow">08 · Quick Reference</div>
+      <h2 class="sec-title">Default chains <em>cheat sheet</em></h2>
+    </div>
+    <div class="cheatsheet">
+      <div class="cs-header">
+        <h3>⚡ Built-In Hotkey Chains</h3>
+        <span>All active on first launch</span>
+      </div>
+      <table class="cs-table">
+        <thead>
+          <tr>
+            <th>Shortcut</th>
+            <th>Chain Name</th>
+            <th>Creates</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="kbd">Ctrl+T</span></td>
+            <td><strong>Task Node</strong></td>
+            <td><span class="result-node"><span class="rn-square" style="background:#f59e0b;color:#f59e0b;box-shadow:0 0 5px #f59e0b;"></span> Amber square</span></td>
+            <td>add · shape · color · glow</td>
+          </tr>
+          <tr>
+            <td><span class="kbd">Ctrl+I</span></td>
+            <td><strong>Idea Node</strong></td>
+            <td><span class="result-node"><span class="rn-dot" style="background:#fbbf24;color:#fbbf24;"></span> Gold circle, high glow</span></td>
+            <td>add · shape · color · glow</td>
+          </tr>
+          <tr>
+            <td><span class="kbd">Ctrl+1</span></td>
+            <td><strong>Important Node</strong></td>
+            <td><span class="result-node"><span class="rn-diamond" style="background:#ef4444;"></span> Red diamond, 120px, max glow</span></td>
+            <td>add · shape · color · glow · size</td>
+          </tr>
+          <tr>
+            <td><span class="kbd">Ctrl+Q</span></td>
+            <td><strong>Question Node</strong></td>
+            <td><span class="result-node"><span class="rn-dot" style="background:#8b5cf6;color:#8b5cf6;"></span> Purple hexagon</span></td>
+            <td>add · shape · color</td>
+          </tr>
+          <tr>
+            <td><span class="kbd">C</span></td>
+            <td><strong>Circle Shape</strong></td>
+            <td>Restyling: sets selected → circle</td>
+            <td>shape only</td>
+          </tr>
+          <tr>
+            <td><span class="kbd">S</span></td>
+            <td><strong>Square Shape</strong></td>
+            <td>Restyling: sets selected → square</td>
+            <td>shape only</td>
+          </tr>
+          <tr>
+            <td><span class="kbd">3</span></td>
+            <td><strong>Diamond Shape</strong></td>
+            <td>Restyling: sets selected → diamond</td>
+            <td>shape only</td>
+          </tr>
+          <tr>
+            <td><span class="kbd">N</span></td>
+            <td><strong>Hex Shape</strong></td>
+            <td>Restyling: sets selected → hexagon</td>
+            <td>shape only</td>
+          </tr>
+          <tr>
+            <td><span class="kbd">H</span></td>
+            <td><strong>Heart Shape</strong></td>
+            <td>Restyling: sets selected → heart</td>
+            <td>shape only</td>
+          </tr>
+          <tr>
+            <td><span class="kbd">G</span></td>
+            <td><strong>Green</strong></td>
+            <td>Recolor: sets selected → #1c8b36</td>
+            <td>color only</td>
+          </tr>
+          <tr>
+            <td><span class="kbd">R</span></td>
+            <td><strong>Red</strong></td>
+            <td>Recolor: sets selected → #bc0000</td>
+            <td>color only</td>
+          </tr>
+          <tr>
+            <td><span class="kbd">P</span></td>
+            <td><strong>Purple</strong></td>
+            <td>Recolor: sets selected → #6c36a2</td>
+            <td>color only</td>
+          </tr>
+          <tr>
+            <td><span class="kbd">M</span></td>
+            <td><strong>Pink</strong></td>
+            <td>Recolor: sets selected → #ffaaff</td>
+            <td>color only</td>
+          </tr>
+          <tr>
+            <td><span class="kbd">T</span></td>
+            <td><strong>Edit Node</strong></td>
+            <td>Opens text editor on selected node</td>
+            <td>edit only</td>
+          </tr>
+          <tr>
+            <td><span class="kbd">Ctrl+Shift+V</span></td>
+            <td><strong>Paste Image</strong></td>
+            <td>Creates node with clipboard image</td>
+            <td>quick_image</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<!-- ════════════ FOOTER ════════════ -->
+<footer class="page-footer">
+  <div class="footer-brand">
+    <span class="brand-name">ThoughtJunkie</span>
+    <span class="brand-sep">·</span>
+    <span class="brand-doc">Hotkey Chains Guide</span>
+  </div>
+  <div class="footer-links">
+    <a href="index.html">← Back to Site</a>
+    <a href="ThoughtJunkie_Node_Image_Guide.html">Image AI Guide</a>
+    <a href="https://www.frienduit.com" target="_blank">frienduit.com</a>
+  </div>
+</footer>
+
+</div><!-- /page -->
+</body>
+</html>
