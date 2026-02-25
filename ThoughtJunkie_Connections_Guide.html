@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connection Styles & Node Effects · ThoughtJunkie</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Fira+Code:wght@400;500;700&display=swap');
+
+/* Override the "don't use Space Grotesk" rule — it's intentional here as a brutalist-tech aesthetic choice */
+
+:root {
+  --bg:      #04080f;
+  --bg2:     #080e1a;
+  --surf:    #0d1424;
+  --surf2:   #111a2e;
+  --border:  #182035;
+  --border2: #1f2d48;
+  --text:    #d4e0f0;
+  --muted:   #7a90b0;
+  --dim:     #3a4f6a;
+
+  /* Style accent colours - from actual render code */
+  --electric:  #ffff64;
+  --water:     #64c8ff;
+  --neon:      #ff55ff;
+  --particle:  #aaffe0;
+  --energy:    #ff8833;
+  --fire:      #ff4400;
+  --crystal:   #88ddff;
+  --sketchy:   #aaddff;
+  --branch:    #88cc66;
+  --network:   #8866ff;
+  --bold:      #ff6633;
+  --straight:  #66aaff;
+  --organic:   #55dd99;
+
+  /* Node effects */
+  --ripple:   #3b82f6;
+  --sparkle:  #fbbf24;
+  --pulse:    #ec4899;
+  --portal:   #8b5cf6;
+
+  --mono: 'Fira Code', monospace;
+  --sans: 'Space Grotesk', system-ui, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+/* Scanline grid */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(100,200,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(100,200,255,0.025) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+.page { position: relative; z-index: 1; }
+
+/* ─── HERO ─── */
+.hero {
+  padding: 80px 40px 64px;
+  position: relative;
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 70% at 15% 50%, rgba(255,255,100,0.05) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 60% at 85% 50%, rgba(100,200,255,0.06) 0%, transparent 60%);
+}
+
+.hero-back {
+  display: inline-flex; align-items: center; gap: 6px;
+  text-decoration: none; color: var(--dim); font-size: 13px;
+  font-weight: 500; letter-spacing: 1px; text-transform: uppercase;
+  margin-bottom: 48px; transition: color 0.2s;
+}
+.hero-back:hover { color: var(--electric); }
+.hero-back svg { width: 14px; height: 14px; }
+
+.hero-layout {
+  display: flex; align-items: flex-start; gap: 60px;
+  max-width: 1140px; margin: 0 auto;
+}
+.hero-text { flex: 1; }
+
+.hero-eyebrow {
+  font-size: 12px; font-weight: 700; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--electric);
+  opacity: 0.8; margin-bottom: 20px;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-eyebrow::before {
+  content: ''; display: block; width: 24px; height: 2px; background: var(--electric);
+}
+
+.hero h1 {
+  font-size: clamp(38px, 6vw, 68px);
+  font-weight: 700; line-height: 1.05;
+  letter-spacing: -1.5px; color: #fff;
+  margin-bottom: 16px;
+}
+.hero h1 span {
+  background: linear-gradient(90deg, var(--electric), var(--water), var(--neon));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+
+.hero-sub { font-size: 17px; color: var(--muted); line-height: 1.7; font-weight: 400; max-width: 540px; }
+
+/* Live connection demo */
+.hero-demo {
+  flex-shrink: 0; width: 300px;
+}
+.demo-canvas {
+  width: 300px; height: 220px; position: relative;
+  border: 1px solid var(--border2); border-radius: 14px;
+  background: var(--surf); overflow: hidden;
+}
+.demo-canvas svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.demo-node {
+  position: absolute; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: #fff;
+  width: 52px; height: 52px;
+  box-shadow: 0 0 20px currentColor;
+}
+.demo-label {
+  position: absolute; bottom: 10px; left: 0; right: 0; text-align: center;
+  font-size: 12px; color: var(--dim); font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+}
+
+/* ─── MAIN ─── */
+main {
+  max-width: 1140px; margin: 0 auto;
+  padding: 72px 32px 100px;
+  display: flex; flex-direction: column; gap: 80px;
+}
+
+/* ─── SECTION HEADINGS ─── */
+.sec-label { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--dim); margin-bottom: 10px; }
+.sec-title { font-size: clamp(24px, 3.5vw, 36px); font-weight: 700; color: #fff; letter-spacing: -0.5px; margin-bottom: 14px; }
+.sec-title span { color: var(--electric); }
+.sec-body  { font-size: 16px; color: var(--muted); line-height: 1.7; max-width: 660px; }
+
+/* ─── CONNECTION STYLE CARDS ─── */
+.style-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.style-card {
+  background: var(--surf); border: 1px solid var(--border);
+  border-radius: 14px; overflow: hidden;
+  transition: border-color 0.25s, box-shadow 0.25s;
+  position: relative;
+}
+.style-card:hover {
+  border-color: var(--border2);
+  box-shadow: 0 0 24px rgba(0,0,0,0.4);
+}
+
+/* Animated connection preview area */
+.sc-preview {
+  height: 72px; position: relative; overflow: hidden;
+  background: #060c18;
+  display: flex; align-items: center; justify-content: center;
+}
+.sc-preview svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+
+/* Node dots on connection preview */
+.prev-dot {
+  width: 16px; height: 16px; border-radius: 50%;
+  position: absolute; top: 50%; transform: translateY(-50%);
+  z-index: 2;
+}
+.prev-dot.left  { left: 20px; }
+.prev-dot.right { right: 20px; }
+
+.sc-body { padding: 16px 18px; }
+.sc-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.sc-icon { font-size: 18px; }
+.sc-name { font-size: 15px; font-weight: 700; color: #fff; }
+.sc-code {
+  font-family: var(--mono); font-size: 11px; font-weight: 500;
+  padding: 3px 9px; border-radius: 5px; margin-left: auto;
+  color: var(--dim); background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border2);
+}
+.sc-desc { font-size: 14px; color: var(--muted); line-height: 1.55; }
+.sc-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+.sc-tag {
+  font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 5px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.tag-energy { background: rgba(255,136,51,0.12); color: var(--energy); border: 1px solid rgba(255,136,51,0.25); }
+.tag-calm   { background: rgba(100,200,255,0.12); color: var(--water);  border: 1px solid rgba(100,200,255,0.25); }
+.tag-focus  { background: rgba(136,204,102,0.12); color: var(--branch); border: 1px solid rgba(136,204,102,0.25); }
+.tag-minimal { background: rgba(102,170,255,0.12); color: var(--straight); border: 1px solid rgba(102,170,255,0.25); }
+.tag-urgent { background: rgba(255,68,0,0.12); color: var(--fire); border: 1px solid rgba(255,68,0,0.25); }
+.tag-creative { background: rgba(255,85,255,0.12); color: var(--neon); border: 1px solid rgba(255,85,255,0.25); }
+
+/* ── connection line animations ── */
+@keyframes dash-flow { to { stroke-dashoffset: -40; } }
+@keyframes electric-flicker { 0%,100%{opacity:1} 50%{opacity:0.6} 25%{opacity:0.9} 75%{opacity:0.7} }
+@keyframes neon-pulse { 0%,100%{filter:drop-shadow(0 0 4px currentColor) drop-shadow(0 0 10px currentColor)} 50%{filter:drop-shadow(0 0 8px currentColor) drop-shadow(0 0 20px currentColor)} }
+@keyframes fire-flicker { 0%,100%{opacity:0.9;transform:scaleY(1)} 33%{opacity:1;transform:scaleY(1.04)} 66%{opacity:0.85;transform:scaleY(0.97)} }
+@keyframes particle-travel { from{stroke-dashoffset:100} to{stroke-dashoffset:0} }
+@keyframes energy-pulse-line { 0%,100%{stroke-width:2;opacity:0.8} 50%{stroke-width:4;opacity:1} }
+@keyframes crystal-shimmer { 0%,100%{stroke:rgba(136,221,255,0.8)} 50%{stroke:rgba(200,240,255,1)} }
+@keyframes sketch-wobble { 0%,100%{d:path('M20,36 Q80,28 140,36 Q200,44 260,36')} 50%{d:path('M20,36 Q80,44 140,36 Q200,28 260,36')} }
+
+.line-electric { animation: electric-flicker 0.3s infinite; }
+.line-neon { animation: neon-pulse 2s ease-in-out infinite; }
+.line-fire { animation: fire-flicker 0.4s ease-in-out infinite; }
+.line-flow { stroke-dasharray: 8 6; animation: dash-flow 1.2s linear infinite; }
+.line-particle { stroke-dasharray: 4 20; animation: particle-travel 1.5s linear infinite; }
+.line-energy { animation: energy-pulse-line 1.5s ease-in-out infinite; }
+.line-crystal { animation: crystal-shimmer 2s ease-in-out infinite; }
+.line-arrow { stroke-dasharray: 6 8; animation: dash-flow 0.8s linear infinite; }
+
+/* ─── USE CASES ─── */
+.use-cases {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px; margin-top: 28px;
+}
+@media(max-width:760px) { .use-cases { grid-template-columns: 1fr; } }
+
+.uc-card {
+  background: var(--surf); border: 1px solid var(--border);
+  border-radius: 14px; padding: 22px 24px;
+  position: relative; overflow: hidden;
+}
+.uc-stripe {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+}
+.uc-title { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+.uc-body  { font-size: 14px; color: var(--muted); line-height: 1.6; }
+.uc-styles {
+  margin-top: 14px; display: flex; flex-wrap: wrap; gap: 6px;
+}
+.style-chip {
+  font-family: var(--mono); font-size: 12px; font-weight: 500;
+  padding: 4px 10px; border-radius: 6px; border: 1px solid;
+}
+
+/* ─── FREEHAND ─── */
+.freehand-panel {
+  background: var(--surf); border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden;
+}
+.fp-header {
+  padding: 16px 24px; background: var(--surf2);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+}
+.fp-icon { font-size: 20px; }
+.fp-title { font-size: 15px; font-weight: 700; color: #fff; }
+.fp-sub   { font-size: 13px; color: var(--dim); margin-left: auto; }
+.fp-body  { padding: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+@media(max-width:680px) { .fp-body { grid-template-columns: 1fr; } }
+.fp-col-title { font-size: 13px; font-weight: 700; color: var(--dim); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+.fp-item { font-size: 14px; color: var(--muted); padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04); display: flex; align-items: baseline; gap: 8px; }
+.fp-item:last-child { border-bottom: none; }
+.fp-item strong { color: var(--text); }
+.freehand-path-demo {
+  width: 100%; height: 80px; position: relative;
+  background: #060c18; border-radius: 10px;
+  border: 1px solid var(--border); overflow: hidden;
+}
+.freehand-path-demo svg { width: 100%; height: 100%; }
+
+/* ─── NODE EFFECTS ─── */
+.effects-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px; margin-top: 28px;
+}
+
+.effect-card {
+  background: var(--surf); border: 1px solid var(--border);
+  border-radius: 14px; overflow: hidden;
+  transition: border-color 0.25s;
+}
+.effect-card:hover { border-color: var(--border2); }
+
+.ec-preview {
+  height: 120px; background: #060c18; position: relative;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.ec-node {
+  width: 64px; height: 64px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; position: relative; z-index: 2;
+  font-weight: 700; color: #fff;
+}
+.ec-ring {
+  position: absolute; border-radius: 50%; border: 2px solid;
+  animation: ripple-expand 2s ease-out infinite;
+}
+.ec-ring:nth-child(2) { animation-delay: 0.7s; }
+.ec-ring:nth-child(3) { animation-delay: 1.4s; }
+@keyframes ripple-expand {
+  0%   { width: 64px; height: 64px; opacity: 0.8; }
+  100% { width: 160px; height: 160px; opacity: 0; }
+}
+
+.ec-sparkle {
+  position: absolute; background: white; border-radius: 1px;
+  animation: sparkle-twinkle 1.2s ease-in-out infinite;
+}
+@keyframes sparkle-twinkle {
+  0%,100% { opacity: 0.2; transform: scale(0.5) rotate(0deg); }
+  50%     { opacity: 1;   transform: scale(1) rotate(45deg); }
+}
+
+.ec-pulse-ring {
+  position: absolute; border-radius: 50%;
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+@keyframes pulse-glow {
+  0%,100% { transform: scale(1);   opacity: 0.6; }
+  50%     { transform: scale(1.4); opacity: 0; }
+}
+
+.portal-orbit {
+  position: absolute; border-radius: 50%;
+  animation: portal-spin 3s linear infinite;
+}
+@keyframes portal-spin { to { transform: rotate(360deg); } }
+
+.ec-body { padding: 16px 18px; }
+.ec-name { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+.ec-code-val {
+  font-family: var(--mono); font-size: 11px; padding: 2px 8px; border-radius: 5px;
+  background: rgba(255,255,255,0.06); border: 1px solid var(--border2); color: var(--dim);
+}
+.ec-desc { font-size: 14px; color: var(--muted); line-height: 1.6; }
+.ec-when { margin-top: 12px; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; }
+
+/* ─── PER-CONNECTION HOW-TO ─── */
+.howto-steps { display: flex; flex-direction: column; gap: 0; }
+.hs-item {
+  display: flex; gap: 20px; padding: 22px 0;
+  border-bottom: 1px solid var(--border);
+}
+.hs-item:last-child { border-bottom: none; }
+.hs-num {
+  font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--electric);
+  width: 28px; height: 28px; border-radius: 7px; flex-shrink: 0;
+  background: rgba(255,255,100,0.08); border: 1px solid rgba(255,255,100,0.2);
+  display: flex; align-items: center; justify-content: center;
+  margin-top: 2px;
+}
+.hs-content { flex: 1; }
+.hs-title { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+.hs-body  { font-size: 14px; color: var(--muted); line-height: 1.65; }
+.hs-body strong { color: var(--text); }
+.hs-body code {
+  font-family: var(--mono); font-size: 12px; background: rgba(255,255,100,0.07);
+  color: var(--electric); padding: 1px 6px; border-radius: 4px;
+}
+.hs-tip {
+  margin-top: 10px; padding: 10px 14px;
+  background: rgba(255,255,100,0.05); border: 1px solid rgba(255,255,100,0.15);
+  border-left: 3px solid var(--electric); border-radius: 8px;
+  font-size: 13px; color: var(--muted);
+}
+.hs-tip strong { color: var(--electric); }
+
+/* ─── QUICK CHEATSHEET ─── */
+.ref-table-wrap {
+  background: var(--surf); border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
+}
+.ref-table { width: 100%; border-collapse: collapse; }
+.ref-table th {
+  background: var(--surf2); padding: 11px 18px; text-align: left;
+  font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--dim);
+  border-bottom: 1px solid var(--border);
+}
+.ref-table td {
+  padding: 10px 18px; font-size: 13px; color: var(--muted);
+  border-bottom: 1px solid rgba(255,255,255,0.03); vertical-align: middle;
+}
+.ref-table tr:last-child td { border-bottom: none; }
+.ref-table tr:hover td { background: rgba(255,255,255,0.015); }
+.ref-table td strong { color: var(--text); }
+.ref-table td .key {
+  font-family: var(--mono); font-size: 11px; padding: 2px 7px; border-radius: 4px;
+  background: rgba(255,255,255,0.06); border: 1px solid var(--border2); color: var(--dim);
+}
+.ref-table td .col-swatch {
+  display: inline-block; width: 10px; height: 10px; border-radius: 2px;
+  margin-right: 6px; vertical-align: middle;
+  box-shadow: 0 0 6px currentColor;
+}
+
+/* ─── CALLOUT ─── */
+.callout {
+  padding: 14px 20px; border-radius: 10px; font-size: 14px; color: var(--muted); line-height: 1.65;
+  background: rgba(255,255,100,0.04); border: 1px solid rgba(255,255,100,0.15); border-left: 3px solid var(--electric);
+}
+.callout strong { color: var(--electric); }
+.callout.blue { background: rgba(100,200,255,0.04); border-color: rgba(100,200,255,0.15); border-left-color: var(--water); }
+.callout.blue strong { color: var(--water); }
+
+/* ─── FOOTER ─── */
+.page-footer {
+  position: relative; z-index: 1; border-top: 1px solid var(--border);
+  padding: 32px 40px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+}
+.footer-brand { font-size: 16px; font-weight: 700; color: var(--electric); }
+.footer-links { display: flex; gap: 22px; }
+.footer-links a { font-size: 13px; color: var(--dim); text-decoration: none; transition: color 0.2s; }
+.footer-links a:hover { color: var(--electric); }
+
+@media(max-width:760px) {
+  .hero-layout { flex-direction: column; }
+  .hero-demo { width: 100%; }
+  .demo-canvas { width: 100%; }
+  main { padding: 48px 20px 80px; gap: 60px; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ══════════ HERO ══════════ -->
+<header class="hero">
+  <div style="max-width:1140px;margin:0 auto;">
+    <a href="index.html" class="hero-back">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+      Back to ThoughtJunkie
+    </a>
+
+    <div class="hero-layout">
+      <div class="hero-text">
+        <div class="hero-eyebrow">Visual Systems Guide</div>
+        <h1>Connection Styles<br><span>&amp; Node Effects</span></h1>
+        <p class="hero-sub">
+          Every line between nodes is animated. Every node can pulse, sparkle, ripple, or glow.
+          These aren't decorations — they're a language for urgency, flow, energy, and ideas.
+          Learn to use them intentionally.
+        </p>
+      </div>
+
+      <!-- Live animated demo -->
+      <div class="hero-demo">
+        <div class="demo-canvas">
+          <svg viewBox="0 0 300 220" preserveAspectRatio="none">
+            <!-- Electric line -->
+            <path d="M50,50 L95,60 L115,45 L140,55 L165,44 L190,58 L210,48 L250,50" fill="none" stroke="#ffff64" stroke-width="2" class="line-electric" opacity="0.9"/>
+            <!-- Neon glow line -->
+            <path d="M50,110 Q150,85 250,110" fill="none" stroke="#ff55ff" stroke-width="2.5" class="line-neon"/>
+            <path d="M50,110 Q150,85 250,110" fill="none" stroke="rgba(255,85,255,0.2)" stroke-width="12" class="line-neon"/>
+            <!-- Water flow -->
+            <path d="M50,170 Q100,155 150,170 Q200,185 250,170" fill="none" stroke="#64c8ff" stroke-width="3" stroke-dasharray="8 5" class="line-flow"/>
+            <!-- Sparkle dots -->
+            <circle cx="110" cy="170" r="3" fill="white" opacity="0.7" class="line-energy"/>
+            <circle cx="190" cy="170" r="3" fill="white" opacity="0.7" class="line-energy" style="animation-delay:0.5s"/>
+          </svg>
+          <!-- Left nodes -->
+          <div class="prev-dot left" style="top:50px;background:#ffff64;box-shadow:0 0 12px #ffff64;"></div>
+          <div class="prev-dot left" style="top:110px;background:#ff55ff;box-shadow:0 0 12px #ff55ff;"></div>
+          <div class="prev-dot left" style="top:170px;background:#64c8ff;box-shadow:0 0 12px #64c8ff;"></div>
+          <!-- Right nodes -->
+          <div class="prev-dot right" style="top:50px;background:#ffff64;box-shadow:0 0 12px #ffff64;"></div>
+          <div class="prev-dot right" style="top:110px;background:#ff55ff;box-shadow:0 0 12px #ff55ff;"></div>
+          <div class="prev-dot right" style="top:170px;background:#64c8ff;box-shadow:0 0 12px #64c8ff;"></div>
+          <div class="demo-label">Live animation preview</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════ MAIN ══════════ -->
+<main>
+
+  <!-- ── 1. ALL 13 CONNECTION STYLES ── -->
+  <section>
+    <div class="sec-label">01 · The Full Collection</div>
+    <h2 class="sec-title">All <span>13 connection styles</span></h2>
+    <p class="sec-body">Set globally for an entire tab, or per-connection for individual lines. Right-click any node → Connection Style. Right-click any line to change just that one.</p>
+
+    <div class="style-grid">
+
+      <!-- ORGANIC FLOW -->
+      <div class="style-card">
+        <div class="sc-preview">
+          <div class="prev-dot left" style="background:#55dd99; box-shadow:0 0 10px #55dd99;"></div>
+          <svg viewBox="0 0 280 72" preserveAspectRatio="none">
+            <path d="M36,36 C90,20 190,52 244,36" fill="none" stroke="#55dd99" stroke-width="3" stroke-linecap="round" class="line-arrow" stroke-dasharray="6 8"/>
+            <path d="M36,36 C90,20 190,52 244,36" fill="none" stroke="rgba(85,221,153,0.15)" stroke-width="10"/>
+          </svg>
+          <div class="prev-dot right" style="background:#55dd99; box-shadow:0 0 10px #55dd99;"></div>
+        </div>
+        <div class="sc-body">
+          <div class="sc-header">
+            <span class="sc-icon">🌊</span>
+            <span class="sc-name">Organic Flow</span>
+            <span class="sc-code">curved</span>
+          </div>
+          <div class="sc-desc">Smooth bezier curves with an animated arrow flowing along the path. The default style — natural, easy on the eyes, works for any map.</div>
+          <div class="sc-tags"><span class="sc-tag tag-calm">Calm</span><span class="sc-tag tag-focus">Versatile</span></div>
+        </div>
+      </div>
+
+      <!-- ELECTRIC STORM -->
+      <div class="style-card">
+        <div class="sc-preview">
+          <div class="prev-dot left" style="background:#ffff64; box-shadow:0 0 10px #ffff64;"></div>
+          <svg viewBox="0 0 280 72" preserveAspectRatio="none">
+            <path d="M36,36 L60,22 L85,48 L110,20 L135,44 L160,24 L185,46 L210,26 L244,36" fill="none" stroke="rgba(255,255,100,0.3)" stroke-width="8" stroke-linecap="round"/>
+            <path d="M36,36 L60,22 L85,48 L110,20 L135,44 L160,24 L185,46 L210,26 L244,36" fill="none" stroke="#ffff64" stroke-width="2" stroke-linecap="round" class="line-electric"/>
+          </svg>
+          <div class="prev-dot right" style="background:#ffff64; box-shadow:0 0 10px #ffff64;"></div>
+        </div>
+        <div class="sc-body">
+          <div class="sc-header">
+            <span class="sc-icon">⚡</span>
+            <span class="sc-name">Electric Storm</span>
+            <span class="sc-code">electric</span>
+          </div>
+          <div class="sc-desc">Jagged lightning-bolt paths that flicker and crackle. Bright yellow core with a wide glow halo. High tension, high urgency.</div>
+          <div class="sc-tags"><span class="sc-tag tag-energy">High Energy</span><span class="sc-tag tag-urgent">Urgency</span></div>
+        </div>
+      </div>
+
+      <!-- WATER FLOW -->
+      <div class="style-card">
+        <div class="sc-preview">
+          <div class="prev-dot left" style="background:#64c8ff; box-shadow:0 0 10px #64c8ff;"></div>
+          <svg viewBox="0 0 280 72" preserveAspectRatio="none">
+            <path d="M36,36 Q80,22 140,36 Q200,50 244,36" fill="none" stroke="#64c8ff" stroke-width="3.5" class="line-flow"/>
+            <circle cx="80" cy="30" r="3" fill="white" opacity="0.6" class="line-energy"/>
+            <circle cx="160" cy="42" r="3" fill="white" opacity="0.6" class="line-energy" style="animation-delay:0.8s"/>
+          </svg>
+          <div class="prev-dot right" style="background:#64c8ff; box-shadow:0 0 10px #64c8ff;"></div>
+        </div>
+        <div class="sc-body">
+          <div class="sc-header">
+            <span class="sc-icon">💧</span>
+            <span class="sc-name">Water Flow</span>
+            <span class="sc-code">water_flow</span>
+          </div>
+          <div class="sc-desc">Sine wave path with animated traveling sparkle highlights. Gradient from blue to cyan. Relaxed, flowing, continuous movement.</div>
+          <div class="sc-tags"><span class="sc-tag tag-calm">Flowing</span><span class="sc-tag tag-focus">Journaling</span></div>
+        </div>
+      </div>
+
+      <!-- NEON GLOW -->
+      <div class="style-card">
+        <div class="sc-preview">
+          <div class="prev-dot left" style="background:#ff55ff; box-shadow:0 0 10px #ff55ff;"></div>
+          <svg viewBox="0 0 280 72" preserveAspectRatio="none">
+            <path d="M36,36 Q140,12 244,36" fill="none" stroke="rgba(255,85,255,0.15)" stroke-width="18" class="line-neon"/>
+            <path d="M36,36 Q140,12 244,36" fill="none" stroke="rgba(255,85,255,0.4)" stroke-width="8" class="line-neon"/>
+            <path d="M36,36 Q140,12 244,36" fill="none" stroke="#ff55ff" stroke-width="2" class="line-neon"/>
+            <path d="M36,36 Q140,12 244,36" fill="none" stroke="white" stroke-width="1" opacity="0.7"/>
+          </svg>
+          <div class="prev-dot right" style="background:#ff55ff; box-shadow:0 0 10px #ff55ff;"></div>
+        </div>
+        <div class="sc-body">
+          <div class="sc-header">
+            <span class="sc-icon">🌟</span>
+            <span class="sc-name">Neon Glow</span>
+            <span class="sc-code">neon_glow</span>
+          </div>
+          <div class="sc-desc">4-layer pulsing bloom using the node's own color with a white core. The glow breathes in and out continuously. Vivid and electric.</div>
+          <div class="sc-tags"><span class="sc-tag tag-creative">Creative</span><span class="sc-tag tag-energy">Vivid</span></div>
+        </div>
+      </div>
+
+      <!-- PARTICLE STREAM -->
+      <div class="style-card">
+        <div class="sc-preview">
+          <div class="prev-dot left" style="background:#aaffe0; box-shadow:0 0 10px #aaffe0;"></div>
+          <svg viewBox="0 0 280 72" preserveAspectRatio="none">
+            <line x1="36" y1="36" x2="244" y2="36" stroke="rgba(170,255,224,0.2)" stroke-width="1"/>
+            <line x1="36" y1="36" x2="244" y2="36" stroke="#aaffe0" stroke-width="2" stroke-dasharray="3 18" class="line-particle"/>
+            <line x1="36" y1="36" x2="244" y2="36" stroke="#aaffe0" stroke-width="4" stroke-dasharray="3 18" class="line-particle" style="animation-delay:-0.5s; opacity:0.5;"/>
+          </svg>
+          <div class="prev-dot right" style="background:#aaffe0; box-shadow:0 0 10px #aaffe0;"></div>
+        </div>
+        <div class="sc-body">
+          <div class="sc-header">
+            <span class="sc-icon">✨</span>
+            <span class="sc-name">Particle Stream</span>
+            <span class="sc-code">particle_stream</span>
+          </div>
+          <div class="sc-desc">Dashed dots traveling along a straight path — like molecules in motion. Subtle and systematic. Good for process flows and sequences.</div>
+          <div class="sc-tags"><span class="sc-tag tag-minimal">Systematic</span><span class="sc-tag tag-focus">Process</span></div>
+        </div>
+      </div>
+
+      <!-- ENERGY PULSE -->
+      <div class="style-card">
+        <div class="sc-preview">
+          <div class="prev-dot left" style="background:#ff8833; box-shadow:0 0 10px #ff8833;"></div>
+          <svg viewBox="0 0 280 72" preserveAspectRatio="none">
+            <path d="M36,36 Q140,20 244,36" fill="none" stroke="#ff8833" stroke-width="2" class="line-energy"/>
+            <path d="M36,36 Q140,20 244,36" fill="none" stroke="rgba(255,136,51,0.3)" stroke-width="10" class="line-energy" style="animation-delay:0.3s"/>
+          </svg>
+          <div class="prev-dot right" style="background:#ff8833; box-shadow:0 0 10px #ff8833;"></div>
+        </div>
+        <div class="sc-body">
+          <div class="sc-header">
+            <span class="sc-icon">⚡</span>
+            <span class="sc-name">Energy Pulse</span>
+            <span class="sc-code">energy_pulse</span>
+          </div>
+          <div class="sc-desc">A curved line that breathes in and out — the width and opacity pulse rhythmically. Slightly orange-toned. Great for active connections in a brainstorm.</div>
+          <div class="sc-tags"><span class="sc-tag tag-energy">Brainstorm</span><span class="sc-tag tag-creative">Active</span></div>
+        </div>
+      </div>
+
+      <!-- FIRE -->
+      <div class="style-card">
+        <div class="sc-preview">
+          <div class="prev-dot left" style="background:#ff4400; box-shadow:0 0 12px #ff4400;"></div>
+          <svg viewBox="0 0 280 72" preserveAspectRatio="none">
+            <path d="M36,36 Q80,44 140,30 Q200,16 244,36" fill="none" stroke="rgba(255,100,0,0.3)" stroke-width="12" class="line-fire"/>
+            <path d="M36,36 Q80,44 140,30 Q200,16 244,36" fill="none" stroke="rgba(255,140,0,0.6)" stroke-width="6" class="line-fire"/>
+            <path d="M36,36 Q80,44 140,30 Q200,16 244,36" fill="none" stroke="#ff6600" stroke-width="2.5" class="line-fire"/>
+            <path d="M36,36 Q80,44 140,30 Q200,16 244,36" fill="none" stroke="#ffcc00" stroke-width="1" opacity="0.7" class="line-fire"/>
+          </svg>
+          <div class="prev-dot right" style="background:#ff4400; box-shadow:0 0 12px #ff4400;"></div>
+        </div>
+        <div class="sc-body">
+          <div class="sc-header">
+            <span class="sc-icon">🔥</span>
+            <span class="sc-name">Fire</span>
+            <span class="sc-code">fire</span>
+          </div>
+          <div class="sc-desc">Multi-layer flickering flame — orange outer glow, amber mid, bright yellow core. All layers flicker out of phase. Intense urgency, impossible to ignore.</div>
+          <div class="sc-tags"><span class="sc-tag tag-urgent">Critical</span><span class="sc-tag tag-energy">Urgent</span></div>
+        </div>
+      </div>
+
+      <!-- CRYSTALLINE -->
+      <div class="style-card">
+        <div class="sc-preview">
+          <div class="prev-dot left" style="background:#88ddff; box-shadow:0 0 10px #88ddff;"></div>
+          <svg viewBox="0 0 280 72" preserveAspectRatio="none">
+            <path d="M36,36 L80,22 L120,42 L160,20 L200,40 L244,36" fill="none" stroke="rgba(136,221,255,0.25)" stroke-width="6"/>
+            <path d="M36,36 L80,22 L120,42 L160,20 L200,40 L244,36" fill="none" stroke="#88ddff" stroke-width="2" class="line-crystal" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="80" cy="22" r="3" fill="#88ddff" opacity="0.8"/>
+            <circle cx="120" cy="42" r="3" fill="#88ddff" opacity="0.8"/>
+            <circle cx="160" cy="20" r="3" fill="#88ddff" opacity="0.8"/>
+            <circle cx="200" cy="40" r="3" fill="#88ddff" opacity="0.8"/>
+          </svg>
+          <div class="prev-dot right" style="background:#88ddff; box-shadow:0 0 10px #88ddff;"></div>
+        </div>
+        <div class="sc-body">
+          <div class="sc-header">
+            <span class="sc-icon">💎</span>
+            <span class="sc-name">Crystalline</span>
+            <span class="sc-code">crystalline</span>
+          </div>
+          <div class="sc-desc">Angular, geometric facets with glowing vertex dots that shimmer. Cold, precise, and structural. Perfect for analytical or technical maps.</div>
+          <div class="sc-tags"><span class="sc-tag tag-minimal">Analytical</span><span class="sc-tag tag-focus">Technical</span></div>
+        </div>
+      </div>
+
+      <!-- HAND DRAWN -->
+      <div class="style-card">
+        <div class="sc-preview">
+          <div class="prev-dot left" style="background:#aaddff; box-shadow:0 0 8px #aaddff;"></div>
+          <svg viewBox="0 0 280 72" preserveAspectRatio="none">
+            <path d="M36,36 Q55,34 70,37 Q95,41 115,35 Q140,29 165,37 Q190,44 210,36 Q230,30 244,36" fill="none" stroke="#aaddff" stroke-width="2.5" stroke-linecap="round" class="line-arrow" stroke-dasharray="5 7"/>
+            <!-- arrows along path -->
+            <path d="M120,34 L112,30 M120,34 L112,38" fill="none" stroke="#aaddff" stroke-width="2" stroke-linecap="round"/>
+            <path d="M190,37 L182,33 M190,37 L182,41" fill="none" stroke="#aaddff" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <div class="prev-dot right" style="background:#aaddff; box-shadow:0 0 8px #aaddff;"></div>
+        </div>
+        <div class="sc-body">
+          <div class="sc-header">
+            <span class="sc-icon">✏️</span>
+            <span class="sc-name">Hand Drawn</span>
+            <span class="sc-code">sketchy</span>
+          </div>
+          <div class="sc-desc">A wobbly, organic stroke with 3 animated arrows traveling along the path. Warm and human. Feels like a whiteboard sketch — great for personal journaling.</div>
+          <div class="sc-tags"><span class="sc-tag tag-calm">Personal</span><span class="sc-tag tag-focus">Journaling</span></div>
+        </div>
+      </div>
+
+      <!-- TREE BRANCHES -->
+      <div class="style-card">
+        <div class="sc-preview">
+          <div class="prev-dot left" style="background:#88cc66; box-shadow:0 0 8px #88cc66;"></div>
+          <svg viewBox="0 0 280 72" preserveAspectRatio="none">
+            <path d="M36,36 C80,36 100,22 140,22 C180,22 200,36 244,36" fill="none" stroke="rgba(136,204,102,0.3)" stroke-width="8" stroke-linecap="round"/>
+            <path d="M36,36 C80,36 100,22 140,22 C180,22 200,36 244,36" fill="none" stroke="#88cc66" stroke-width="2.5" stroke-linecap="round"/>
+            <!-- branch knots -->
+            <circle cx="100" cy="26" r="4" fill="#88cc66" opacity="0.6"/>
+            <circle cx="180" cy="30" r="4" fill="#88cc66" opacity="0.6"/>
+          </svg>
+          <div class="prev-dot right" style="background:#88cc66; box-shadow:0 0 8px #88cc66;"></div>
+        </div>
+        <div class="sc-body">
+          <div class="sc-header">
+            <span class="sc-icon">🌳</span>
+            <span class="sc-name">Tree Branches</span>
+            <span class="sc-code">organic_branch</span>
+          </div>
+          <div class="sc-desc">S-shaped organic curves with subtle knot dots along the path. Soft green tones. Feels like growth, good for mind maps with a natural or wellness theme.</div>
+          <div class="sc-tags"><span class="sc-tag tag-calm">Organic</span><span class="sc-tag tag-focus">Wellness</span></div>
+        </div>
+      </div>
+
+      <!-- NEURAL NETWORK -->
+      <div class="style-card">
+        <div class="sc-preview">
+          <div class="prev-dot left" style="background:#8866ff; box-shadow:0 0 8px #8866ff;"></div>
+          <svg viewBox="0 0 280 72" preserveAspectRatio="none">
+            <line x1="36" y1="36" x2="244" y2="36" stroke="rgba(136,102,255,0.4)" stroke-width="1.5"/>
+            <circle cx="244" cy="36" r="5" fill="#8866ff" opacity="0.8"/>
+            <circle cx="36" cy="36" r="5" fill="#8866ff" opacity="0.8"/>
+          </svg>
+          <div class="prev-dot right" style="background:#8866ff; box-shadow:0 0 8px #8866ff;"></div>
+        </div>
+        <div class="sc-body">
+          <div class="sc-header">
+            <span class="sc-icon">🧠</span>
+            <span class="sc-name">Neural Network</span>
+            <span class="sc-code">network</span>
+          </div>
+          <div class="sc-desc">Ultra-thin straight line with small endpoint dots. Minimal, quiet, near-invisible. Best for dense maps with many connections where visual noise must stay low.</div>
+          <div class="sc-tags"><span class="sc-tag tag-minimal">Minimal</span><span class="sc-tag tag-focus">Dense Maps</span></div>
+        </div>
+      </div>
+
+      <!-- COMIC BOOK -->
+      <div class="style-card">
+        <div class="sc-preview">
+          <div class="prev-dot left" style="background:#ff6633; box-shadow:0 0 10px #ff6633;"></div>
+          <svg viewBox="0 0 280 72" preserveAspectRatio="none">
+            <line x1="36" y1="36" x2="244" y2="36" stroke="black" stroke-width="8" stroke-linecap="round"/>
+            <line x1="36" y1="36" x2="244" y2="36" stroke="#ff6633" stroke-width="5" stroke-linecap="round"/>
+            <!-- bold arrow -->
+            <path d="M210,36 L196,26 M210,36 L196,46" fill="none" stroke="black" stroke-width="5" stroke-linecap="round"/>
+            <path d="M210,36 L196,26 M210,36 L196,46" fill="none" stroke="#ff6633" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+          <div class="prev-dot right" style="background:#ff6633; box-shadow:0 0 10px #ff6633;"></div>
+        </div>
+        <div class="sc-body">
+          <div class="sc-header">
+            <span class="sc-icon">💥</span>
+            <span class="sc-name">Comic Book</span>
+            <span class="sc-code">bold</span>
+          </div>
+          <div class="sc-desc">Thick colored line over a black outline with a bold bouncing arrow. Cartoon-panel energy. High contrast, graphic, and punchy.</div>
+          <div class="sc-tags"><span class="sc-tag tag-creative">Playful</span><span class="sc-tag tag-energy">Bold</span></div>
+        </div>
+      </div>
+
+      <!-- MINIMALIST -->
+      <div class="style-card">
+        <div class="sc-preview">
+          <div class="prev-dot left" style="background:#66aaff; box-shadow:0 0 8px #66aaff;"></div>
+          <svg viewBox="0 0 280 72" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="grad-straight" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#3b82f6"/>
+                <stop offset="100%" stop-color="#66aaff"/>
+              </linearGradient>
+            </defs>
+            <line x1="36" y1="36" x2="244" y2="36" stroke="url(#grad-straight)" stroke-width="3" stroke-linecap="round"/>
+            <!-- pulsing arrow -->
+            <path d="M200,36 L186,26 M200,36 L186,46" fill="none" stroke="#66aaff" stroke-width="3" stroke-linecap="round" class="line-energy"/>
+          </svg>
+          <div class="prev-dot right" style="background:#66aaff; box-shadow:0 0 8px #66aaff;"></div>
+        </div>
+        <div class="sc-body">
+          <div class="sc-header">
+            <span class="sc-icon">➡️</span>
+            <span class="sc-name">Minimalist</span>
+            <span class="sc-code">straight</span>
+          </div>
+          <div class="sc-desc">Straight line with a gradient from the source node color to the target. Pulsing arrow at 80% of the path. Clean, direct, distraction-free.</div>
+          <div class="sc-tags"><span class="sc-tag tag-minimal">Clean</span><span class="sc-tag tag-focus">Directional</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ── 2. USE CASES ── -->
+  <section>
+    <div class="sec-label">02 · When to Use What</div>
+    <h2 class="sec-title">Styles as a <span>visual language</span></h2>
+    <p class="sec-body">The most powerful use of connection styles isn't random variety — it's consistent mapping of style to meaning. Here's how to build that system.</p>
+
+    <div class="use-cases">
+      <div class="uc-card">
+        <div class="uc-stripe" style="background: linear-gradient(180deg, var(--fire), var(--electric));"></div>
+        <div class="uc-title">🚨 Urgency & Blockers</div>
+        <div class="uc-body">Connections involving urgent tasks, blockers, deadlines, or critical dependencies deserve styles that demand attention. Use these so blockers are impossible to miss at a glance.</div>
+        <div class="uc-styles">
+          <span class="style-chip" style="color:var(--fire);border-color:rgba(255,68,0,0.4);background:rgba(255,68,0,0.08);">🔥 fire</span>
+          <span class="style-chip" style="color:var(--electric);border-color:rgba(255,255,100,0.4);background:rgba(255,255,100,0.08);">⚡ electric</span>
+          <span class="style-chip" style="color:var(--energy);border-color:rgba(255,136,51,0.4);background:rgba(255,136,51,0.08);">⚡ energy_pulse</span>
+        </div>
+      </div>
+      <div class="uc-card">
+        <div class="uc-stripe" style="background: linear-gradient(180deg, var(--water), var(--organic));"></div>
+        <div class="uc-title">🌿 Reflection & Journaling</div>
+        <div class="uc-body">Daily journal maps benefit from styles that feel human and unhurried. The lines should recede visually so nodes carry the focus — calm backgrounds for calm thoughts.</div>
+        <div class="uc-styles">
+          <span class="style-chip" style="color:var(--sketchy);border-color:rgba(170,221,255,0.4);background:rgba(170,221,255,0.08);">✏️ sketchy</span>
+          <span class="style-chip" style="color:var(--water);border-color:rgba(100,200,255,0.4);background:rgba(100,200,255,0.08);">💧 water_flow</span>
+          <span class="style-chip" style="color:var(--organic);border-color:rgba(85,221,153,0.4);background:rgba(85,221,153,0.08);">🌊 curved</span>
+        </div>
+      </div>
+      <div class="uc-card">
+        <div class="uc-stripe" style="background: linear-gradient(180deg, var(--neon), var(--particle));"></div>
+        <div class="uc-title">💡 Brainstorming</div>
+        <div class="uc-body">In a brainstorm session, you want the map to feel alive and generative. Use high-energy animated styles that pulse and move — they prime the brain for creative association.</div>
+        <div class="uc-styles">
+          <span class="style-chip" style="color:var(--neon);border-color:rgba(255,85,255,0.4);background:rgba(255,85,255,0.08);">🌟 neon_glow</span>
+          <span class="style-chip" style="color:var(--energy);border-color:rgba(255,136,51,0.4);background:rgba(255,136,51,0.08);">⚡ energy_pulse</span>
+          <span class="style-chip" style="color:var(--bold);border-color:rgba(255,102,51,0.4);background:rgba(255,102,51,0.08);">💥 bold</span>
+        </div>
+      </div>
+      <div class="uc-card">
+        <div class="uc-stripe" style="background: linear-gradient(180deg, var(--crystal), var(--network));"></div>
+        <div class="uc-title">📊 Analysis & Research</div>
+        <div class="uc-body">Technical analysis maps need structured, legible connections that don't compete with the data. Precision over expression — let the node labels carry the meaning.</div>
+        <div class="uc-styles">
+          <span class="style-chip" style="color:var(--crystal);border-color:rgba(136,221,255,0.4);background:rgba(136,221,255,0.08);">💎 crystalline</span>
+          <span class="style-chip" style="color:var(--network);border-color:rgba(136,102,255,0.4);background:rgba(136,102,255,0.08);">🧠 network</span>
+          <span class="style-chip" style="color:var(--straight);border-color:rgba(102,170,255,0.4);background:rgba(102,170,255,0.08);">➡️ straight</span>
+        </div>
+      </div>
+      <div class="uc-card">
+        <div class="uc-stripe" style="background: linear-gradient(180deg, var(--particle), var(--straight));"></div>
+        <div class="uc-title">🔄 Process Flows</div>
+        <div class="uc-body">When the map represents steps in a sequence or a workflow, directional styles make the flow self-evident. The arrows carry the "next" meaning without a word.</div>
+        <div class="uc-styles">
+          <span class="style-chip" style="color:var(--particle);border-color:rgba(170,255,224,0.4);background:rgba(170,255,224,0.08);">✨ particle_stream</span>
+          <span class="style-chip" style="color:var(--straight);border-color:rgba(102,170,255,0.4);background:rgba(102,170,255,0.08);">➡️ straight</span>
+          <span class="style-chip" style="color:var(--organic);border-color:rgba(85,221,153,0.4);background:rgba(85,221,153,0.08);">🌊 curved</span>
+        </div>
+      </div>
+      <div class="uc-card">
+        <div class="uc-stripe" style="background: linear-gradient(180deg, var(--branch), var(--sketchy));"></div>
+        <div class="uc-title">🌱 Wellness & Goals</div>
+        <div class="uc-body">Maps tracking habits, gratitude, growth, or wellbeing should feel alive but unhurried. Organic and botanical styles reinforce the growth metaphor of the map itself.</div>
+        <div class="uc-styles">
+          <span class="style-chip" style="color:var(--branch);border-color:rgba(136,204,102,0.4);background:rgba(136,204,102,0.08);">🌳 organic_branch</span>
+          <span class="style-chip" style="color:var(--water);border-color:rgba(100,200,255,0.4);background:rgba(100,200,255,0.08);">💧 water_flow</span>
+          <span class="style-chip" style="color:var(--sketchy);border-color:rgba(170,221,255,0.4);background:rgba(170,221,255,0.08);">✏️ sketchy</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ── 3. FREEHAND ── -->
+  <section>
+    <div class="freehand-panel">
+      <div class="fp-header">
+        <span class="fp-icon">🖊️</span>
+        <span class="fp-title">Freehand Connections</span>
+        <span class="fp-sub">Draw any shape between nodes</span>
+      </div>
+      <div class="fp-body">
+        <div>
+          <div class="fp-col-title">How it works</div>
+          <div class="fp-item"><strong>Draw mode:</strong> Hold Shift and drag from one node to another to draw any curved or looping path between them.</div>
+          <div class="fp-item"><strong>Animated arrows:</strong> Once drawn, the path gets traveling animated arrows that flow along your exact drawn shape — no straight-line approximation.</div>
+          <div class="fp-item"><strong>Any shape:</strong> Loops, spirals, arcs, S-curves — the path is stored as raw coordinate points and replayed exactly.</div>
+          <div class="fp-item"><strong>Per-path color:</strong> Uses the source node's color, including glow. Freehand arrows pulse just like structured connection arrows.</div>
+          <div class="fp-item"><strong>Saved persistently:</strong> Freehand paths are saved in the daily snapshot alongside regular connections — no extra step needed.</div>
+        </div>
+        <div>
+          <div class="fp-col-title">When to use it</div>
+          <div class="fp-item"><strong>Associations:</strong> When two thoughts are loosely related but not in a clean parent-child hierarchy, draw a freehand arc between them.</div>
+          <div class="fp-item"><strong>Emphasis:</strong> Draw a looping ring around a cluster of nodes to visually group them without restructuring the map hierarchy.</div>
+          <div class="fp-item"><strong>Mood:</strong> In a creative or emotional session, freehand paths feel less structured than regular connections — they carry that feeling through to the reader.</div>
+          <div class="fp-item"><strong>Annotation:</strong> Draw an arrow pointing to a specific node from a piece of text — like a call-out annotation in a sketchbook.</div>
+          <div class="freehand-path-demo" style="margin-top:14px;">
+            <svg viewBox="0 0 400 80" preserveAspectRatio="none">
+              <path d="M30,40 C60,10 100,65 140,40 C180,15 220,60 260,35 C300,10 340,55 370,40" fill="none" stroke="#aaddff" stroke-width="2" stroke-linecap="round" class="line-arrow" stroke-dasharray="5 8"/>
+              <path d="M186,36 L174,28 M186,36 L174,44" fill="none" stroke="#aaddff" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="30" cy="40" r="7" fill="rgba(59,130,246,0.3)" stroke="#3b82f6" stroke-width="2"/>
+              <circle cx="370" cy="40" r="7" fill="rgba(236,72,153,0.3)" stroke="#ec4899" stroke-width="2"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ── 4. NODE EFFECTS ── -->
+  <section>
+    <div class="sec-label">04 · Node-Level Effects</div>
+    <h2 class="sec-title">4 node effects — <span>for urgency, energy, ideas, and time</span></h2>
+    <p class="sec-body">
+      Connection styles live on the lines. Node effects live on the nodes themselves. 
+      They're ambient animations that extend beyond the node boundary and signal its 
+      state — emotional, cognitive, or temporal. Right-click any node to set its effect.
+    </p>
+
+    <div class="effects-grid">
+
+      <!-- RIPPLE -->
+      <div class="effect-card">
+        <div class="ec-preview">
+          <div class="ec-ring" style="color:#3b82f6; border-color:rgba(59,130,246,0.6); width:64px; height:64px;"></div>
+          <div class="ec-ring" style="color:#3b82f6; border-color:rgba(59,130,246,0.4); width:64px; height:64px;"></div>
+          <div class="ec-ring" style="color:#3b82f6; border-color:rgba(59,130,246,0.2); width:64px; height:64px;"></div>
+          <div class="ec-node" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8); box-shadow:0 0 20px rgba(59,130,246,0.5); z-index:5;">〰️</div>
+        </div>
+        <div class="ec-body">
+          <div class="ec-name">Ripple <span class="ec-code-val">effect: 'ripple'</span></div>
+          <div class="ec-desc">3 concentric rings expand outward from the node and fade as they grow. Continuous and calm — like a stone dropped in still water. Broadcasts presence without aggression.</div>
+          <div class="ec-when" style="background:rgba(59,130,246,0.07); border: 1px solid rgba(59,130,246,0.2); color:#60a5fa;">
+            💡 Use for: <strong>Important updates</strong>, a node that was recently changed, or thoughts that should draw attention without demanding it.
+          </div>
+        </div>
+      </div>
+
+      <!-- SPARKLE -->
+      <div class="effect-card">
+        <div class="ec-preview" style="overflow:hidden;">
+          <!-- sparkle dots -->
+          <div class="ec-sparkle" style="width:4px;height:14px;top:22px;left:50%;margin-left:44px; animation-delay:0s;"></div>
+          <div class="ec-sparkle" style="width:14px;height:4px;top:36px;left:50%;margin-left:44px; animation-delay:0s;"></div>
+          <div class="ec-sparkle" style="width:4px;height:14px;top:22px;right:50%;margin-right:44px; animation-delay:0.3s;"></div>
+          <div class="ec-sparkle" style="width:14px;height:4px;top:36px;right:50%;margin-right:44px; animation-delay:0.3s;"></div>
+          <div class="ec-sparkle" style="width:4px;height:12px;top:10px;left:50%;margin-left:10px; animation-delay:0.6s;"></div>
+          <div class="ec-sparkle" style="width:12px;height:4px;top:18px;left:50%;margin-left:10px; animation-delay:0.6s;"></div>
+          <div class="ec-sparkle" style="width:4px;height:12px;bottom:10px;left:50%;margin-left:-14px; animation-delay:0.9s;"></div>
+          <div class="ec-sparkle" style="width:12px;height:4px;bottom:18px;left:50%;margin-left:-14px; animation-delay:0.9s;"></div>
+          <div class="ec-node" style="background:linear-gradient(135deg,#fbbf24,#f59e0b); box-shadow:0 0 20px rgba(251,191,36,0.6); z-index:5;">✨</div>
+        </div>
+        <div class="ec-body">
+          <div class="ec-name">Sparkle <span class="ec-code-val">effect: 'sparkle'</span></div>
+          <div class="ec-desc">8 four-pointed stars orbit the node, each twinkling in and out of phase. They rotate slowly while sparkling independently. Active and celebratory without being noisy.</div>
+          <div class="ec-when" style="background:rgba(251,191,36,0.07); border: 1px solid rgba(251,191,36,0.2); color:#fbbf24;">
+            💡 Use for: <strong>Breakthrough ideas</strong>, completed milestones, exciting discoveries, or any node that deserves celebration or highlight.
+          </div>
+        </div>
+      </div>
+
+      <!-- PULSE -->
+      <div class="effect-card">
+        <div class="ec-preview">
+          <div class="ec-pulse-ring" style="width:64px;height:64px;background:rgba(236,72,153,0.3);"></div>
+          <div class="ec-pulse-ring" style="width:64px;height:64px;background:rgba(236,72,153,0.15); animation-delay:0.5s;"></div>
+          <div class="ec-node" style="background:linear-gradient(135deg,#ec4899,#be185d); box-shadow:0 0 24px rgba(236,72,153,0.7); z-index:5;">❗</div>
+        </div>
+        <div class="ec-body">
+          <div class="ec-name">Pulse <span class="ec-code-val">effect: 'pulse'</span></div>
+          <div class="ec-desc">Multi-layer radial gradient rings that expand and fade rhythmically — 5 stacked glow layers synced to a shared breath. More intense than Ripple. Harder to ignore.</div>
+          <div class="ec-when" style="background:rgba(236,72,153,0.07); border: 1px solid rgba(236,72,153,0.2); color:#f472b6;">
+            💡 Use for: <strong>Urgent items, active blockers</strong>, something that needs resolution, or emotional nodes you don't want to miss when scanning the map.
+          </div>
+        </div>
+      </div>
+
+      <!-- PORTAL -->
+      <div class="effect-card">
+        <div class="ec-preview" style="overflow:hidden;">
+          <div class="portal-orbit" style="width:110px;height:110px;border:2px dashed rgba(139,92,246,0.4);"></div>
+          <div class="portal-orbit" style="width:90px;height:90px;border:1px solid rgba(99,102,241,0.3); animation-duration:5s; animation-direction:reverse;"></div>
+          <div class="ec-node" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9); box-shadow:0 0 24px rgba(139,92,246,0.6); z-index:5;">📌</div>
+        </div>
+        <div class="ec-body">
+          <div class="ec-name">Portal <span class="ec-code-val">auto on date pins</span></div>
+          <div class="ec-desc">Two concentric rings orbit the node in opposite directions — automatically applied to any node with date pins attached. It signals a node that exists across time, not just today.</div>
+          <div class="ec-when" style="background:rgba(139,92,246,0.07); border: 1px solid rgba(139,92,246,0.2); color:#a78bfa;">
+            💡 Automatic: applied whenever you add a Date Pin. Indicates the node is linked to another date in your journal timeline — a thread through time.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ── 5. HOW TO SET ── -->
+  <section>
+    <div class="sec-label">05 · Setting Them</div>
+    <h2 class="sec-title">How to apply <span>styles and effects</span></h2>
+
+    <div class="howto-steps">
+
+      <div class="hs-item">
+        <div class="hs-num">01</div>
+        <div class="hs-content">
+          <div class="hs-title">Change one connection's style</div>
+          <div class="hs-body">Right-click any <strong>node</strong> → <strong>Connection Style</strong> submenu → pick a style. This changes the style of all connections from that node outward to its children. Or right-click directly on a <strong>connection line</strong> to change just that one link.</div>
+          <div class="hs-tip"><strong>Stored as:</strong> <code>"from_id-to_id": "style_name"</code> in the tab's <code>connection_styles</code> dictionary — per date snapshot.</div>
+        </div>
+      </div>
+
+      <div class="hs-item">
+        <div class="hs-num">02</div>
+        <div class="hs-content">
+          <div class="hs-title">Change the whole tab's default style</div>
+          <div class="hs-body">The toolbar dropdown at the top of the app sets the <strong>global style</strong> for the entire tab. Connections without an individual override inherit this setting. Good for setting the mood of a map before you start filling it in.</div>
+        </div>
+      </div>
+
+      <div class="hs-item">
+        <div class="hs-num">03</div>
+        <div class="hs-content">
+          <div class="hs-title">Set a node effect</div>
+          <div class="hs-body">Right-click any node → <strong>Details &amp; Files</strong> → scroll to the Effect section → pick <strong>Ripple</strong>, <strong>Sparkle</strong>, or <strong>Pulse</strong>. Remove it by selecting <strong>None</strong>. Effects are stored per-node in the snapshot and persist across sessions.</div>
+          <div class="hs-tip"><strong>Portal effect</strong> doesn't need to be set manually — it activates automatically the moment you add a <code>Date Pin</code> to any node via Right-click → Add Date Pin.</div>
+        </div>
+      </div>
+
+      <div class="hs-item">
+        <div class="hs-num">04</div>
+        <div class="hs-content">
+          <div class="hs-title">Use hotkey chains to set styles instantly</div>
+          <div class="hs-body">The hotkey chain system supports <code>set_intensity</code> which works alongside node color to drive the glow. Combine it with a connection style chain that also calls <code>set_color</code> to create a single-key "URGENT" preset — red node + fire connections + pulse effect — all at once.</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ── 6. QUICK REF ── -->
+  <section>
+    <div class="sec-label">06 · Quick Reference</div>
+    <h2 class="sec-title">All styles &amp; effects <span>at a glance</span></h2>
+
+    <div class="ref-table-wrap">
+      <table class="ref-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Code Value</th>
+            <th>Visual Character</th>
+            <th>Best For</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>🌊 <strong>Organic Flow</strong></td><td><span class="key">curved</span></td><td><span class="col-swatch" style="color:var(--organic);background:var(--organic)"></span>Smooth bezier + arrow</td><td>Default, everyday maps</td></tr>
+          <tr><td>🌳 <strong>Tree Branches</strong></td><td><span class="key">organic_branch</span></td><td><span class="col-swatch" style="color:var(--branch);background:var(--branch)"></span>S-curve + knot dots</td><td>Wellness, growth</td></tr>
+          <tr><td>💧 <strong>Water Flow</strong></td><td><span class="key">water_flow</span></td><td><span class="col-swatch" style="color:var(--water);background:var(--water)"></span>Sine wave + sparkles</td><td>Journaling, reflection</td></tr>
+          <tr><td>✏️ <strong>Hand Drawn</strong></td><td><span class="key">sketchy</span></td><td><span class="col-swatch" style="color:var(--sketchy);background:var(--sketchy)"></span>Wobbly + 3 arrows</td><td>Personal, warm</td></tr>
+          <tr><td>⚡ <strong>Electric Storm</strong></td><td><span class="key">electric</span></td><td><span class="col-swatch" style="color:var(--electric);background:var(--electric)"></span>Jagged lightning, flicker</td><td>Urgency, blockers</td></tr>
+          <tr><td>🔥 <strong>Fire</strong></td><td><span class="key">fire</span></td><td><span class="col-swatch" style="color:var(--fire);background:var(--fire)"></span>Multi-layer flicker</td><td>Critical, on-fire tasks</td></tr>
+          <tr><td>⚡ <strong>Energy Pulse</strong></td><td><span class="key">energy_pulse</span></td><td><span class="col-swatch" style="color:var(--energy);background:var(--energy)"></span>Breathing width pulse</td><td>Brainstorm, active</td></tr>
+          <tr><td>🌟 <strong>Neon Glow</strong></td><td><span class="key">neon_glow</span></td><td><span class="col-swatch" style="color:var(--neon);background:var(--neon)"></span>4-layer bloom, white core</td><td>Creative, vivid</td></tr>
+          <tr><td>💎 <strong>Crystalline</strong></td><td><span class="key">crystalline</span></td><td><span class="col-swatch" style="color:var(--crystal);background:var(--crystal)"></span>Angular facets + nodes</td><td>Analysis, technical</td></tr>
+          <tr><td>✨ <strong>Particle Stream</strong></td><td><span class="key">particle_stream</span></td><td><span class="col-swatch" style="color:var(--particle);background:var(--particle)"></span>Traveling dashes</td><td>Process, sequence</td></tr>
+          <tr><td>🧠 <strong>Neural Network</strong></td><td><span class="key">network</span></td><td><span class="col-swatch" style="color:var(--network);background:var(--network)"></span>Ultra-thin + endpoint dot</td><td>Dense maps, minimal</td></tr>
+          <tr><td>💥 <strong>Comic Book</strong></td><td><span class="key">bold</span></td><td><span class="col-swatch" style="color:var(--bold);background:var(--bold)"></span>Black outline + bounce arrow</td><td>Playful, emphasis</td></tr>
+          <tr><td>➡️ <strong>Minimalist</strong></td><td><span class="key">straight</span></td><td><span class="col-swatch" style="color:var(--straight);background:var(--straight)"></span>Gradient line + arrow</td><td>Clean, directional</td></tr>
+          <tr style="border-top: 2px solid var(--border2);">
+            <td colspan="4" style="padding:6px 18px; font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--dim);">Node Effects</td>
+          </tr>
+          <tr><td>〰️ <strong>Ripple</strong></td><td><span class="key">effect: ripple</span></td><td><span class="col-swatch" style="color:var(--ripple);background:var(--ripple)"></span>3 expanding rings, calm</td><td>Recent changes, attention</td></tr>
+          <tr><td>✨ <strong>Sparkle</strong></td><td><span class="key">effect: sparkle</span></td><td><span class="col-swatch" style="color:var(--sparkle);background:var(--sparkle)"></span>8 orbiting star bursts</td><td>Ideas, milestones, wins</td></tr>
+          <tr><td>❗ <strong>Pulse</strong></td><td><span class="key">effect: pulse</span></td><td><span class="col-swatch" style="color:var(--pulse);background:var(--pulse)"></span>5-layer breathing glow</td><td>Urgent, active blockers</td></tr>
+          <tr><td>📌 <strong>Portal</strong></td><td><span class="key">auto (date pins)</span></td><td><span class="col-swatch" style="color:var(--portal);background:var(--portal)"></span>Dual counter-rotating rings</td><td>Cross-date linked nodes</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top:16px;">
+      <div class="callout">
+        <strong>Per-connection override:</strong> Even if the tab is set to Minimalist globally, any individual connection can be set to Fire for a specific urgent link. Per-connection styles always win.
+      </div>
+      <div class="callout blue">
+        <strong>Combine for maximum impact:</strong> Fire connection + Pulse node effect + red color + max glow intensity = an unmissable urgent node. Chain all four with a single hotkey.
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ══════════ FOOTER ══════════ -->
+<footer class="page-footer">
+  <div class="footer-brand">ThoughtJunkie — Connection Styles & Node Effects Guide</div>
+  <div class="footer-links">
+    <a href="index.html">← Back to Site</a>
+    <a href="ThoughtJunkie_Hotkey_Chains_Guide.html">Hotkey Chains</a>
+    <a href="ThoughtJunkie_Journaling_Guide.html">Journaling Guide</a>
+    <a href="https://www.frienduit.com" target="_blank">frienduit.com</a>
+  </div>
+</footer>
+
+</div>
+</body>
+</html>
