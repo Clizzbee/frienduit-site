@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Journaling with Date Tabs · ThoughtJunkie</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,400&display=swap');
+
+:root {
+  --bg:       #0a0f1a;
+  --bg2:      #0f1623;
+  --surface:  #141e2e;
+  --surface2: #1a2638;
+  --border:   #1f2f45;
+  --border2:  #2a3f5a;
+  --ink:      #e8dcc8;   /* warm parchment text */
+  --muted:    #8a9ab5;
+  --dim:      #4a5a75;
+  --teal:     #2dd4bf;
+  --amber:    #fbbf24;
+  --gold:     #e8a623;
+  --purple:   #a78bfa;
+  --pink:     #f472b6;
+  --green:    #34d399;
+  --red:      #f87171;
+  --blue:     #60a5fa;
+  --indigo:   #818cf8;
+  --serif:    'DM Serif Display', Georgia, serif;
+  --sans:     'DM Sans', system-ui, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+/* warm paper texture overlay */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 90% 50% at 20% 80%, rgba(251,191,36,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 80% 10%, rgba(167,139,250,0.05) 0%, transparent 60%);
+}
+
+.page { position: relative; z-index: 1; }
+
+/* ─── HERO ─── */
+.hero {
+  padding: 80px 40px 70px;
+  text-align: center;
+  position: relative;
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(ellipse 70% 60% at 50% 0%, rgba(251,191,36,0.07) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-back {
+  display: inline-flex; align-items: center; gap: 6px;
+  text-decoration: none; color: var(--dim); font-size: 14px;
+  letter-spacing: 0.5px; font-weight: 500; margin-bottom: 44px;
+  transition: color 0.2s;
+}
+.hero-back:hover { color: var(--amber); }
+.hero-back svg { width: 14px; height: 14px; }
+
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.3);
+  border-radius: 999px; padding: 6px 20px;
+  font-size: 13px; font-weight: 500; color: var(--amber);
+  letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 30px;
+}
+
+.hero h1 {
+  font-family: var(--serif);
+  font-size: clamp(42px, 8vw, 80px);
+  line-height: 1.05; letter-spacing: -1px;
+  margin-bottom: 14px; color: #fff;
+}
+.hero h1 em {
+  font-style: italic;
+  color: var(--amber);
+}
+
+.hero-sub {
+  font-size: clamp(17px, 2.5vw, 20px); color: var(--muted);
+  max-width: 580px; margin: 16px auto 0; line-height: 1.65; font-weight: 300;
+}
+
+/* stat strip */
+.stat-strip {
+  display: flex; justify-content: center;
+  margin: 52px auto 0; max-width: 720px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden;
+}
+.stat-item {
+  flex: 1; padding: 24px 20px; text-align: center;
+  border-right: 1px solid var(--border);
+}
+.stat-item:last-child { border-right: none; }
+.stat-val {
+  font-family: var(--serif); font-size: 36px;
+  display: block; margin-bottom: 6px; color: var(--amber); line-height: 1;
+}
+.stat-label { font-size: 13px; color: var(--dim); font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
+
+/* ─── MAIN ─── */
+main {
+  max-width: 1080px; margin: 0 auto;
+  padding: 72px 32px 100px;
+  display: flex; flex-direction: column; gap: 80px;
+}
+
+/* Section header */
+.sec-label { font-size: 12px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--dim); margin-bottom: 10px; }
+.sec-title { font-family: var(--serif); font-size: clamp(26px, 4vw, 40px); color: #fff; line-height: 1.15; margin-bottom: 14px; }
+.sec-title em { font-style: italic; color: var(--amber); }
+.sec-body { font-size: 16px; color: var(--muted); line-height: 1.75; max-width: 660px; }
+.sec-body strong { color: var(--ink); }
+
+/* Shared panel */
+.panel {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden;
+}
+.panel-hd {
+  padding: 14px 22px; background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  font-size: 13px; font-weight: 700; color: var(--dim);
+  letter-spacing: 2px; text-transform: uppercase;
+  display: flex; align-items: center; gap: 8px;
+}
+.panel-body { padding: 24px; }
+
+/* ─── TAB SYSTEM ─── */
+.tab-diagram {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 18px;
+}
+@media(max-width:660px) { .tab-diagram { grid-template-columns: 1fr; } }
+
+.tab-card {
+  border-radius: 14px; padding: 24px 26px;
+  border: 1px solid var(--border);
+  position: relative; overflow: hidden;
+}
+.tab-card::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 3px;
+}
+.tab-global { background: linear-gradient(135deg, rgba(167,139,250,0.06), rgba(99,102,241,0.04)); }
+.tab-global::before { background: linear-gradient(90deg, var(--purple), var(--indigo)); }
+.tab-daily  { background: linear-gradient(135deg, rgba(251,191,36,0.06), rgba(234,179,8,0.04)); }
+.tab-daily::before  { background: linear-gradient(90deg, var(--amber), var(--gold)); }
+
+.tc-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 700; padding: 4px 12px;
+  border-radius: 999px; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 1px;
+}
+.badge-global { background: rgba(167,139,250,0.15); border: 1px solid rgba(167,139,250,0.3); color: var(--purple); }
+.badge-daily  { background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.3); color: var(--amber); }
+
+.tc-title { font-family: var(--serif); font-size: 20px; color: #fff; margin-bottom: 10px; }
+.tc-body  { font-size: 15px; color: var(--muted); line-height: 1.65; }
+.tc-rule  { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 14px; color: var(--dim); font-style: italic; }
+.tc-rule strong { color: var(--ink); font-style: normal; }
+
+/* calendar nav mockup */
+.cal-mockup {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 14px; padding: 18px 22px; margin-top: 20px;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+.cal-btn {
+  padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 700;
+  border: 1px solid var(--border2); background: var(--surface);
+  color: var(--muted); cursor: default; transition: all 0.2s;
+}
+.cal-btn.today {
+  background: rgba(251,191,36,0.15); border-color: var(--amber); color: var(--amber);
+}
+.cal-note { font-size: 13px; color: var(--dim); flex: 1; min-width: 160px; }
+
+/* ─── CUSTOMIZATION LAYERS ─── */
+.layers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+.layer-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 20px 22px;
+  position: relative; overflow: hidden;
+  transition: border-color 0.25s, transform 0.2s;
+}
+.layer-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+.lc-stripe {
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+}
+.lc-icon { font-size: 22px; margin-bottom: 10px; }
+.lc-title { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 7px; }
+.lc-body  { font-size: 14px; color: var(--muted); line-height: 1.65; }
+.lc-values {
+  margin-top: 12px; display: flex; flex-wrap: wrap; gap: 5px;
+}
+.lc-val {
+  font-size: 12px; padding: 3px 9px; border-radius: 6px;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border2);
+  color: var(--muted); font-weight: 500;
+}
+
+/* ─── NODE ANATOMY ─── */
+.anatomy-wrap {
+  display: grid; grid-template-columns: 260px 1fr; gap: 28px; align-items: start;
+}
+@media(max-width:700px) { .anatomy-wrap { grid-template-columns: 1fr; } }
+
+.node-viz {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 14px; padding: 32px;
+  display: flex; align-items: center; justify-content: center;
+}
+.node-demo {
+  width: 120px; height: 120px; border-radius: 50%;
+  background: linear-gradient(135deg, #ec4899, #8b5cf6);
+  box-shadow:
+    0 0 0 6px rgba(236,72,153,0.12),
+    0 0 30px rgba(236,72,153,0.4),
+    0 0 60px rgba(139,92,246,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; color: white; text-align: center;
+  line-height: 1.3; position: relative;
+}
+.node-demo .nd-label { padding: 0 8px; }
+
+.annotation-list {
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 4px 0;
+}
+.ann-row {
+  display: flex; align-items: baseline; gap: 10px;
+  padding: 10px 14px; border-radius: 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  font-size: 14px;
+}
+.ann-row:hover { border-color: var(--border2); }
+.ann-icon { font-size: 16px; flex-shrink: 0; }
+.ann-prop { font-weight: 700; color: var(--ink); width: 120px; flex-shrink: 0; }
+.ann-detail { color: var(--muted); line-height: 1.5; }
+.ann-detail code {
+  font-size: 12px; background: rgba(255,255,255,0.07);
+  padding: 1px 6px; border-radius: 4px; color: var(--teal);
+}
+
+/* ─── MOODS ─── */
+.mood-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); gap: 12px;
+}
+.mood-card {
+  border-radius: 12px; padding: 16px 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  display: flex; align-items: center; gap: 12px;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.mood-card:hover { transform: translateY(-2px); border-color: var(--border2); }
+.mood-dot {
+  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 18px;
+}
+.mood-info .m-name { font-size: 14px; font-weight: 700; color: var(--ink); }
+.mood-info .m-color { font-size: 12px; color: var(--dim); font-family: monospace; margin-top: 2px; }
+.mood-info .m-intensity { font-size: 12px; color: var(--dim); }
+
+/* ─── CONNECTION STYLES ─── */
+.conn-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 10px;
+}
+.conn-item {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 13px 16px; display: flex; align-items: center; gap: 10px;
+  transition: border-color 0.2s;
+}
+.conn-item:hover { border-color: var(--border2); }
+.conn-icon { font-size: 18px; flex-shrink: 0; }
+.conn-name { font-size: 14px; font-weight: 600; color: var(--ink); }
+.conn-desc { font-size: 12px; color: var(--dim); margin-top: 2px; }
+
+/* ─── JOURNAL ENTRY ─── */
+.journal-mockup {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 14px;
+  overflow: hidden;
+}
+.jm-header {
+  padding: 12px 20px; background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.jm-dots { display: flex; gap: 5px; }
+.jm-dots span { width: 10px; height: 10px; border-radius: 50%; }
+.jm-title { font-size: 13px; color: var(--dim); font-weight: 600; margin-left: 6px; }
+.jm-body {
+  padding: 22px 24px; font-size: 15px; line-height: 1.8; color: var(--muted);
+}
+.jm-body p { margin-bottom: 12px; }
+.jm-body p:last-child { margin-bottom: 0; }
+.jm-format-bar {
+  padding: 10px 20px; border-top: 1px solid var(--border);
+  background: var(--surface); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.fmt-btn {
+  padding: 5px 10px; border-radius: 6px; font-size: 13px; font-weight: 700;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border2); color: var(--muted);
+  cursor: default;
+}
+.fmt-btn.active { background: rgba(251,191,36,0.15); border-color: var(--amber); color: var(--amber); }
+
+/* ─── FONT CUSTOMIZATION ─── */
+.font-showcase {
+  display: flex; flex-direction: column; gap: 10px;
+}
+.font-row {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 14px 18px; display: flex; align-items: center; gap: 14px;
+  transition: border-color 0.2s;
+}
+.font-row:hover { border-color: var(--border2); }
+.font-swatch { width: 48px; height: 48px; flex-shrink: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; }
+.font-meta { flex: 1; }
+.font-name { font-size: 14px; font-weight: 700; color: var(--ink); }
+.font-desc { font-size: 13px; color: var(--dim); margin-top: 2px; }
+.font-preview { font-size: 18px; color: var(--muted); margin-left: auto; }
+
+/* ─── TASK LIST ─── */
+.tasklist-demo {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 14px;
+  padding: 20px 24px;
+}
+.task-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 15px;
+}
+.task-item:last-child { border-bottom: none; }
+.task-check {
+  width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 11px;
+}
+.check-done { background: rgba(52,211,153,0.2); border: 1px solid rgba(52,211,153,0.4); color: var(--green); }
+.check-open { background: rgba(255,255,255,0.05); border: 1px solid var(--border2); }
+.task-text.done { text-decoration: line-through; color: var(--dim); }
+.task-text { color: var(--muted); }
+
+/* ─── TAB CUSTOMIZATION ─── */
+.tab-custom-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 18px;
+}
+@media(max-width:600px) { .tab-custom-grid { grid-template-columns: 1fr; } }
+
+.tab-custom-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px;
+}
+.tcc-title { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+.tcc-body  { font-size: 14px; color: var(--muted); line-height: 1.65; }
+.tcc-examples {
+  margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+}
+.tab-pill {
+  padding: 7px 16px; border-radius: 8px; font-size: 13px; font-weight: 700;
+  border: 1px solid; cursor: default;
+}
+
+/* ─── WORKFLOW ─── */
+.workflow-steps { display: flex; flex-direction: column; gap: 0; }
+.ws-item {
+  display: flex; gap: 22px; padding: 26px 0;
+  border-bottom: 1px solid var(--border);
+}
+.ws-item:last-child { border-bottom: none; }
+.ws-num {
+  font-family: var(--serif); font-size: 36px; color: var(--amber);
+  opacity: 0.3; flex-shrink: 0; line-height: 1; margin-top: 2px;
+  width: 44px; text-align: right;
+}
+.ws-content { flex: 1; }
+.ws-title { font-family: var(--serif); font-size: 20px; color: #fff; margin-bottom: 8px; }
+.ws-body { font-size: 15px; color: var(--muted); line-height: 1.7; }
+.ws-body strong { color: var(--ink); }
+.ws-tip {
+  margin-top: 12px; padding: 11px 16px;
+  background: rgba(251,191,36,0.06); border: 1px solid rgba(251,191,36,0.2);
+  border-left: 3px solid var(--amber); border-radius: 8px;
+  font-size: 14px; color: var(--muted);
+}
+.ws-tip strong { color: var(--amber); }
+
+/* ─── CUSTOMIZATION CHEATSHEET ─── */
+.cheat-table-wrap {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
+}
+.cheat-table { width: 100%; border-collapse: collapse; }
+.cheat-table th {
+  background: var(--surface2); padding: 12px 20px; text-align: left;
+  font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--dim);
+  border-bottom: 1px solid var(--border);
+}
+.cheat-table td {
+  padding: 11px 20px; font-size: 14px; color: var(--muted);
+  border-bottom: 1px solid rgba(255,255,255,0.03); vertical-align: middle;
+}
+.cheat-table tr:last-child td { border-bottom: none; }
+.cheat-table tr:hover td { background: rgba(255,255,255,0.02); }
+.cheat-table td strong { color: var(--ink); }
+.cheat-table td .range {
+  font-size: 12px; background: rgba(255,255,255,0.06); border-radius: 5px;
+  padding: 2px 8px; color: var(--teal); font-family: monospace;
+}
+.cheat-table td .how {
+  font-size: 12px; color: var(--amber);
+}
+
+/* callout */
+.callout {
+  padding: 14px 20px; border-radius: 10px; font-size: 15px; color: var(--muted); line-height: 1.65;
+  background: rgba(251,191,36,0.05); border: 1px solid rgba(251,191,36,0.15); border-left: 3px solid var(--amber);
+}
+.callout strong { color: var(--amber); }
+.callout.teal { background: rgba(45,212,191,0.05); border-color: rgba(45,212,191,0.15); border-left-color: var(--teal); }
+.callout.teal strong { color: var(--teal); }
+.callout.purple { background: rgba(167,139,250,0.05); border-color: rgba(167,139,250,0.15); border-left-color: var(--purple); }
+.callout.purple strong { color: var(--purple); }
+
+/* footer */
+.page-footer {
+  position: relative; z-index: 1; border-top: 1px solid var(--border);
+  padding: 32px 40px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+}
+.footer-brand .bn { font-family: var(--serif); font-size: 18px; color: var(--amber); }
+.footer-brand .bd { font-size: 14px; color: var(--dim); margin-top: 2px; }
+.footer-links { display: flex; gap: 22px; }
+.footer-links a { font-size: 14px; color: var(--dim); text-decoration: none; transition: color 0.2s; }
+.footer-links a:hover { color: var(--amber); }
+
+@media(max-width:680px) {
+  main { padding: 48px 20px 80px; gap: 60px; }
+  .hero { padding: 50px 20px 50px; }
+  .stat-strip { flex-direction: column; }
+  .stat-item { border-right: none; border-bottom: 1px solid var(--border); }
+  .stat-item:last-child { border-bottom: none; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ══════════ HERO ══════════ -->
+<header class="hero">
+  <a href="index.html" class="hero-back">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+    Back to ThoughtJunkie
+  </a>
+
+  <div class="hero-eyebrow">✦ Complete Guide</div>
+
+  <h1>Daily Journaling<br>with <em>Date Tabs</em></h1>
+
+  <p class="hero-sub">
+    Every day gets its own canvas. Every node is yours to style exactly as you like — shape, color, 
+    font, mood, glow, image, and more. This guide shows you how to make ThoughtJunkie 
+    look and feel completely like you.
+  </p>
+
+  <div class="stat-strip">
+    <div class="stat-item">
+      <span class="stat-val">11</span>
+      <span class="stat-label">Customization Layers</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-val">8</span>
+      <span class="stat-label">Mood Tags</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-val">13</span>
+      <span class="stat-label">Connection Styles</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-val">∞</span>
+      <span class="stat-label">Daily Snapshots</span>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════ MAIN ══════════ -->
+<main>
+
+  <!-- ── 1. THE DATE SYSTEM ── -->
+  <section>
+    <div class="sec-label">01 · The Foundation</div>
+    <h2 class="sec-title">Two kinds of tabs,<br><em>one system that remembers</em></h2>
+    <p class="sec-body">
+      ThoughtJunkie organizes everything around <strong>dates</strong>. 
+      Each day you open the app, you get a fresh canvas — but nothing is ever lost. 
+      Navigate to any past date and that day's map loads exactly as you left it.
+      Two types of tabs work together to make this seamless.
+    </p>
+
+    <div class="tab-diagram" style="margin-top:28px;">
+      <div class="tab-card tab-global">
+        <div class="tc-badge badge-global">🌐 Global Tab</div>
+        <div class="tc-title">Persists across every date</div>
+        <div class="tc-body">Global tabs follow you everywhere. Add a node today, switch to last Tuesday — it's still there. Perfect for ongoing projects, a master task list, people you're thinking about, or any reference material you need every day.</div>
+        <div class="tc-rule"><strong>Saved as:</strong> <code>global_tabname.json</code> — a living file, updated every time you make a change.</div>
+      </div>
+      <div class="tab-card tab-daily">
+        <div class="tc-badge badge-daily">📅 Daily Tab</div>
+        <div class="tc-title">Belongs only to one day</div>
+        <div class="tc-body">Daily tabs are date-specific. What you write on Monday stays on Monday. When you jump to Wednesday, the daily tabs reset to that day's snapshot. Each day's thoughts stay in context — no bleed-over between entries.</div>
+        <div class="tc-rule"><strong>Saved as:</strong> <code>snapshot_yyyy-MM-dd.json</code> — a frozen moment for each date you journaled.</div>
+      </div>
+    </div>
+
+    <div class="cal-mockup" style="margin-top:20px;">
+      <div class="cal-btn">← Yesterday</div>
+      <div class="cal-btn today">📅 Today — Feb 25</div>
+      <div class="cal-btn">Jan 15 →</div>
+      <div class="cal-note">Use the calendar arrows or click the date label to jump to any day. Your entire journal history is always one click away.</div>
+    </div>
+
+    <div class="callout" style="margin-top:20px;">
+      <strong>Pro tip:</strong> Create a Global tab called "Ideas" and a new daily tab each morning. The daily tab captures the day's energy; the Global tab accumulates everything worth keeping long-term.
+    </div>
+  </section>
+
+
+  <!-- ── 2. EVERY CUSTOMIZATION LAYER ── -->
+  <section>
+    <div class="sec-label">02 · What You Can Change</div>
+    <h2 class="sec-title">Every element is <em>yours to style</em></h2>
+    <p class="sec-body">
+      ThoughtJunkie doesn't lock you into a look. Below are all 11 customization layers available 
+      on every node — and on the tabs themselves. Each one is independent: change one without 
+      touching any other.
+    </p>
+
+    <div class="layers-grid" style="margin-top:28px;">
+
+      <div class="layer-card">
+        <div class="lc-stripe" style="background:linear-gradient(90deg,#f472b6,#ec4899)"></div>
+        <div class="lc-icon">◇</div>
+        <div class="lc-title">Shape</div>
+        <div class="lc-body">Each node can be a different shape. Mix them freely — use hearts for feelings, diamonds for alerts, hexagons for ideas.</div>
+        <div class="lc-values">
+          <span class="lc-val">⬤ Circle</span>
+          <span class="lc-val">⬛ Square</span>
+          <span class="lc-val">◆ Diamond</span>
+          <span class="lc-val">⬡ Hexagon</span>
+          <span class="lc-val">♥ Heart</span>
+        </div>
+      </div>
+
+      <div class="layer-card">
+        <div class="lc-stripe" style="background:linear-gradient(90deg,#60a5fa,#3b82f6)"></div>
+        <div class="lc-icon">🎨</div>
+        <div class="lc-title">Node Color</div>
+        <div class="lc-body">Any hex color is valid. The color fills the node and drives the glow. 8 presets available, or pick any custom color from the picker.</div>
+        <div class="lc-values">
+          <span class="lc-val" style="color:#3b82f6;">Blue</span>
+          <span class="lc-val" style="color:#ef4444;">Red</span>
+          <span class="lc-val" style="color:#10b981;">Green</span>
+          <span class="lc-val" style="color:#f59e0b;">Amber</span>
+          <span class="lc-val" style="color:#8b5cf6;">Purple</span>
+          <span class="lc-val" style="color:#ec4899;">Pink</span>
+          <span class="lc-val" style="color:#14b8a6;">Teal</span>
+          <span class="lc-val" style="color:#6366f1;">Indigo</span>
+        </div>
+      </div>
+
+      <div class="layer-card">
+        <div class="lc-stripe" style="background:linear-gradient(90deg,#a78bfa,#7c3aed)"></div>
+        <div class="lc-icon">📐</div>
+        <div class="lc-title">Size</div>
+        <div class="lc-body">Drag the resize handle to set any size from 60px to 600px. Use size to create visual hierarchy — bigger nodes for more important thoughts.</div>
+        <div class="lc-values">
+          <span class="lc-val">60px min</span>
+          <span class="lc-val">100px default</span>
+          <span class="lc-val">600px max</span>
+          <span class="lc-val">drag to resize</span>
+        </div>
+      </div>
+
+      <div class="layer-card">
+        <div class="lc-stripe" style="background:linear-gradient(90deg,#fbbf24,#f59e0b)"></div>
+        <div class="lc-icon">✨</div>
+        <div class="lc-title">Glow Intensity</div>
+        <div class="lc-body">A pulsing radial glow layered over the node color. Intensity 0 is clean and flat; intensity 5 is a full pulsing bloom. Every level in between is tunable.</div>
+        <div class="lc-values">
+          <span class="lc-val">0 · None</span>
+          <span class="lc-val">1 · Hint</span>
+          <span class="lc-val">2 · Soft</span>
+          <span class="lc-val">3 · Visible</span>
+          <span class="lc-val">4 · Strong</span>
+          <span class="lc-val">5 · Max</span>
+        </div>
+      </div>
+
+      <div class="layer-card">
+        <div class="lc-stripe" style="background:linear-gradient(90deg,#34d399,#10b981)"></div>
+        <div class="lc-icon">🔤</div>
+        <div class="lc-title">Label Font</div>
+        <div class="lc-body">Every node's label has its own font: family, size, color, bold, italic — all independent. Use any font installed on your system.</div>
+        <div class="lc-values">
+          <span class="lc-val">family</span>
+          <span class="lc-val">size</span>
+          <span class="lc-val">color</span>
+          <span class="lc-val">bold</span>
+          <span class="lc-val">italic</span>
+        </div>
+      </div>
+
+      <div class="layer-card">
+        <div class="lc-stripe" style="background:linear-gradient(90deg,#f87171,#ef4444)"></div>
+        <div class="lc-icon">🖼️</div>
+        <div class="lc-title">Node Image</div>
+        <div class="lc-body">Drop a photo, illustration, or AI-generated image directly onto any node. The image fills the shape and is clipped to its silhouette. PNG recommended for transparency.</div>
+        <div class="lc-values">
+          <span class="lc-val">drag-drop</span>
+          <span class="lc-val">paste from clipboard</span>
+          <span class="lc-val">browse file</span>
+        </div>
+      </div>
+
+      <div class="layer-card">
+        <div class="lc-stripe" style="background:linear-gradient(90deg,#818cf8,#6366f1)"></div>
+        <div class="lc-icon">😊</div>
+        <div class="lc-title">Mood Tag</div>
+        <div class="lc-body">Tagging a mood sets both the node color and glow intensity in one action. 8 moods to choose from — each a full visual preset.</div>
+        <div class="lc-values">
+          <span class="lc-val">😊 Hopeful</span>
+          <span class="lc-val">😰 Anxious</span>
+          <span class="lc-val">😌 Peaceful</span>
+          <span class="lc-val">✨ Inspired</span>
+          <span class="lc-val">+ 4 more</span>
+        </div>
+      </div>
+
+      <div class="layer-card">
+        <div class="lc-stripe" style="background:linear-gradient(90deg,#2dd4bf,#14b8a6)"></div>
+        <div class="lc-icon">⚡</div>
+        <div class="lc-title">Connection Style</div>
+        <div class="lc-body">Each connection between nodes can have its own animated style — set per-connection or globally. From sketchy hand-drawn lines to neon fire.</div>
+        <div class="lc-values">
+          <span class="lc-val">13 styles</span>
+          <span class="lc-val">per-connection</span>
+          <span class="lc-val">animated</span>
+        </div>
+      </div>
+
+      <div class="layer-card">
+        <div class="lc-stripe" style="background:linear-gradient(90deg,#fb923c,#ea580c)"></div>
+        <div class="lc-icon">📋</div>
+        <div class="lc-title">Task List</div>
+        <div class="lc-body">Any node can carry a checklist. Tasks show as a badge on the node and can be checked off directly on the map — no dialog needed.</div>
+        <div class="lc-values">
+          <span class="lc-val">add tasks</span>
+          <span class="lc-val">check off</span>
+          <span class="lc-val">count badge</span>
+        </div>
+      </div>
+
+      <div class="layer-card">
+        <div class="lc-stripe" style="background:linear-gradient(90deg,#e879f9,#d946ef)"></div>
+        <div class="lc-icon">📝</div>
+        <div class="lc-title">Journal Entry</div>
+        <div class="lc-body">A rich text editor lives behind every node. Write as much or as little as you want — the node label is just the headline. The entry is the story.</div>
+        <div class="lc-values">
+          <span class="lc-val">rich text</span>
+          <span class="lc-val">per node</span>
+          <span class="lc-val">formatted</span>
+        </div>
+      </div>
+
+      <div class="layer-card">
+        <div class="lc-stripe" style="background:linear-gradient(90deg,#94a3b8,#64748b)"></div>
+        <div class="lc-icon">📌</div>
+        <div class="lc-title">Date Pins</div>
+        <div class="lc-body">Pin a node to another date — it appears linked across your timeline. Connect today's thought to a memory from months ago, or a future plan.</div>
+        <div class="lc-values">
+          <span class="lc-val">link across dates</span>
+          <span class="lc-val">timeline view</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ── 3. NODE ANATOMY ── -->
+  <section>
+    <div class="sec-label">03 · Under the Label</div>
+    <h2 class="sec-title">What every node <em>actually holds</em></h2>
+    <p class="sec-body">A node in ThoughtJunkie isn't just a label and a color. It's a container with a full set of properties — each one stored, saved, and restored every time you open that date.</p>
+
+    <div class="anatomy-wrap" style="margin-top:28px;">
+      <div class="node-viz">
+        <div class="node-demo">
+          <div class="nd-label">Today's<br>Mood ✨</div>
+        </div>
+      </div>
+      <div class="annotation-list">
+        <div class="ann-row"><span class="ann-icon">💬</span><span class="ann-prop">Label Text</span><span class="ann-detail">The visible name on the node. Custom font, size, color, bold, italic per node.</span></div>
+        <div class="ann-row"><span class="ann-icon">🎨</span><span class="ann-prop">Fill Color</span><span class="ann-detail">Any hex value. Also drives the glow color. Right-click → Color.</span></div>
+        <div class="ann-row"><span class="ann-icon">◇</span><span class="ann-prop">Shape</span><span class="ann-detail"><code>circle</code> <code>square</code> <code>diamond</code> <code>hexagon</code> <code>heart</code> — clips the image too.</span></div>
+        <div class="ann-row"><span class="ann-icon">📐</span><span class="ann-prop">Size</span><span class="ann-detail">60–600px. Drag the bottom-right handle to resize.</span></div>
+        <div class="ann-row"><span class="ann-icon">✨</span><span class="ann-prop">Glow</span><span class="ann-detail">Intensity 0–5. Pulsing radial gradient. Stacks with node color.</span></div>
+        <div class="ann-row"><span class="ann-icon">🖼️</span><span class="ann-prop">Image</span><span class="ann-detail">Optional photo or illustration. Clipped to shape silhouette.</span></div>
+        <div class="ann-row"><span class="ann-icon">😊</span><span class="ann-prop">Mood</span><span class="ann-detail">One of 8 mood tags. Auto-sets color + intensity as a preset.</span></div>
+        <div class="ann-row"><span class="ann-icon">📝</span><span class="ann-prop">Journal Entry</span><span class="ann-detail">Rich text body — the full story behind the node label.</span></div>
+        <div class="ann-row"><span class="ann-icon">☑️</span><span class="ann-prop">Task List</span><span class="ann-detail">Checklist attached to the node. Click badges to complete.</span></div>
+        <div class="ann-row"><span class="ann-icon">📌</span><span class="ann-prop">Date Pins</span><span class="ann-detail">Links to other dates in your timeline.</span></div>
+        <div class="ann-row"><span class="ann-icon">🕐</span><span class="ann-prop">Timestamps</span><span class="ann-detail">Created and last-edited are stored automatically — you don't type them.</span></div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ── 4. MOOD TAGS ── -->
+  <section>
+    <div class="sec-label">04 · Emotional Layer</div>
+    <h2 class="sec-title">The <em>8 mood presets</em> — one click, full look</h2>
+    <p class="sec-body">
+      Right-click any node → <strong>Tag Mood</strong>. Pick a mood and the color and glow intensity 
+      update instantly — no separate color picker, no manual intensity slider. 
+      Your emotional state becomes part of the visual language of the map.
+    </p>
+
+    <div class="mood-grid" style="margin-top:28px;">
+      <div class="mood-card">
+        <div class="mood-dot" style="background:rgba(16,185,129,0.15);">😊</div>
+        <div class="mood-info">
+          <div class="m-name">Hopeful</div>
+          <div class="m-color">#10b981</div>
+          <div class="m-intensity">Intensity: 0.8</div>
+        </div>
+      </div>
+      <div class="mood-card">
+        <div class="mood-dot" style="background:rgba(239,68,68,0.15);">😰</div>
+        <div class="mood-info">
+          <div class="m-name">Anxious</div>
+          <div class="m-color">#ef4444</div>
+          <div class="m-intensity">Intensity: 0.6</div>
+        </div>
+      </div>
+      <div class="mood-card">
+        <div class="mood-dot" style="background:rgba(59,130,246,0.15);">🤔</div>
+        <div class="mood-info">
+          <div class="m-name">Curious</div>
+          <div class="m-color">#3b82f6</div>
+          <div class="m-intensity">Intensity: 0.7</div>
+        </div>
+      </div>
+      <div class="mood-card">
+        <div class="mood-dot" style="background:rgba(20,184,166,0.15);">😌</div>
+        <div class="mood-info">
+          <div class="m-name">Peaceful</div>
+          <div class="m-color">#14b8a6</div>
+          <div class="m-intensity">Intensity: 0.5</div>
+        </div>
+      </div>
+      <div class="mood-card">
+        <div class="mood-dot" style="background:rgba(245,158,11,0.15);">🔥</div>
+        <div class="mood-info">
+          <div class="m-name">Energized</div>
+          <div class="m-color">#f59e0b</div>
+          <div class="m-intensity">Intensity: 0.9</div>
+        </div>
+      </div>
+      <div class="mood-card">
+        <div class="mood-dot" style="background:rgba(99,102,241,0.15);">😔</div>
+        <div class="mood-info">
+          <div class="m-name">Melancholy</div>
+          <div class="m-color">#6366f1</div>
+          <div class="m-intensity">Intensity: 0.4</div>
+        </div>
+      </div>
+      <div class="mood-card">
+        <div class="mood-dot" style="background:rgba(236,72,153,0.15);">✨</div>
+        <div class="mood-info">
+          <div class="m-name">Inspired</div>
+          <div class="m-color">#ec4899</div>
+          <div class="m-intensity">Intensity: 0.8</div>
+        </div>
+      </div>
+      <div class="mood-card">
+        <div class="mood-dot" style="background:rgba(16,185,129,0.15);">🌿</div>
+        <div class="mood-info">
+          <div class="m-name">Grounded</div>
+          <div class="m-color">#10b981</div>
+          <div class="m-intensity">Intensity: 0.6</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout teal" style="margin-top:20px;">
+      <strong>Journaling tip:</strong> Start each day by adding a root node and tagging its mood first. As the day unfolds, the color of that node tells the story of how the day felt — at a glance, across your entire calendar.
+    </div>
+  </section>
+
+
+  <!-- ── 5. THE JOURNAL ENTRY ── -->
+  <section>
+    <div class="sec-label">05 · The Story Behind the Node</div>
+    <h2 class="sec-title">Journal entries — <em>rich text on every node</em></h2>
+    <p class="sec-body">
+      The node label is the headline. The journal entry is everything else. 
+      Double-click a node to open the editor — a full rich text window where you can write 
+      as much as you want with formatting, font choices, and color.
+    </p>
+
+    <div class="journal-mockup" style="margin-top:24px;">
+      <div class="jm-header">
+        <div class="jm-dots">
+          <span style="background:#ef4444"></span>
+          <span style="background:#f59e0b"></span>
+          <span style="background:#10b981"></span>
+        </div>
+        <div class="jm-title">Journal Entry — "Today's Big Decision"</div>
+      </div>
+      <div class="jm-body">
+        <p style="font-family:'Georgia',serif; font-size:18px; color:#e8dcc8;">Been sitting with this for weeks. Finally made the call this morning.</p>
+        <p>The logic was sound from the start — it just took seeing it laid out on the map to trust it. Sometimes you need the visual to confirm what your gut already knew.</p>
+        <p style="color:#4a5a75; font-style:italic;">Next step: tell the team tomorrow. See how it lands.</p>
+      </div>
+      <div class="jm-format-bar">
+        <div class="fmt-btn active">B</div>
+        <div class="fmt-btn"><em>i</em></div>
+        <div class="fmt-btn"><u>U</u></div>
+        <div class="fmt-btn">Font Family</div>
+        <div class="fmt-btn active">Size 14</div>
+        <div class="fmt-btn" style="color:#ec4899;">🎨 Color</div>
+        <div class="fmt-btn">• List</div>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin-top:16px;">
+      <div class="callout">
+        <strong>The node is the headline.</strong> Keep labels short — one to five words. Let the journal entry hold the detail, context, and reflection.
+      </div>
+      <div class="callout purple">
+        <strong>Font in entries is independent</strong> from the node label font. The entry editor has its own font controls — use a different font inside the entry to change the feeling of the writing.
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ── 6. FONT CUSTOMIZATION ── -->
+  <section>
+    <div class="sec-label">06 · Typography</div>
+    <h2 class="sec-title">Fonts, everywhere — <em>per node, per tab</em></h2>
+    <p class="sec-body">
+      ThoughtJunkie lets you style text at every level independently. The node label has its own font. 
+      The journal entry has its own font. Even the tab buttons at the top can have their own 
+      typeface, size, weight, and color.
+    </p>
+
+    <div class="font-showcase" style="margin-top:24px;">
+      <div class="font-row">
+        <div class="font-swatch" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9); color:white;">Aa</div>
+        <div class="font-meta">
+          <div class="font-name">Node Label Font</div>
+          <div class="font-desc">Font family · size · color · bold · italic — all per node. Set when editing a node's text.</div>
+        </div>
+        <div class="font-preview" style="font-family:'Impact', sans-serif; color:#a78bfa;">Impact 14px</div>
+      </div>
+      <div class="font-row">
+        <div class="font-swatch" style="background:linear-gradient(135deg,#14b8a6,#0d9488); color:white;">Aa</div>
+        <div class="font-meta">
+          <div class="font-name">Journal Entry Font</div>
+          <div class="font-desc">Rich text with its own font controls. Can differ completely from the node label above it.</div>
+        </div>
+        <div class="font-preview" style="font-family:'Georgia', serif; color:#5eead4; font-style:italic;">Georgia 12px italic</div>
+      </div>
+      <div class="font-row">
+        <div class="font-swatch" style="background:linear-gradient(135deg,#fbbf24,#d97706); color:#1e293b;">Aa</div>
+        <div class="font-meta">
+          <div class="font-name">Tab Label Font</div>
+          <div class="font-desc">Right-click any tab → Customize Font. Change the typeface, size, color, bold, and italic of the tab button itself.</div>
+        </div>
+        <div class="font-preview" style="font-family:'MV Boli', cursive; color:#fbbf24; font-weight:bold;">MV Boli Bold</div>
+      </div>
+      <div class="font-row">
+        <div class="font-swatch" style="background:linear-gradient(135deg,#ec4899,#be185d); color:white;">🎨</div>
+        <div class="font-meta">
+          <div class="font-name">Tab Color</div>
+          <div class="font-desc">Each tab button can have a unique background color — completely independent from the font customization. Right-click → Change Color.</div>
+        </div>
+        <div class="font-preview">
+          <div style="display:flex; gap:6px; align-items:center;">
+            <div style="width:14px;height:14px;border-radius:3px;background:#3b82f6;"></div>
+            <div style="width:14px;height:14px;border-radius:3px;background:#ec4899;"></div>
+            <div style="width:14px;height:14px;border-radius:3px;background:#10b981;"></div>
+            <div style="width:14px;height:14px;border-radius:3px;background:#f59e0b;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ── 7. CONNECTION STYLES ── -->
+  <section>
+    <div class="sec-label">07 · The Lines Between</div>
+    <h2 class="sec-title">13 connection styles — <em>set per connection</em></h2>
+    <p class="sec-body">
+      The lines between nodes aren't all the same. Right-click any connection to set its style individually — 
+      or change the global style for the whole tab. Each style is animated, each carries a different feeling.
+    </p>
+
+    <div class="conn-grid" style="margin-top:24px;">
+      <div class="conn-item"><span class="conn-icon">🌊</span><div><div class="conn-name">Organic Flow</div><div class="conn-desc">Smooth curved lines</div></div></div>
+      <div class="conn-item"><span class="conn-icon">⚡</span><div><div class="conn-name">Electric Storm</div><div class="conn-desc">Lightning bolt paths</div></div></div>
+      <div class="conn-item"><span class="conn-icon">💧</span><div><div class="conn-name">Water Flow</div><div class="conn-desc">Animated wave motion</div></div></div>
+      <div class="conn-item"><span class="conn-icon">🌟</span><div><div class="conn-name">Neon Glow</div><div class="conn-desc">Pulsing neon lines</div></div></div>
+      <div class="conn-item"><span class="conn-icon">✨</span><div><div class="conn-name">Particle Stream</div><div class="conn-desc">Flowing particles</div></div></div>
+      <div class="conn-item"><span class="conn-icon">⚡</span><div><div class="conn-name">Energy Pulse</div><div class="conn-desc">Pulsing energy</div></div></div>
+      <div class="conn-item"><span class="conn-icon">🔥</span><div><div class="conn-name">Fire</div><div class="conn-desc">Flickering flames</div></div></div>
+      <div class="conn-item"><span class="conn-icon">💎</span><div><div class="conn-name">Crystalline</div><div class="conn-desc">Sharp ice crystal paths</div></div></div>
+      <div class="conn-item"><span class="conn-icon">✏️</span><div><div class="conn-name">Hand Drawn</div><div class="conn-desc">Wobbly sketch lines</div></div></div>
+      <div class="conn-item"><span class="conn-icon">🌳</span><div><div class="conn-name">Tree Branches</div><div class="conn-desc">Organic branch curves</div></div></div>
+      <div class="conn-item"><span class="conn-icon">🧠</span><div><div class="conn-name">Neural Network</div><div class="conn-desc">Thin neural pathways</div></div></div>
+      <div class="conn-item"><span class="conn-icon">💥</span><div><div class="conn-name">Comic Book</div><div class="conn-desc">Bold outlined strokes</div></div></div>
+      <div class="conn-item"><span class="conn-icon">➡️</span><div><div class="conn-name">Minimalist</div><div class="conn-desc">Simple straight lines</div></div></div>
+    </div>
+
+    <div class="callout" style="margin-top:18px;">
+      <strong>Per-connection customization:</strong> Right-click any line in your map and change just that connection's style. Your "important" connections can pulse in Neon Glow while everything else stays in Hand Drawn.
+    </div>
+  </section>
+
+
+  <!-- ── 8. TASK LISTS ── -->
+  <section>
+    <div class="sec-label">08 · Actionable Nodes</div>
+    <h2 class="sec-title">Task lists — <em>check off without leaving the map</em></h2>
+    <p class="sec-body">
+      Any node can carry a checklist. Open the node details to add tasks. The node then shows a 
+      badge with the count — and you can tap any task badge directly on the map to mark it done, 
+      no dialog required.
+    </p>
+
+    <div class="tasklist-demo" style="margin-top:24px;">
+      <div style="font-size: 13px; font-weight: 700; color: var(--dim); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 14px;">NODE: "Launch Prep" · 4 Tasks · 2 Done</div>
+      <div class="task-item">
+        <div class="task-check check-done">✓</div>
+        <div class="task-text done">Set up the waitlist form</div>
+      </div>
+      <div class="task-item">
+        <div class="task-check check-done">✓</div>
+        <div class="task-text done">Write the tutorial guides</div>
+      </div>
+      <div class="task-item">
+        <div class="task-check check-open"></div>
+        <div class="task-text">Test hotkeys on clean install</div>
+      </div>
+      <div class="task-item">
+        <div class="task-check check-open"></div>
+        <div class="task-text">Upload to frienduit.com</div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ── 9. TAB CUSTOMIZATION ── -->
+  <section>
+    <div class="sec-label">09 · Organize Your Space</div>
+    <h2 class="sec-title">Tabs are <em>yours to style too</em></h2>
+    <p class="sec-body">
+      The tabs at the top aren't just labels. Right-click any tab to access a full customization menu — 
+      change its color, typeface, size, weight, and italic style independently. 
+      Use visual language to organize your workspace at a glance.
+    </p>
+
+    <div class="tab-custom-grid" style="margin-top:24px;">
+      <div class="tab-custom-card">
+        <div class="tcc-title">🎨 Tab Color</div>
+        <div class="tcc-body">Give each tab a unique background color. Right-click → Change Color → pick from the color picker. Great for color-coding projects, moods, or categories.</div>
+        <div class="tcc-examples">
+          <div class="tab-pill" style="background:rgba(59,130,246,0.2);border-color:rgba(59,130,246,0.4);color:#60a5fa;">💼 Work</div>
+          <div class="tab-pill" style="background:rgba(236,72,153,0.2);border-color:rgba(236,72,153,0.4);color:#f472b6;">💭 Personal</div>
+          <div class="tab-pill" style="background:rgba(16,185,129,0.2);border-color:rgba(16,185,129,0.4);color:#34d399;">🌿 Health</div>
+        </div>
+      </div>
+      <div class="tab-custom-card">
+        <div class="tcc-title">🔤 Tab Font</div>
+        <div class="tcc-body">Right-click → Customize Font → set the font family, size, color, bold, and italic for that tab's button label. Your handwriting font, your rules.</div>
+        <div class="tcc-examples">
+          <div class="tab-pill" style="border-color:rgba(251,191,36,0.3);color:#fbbf24;font-family:'Impact',sans-serif;font-size:16px;">GLOBAL</div>
+          <div class="tab-pill" style="border-color:rgba(167,139,250,0.3);color:#a78bfa;font-style:italic;font-family:'Georgia',serif;">Today</div>
+          <div class="tab-pill" style="border-color:rgba(52,211,153,0.3);color:#34d399;font-weight:300;letter-spacing:2px;">PROJECTS</div>
+        </div>
+      </div>
+      <div class="tab-custom-card">
+        <div class="tcc-title">🌐 Global vs Daily</div>
+        <div class="tcc-body">Toggle any tab between Global (persists every day) and Daily (resets per date) via the Tab Manager. Right-click → Manage Tabs to see and edit all tab types.</div>
+        <div class="tcc-examples">
+          <div class="tab-pill" style="border-color:rgba(167,139,250,0.4);color:#a78bfa;">🌐 Global</div>
+          <div class="tab-pill" style="border-color:rgba(251,191,36,0.4);color:#fbbf24;">📅 Daily</div>
+        </div>
+      </div>
+      <div class="tab-custom-card">
+        <div class="tcc-title">📂 Rename & Organize</div>
+        <div class="tcc-body">Right-click any tab to rename it. Tabs are saved by name — rename to reorganize at any point. Global tabs save automatically to <code style="font-size:12px;color:#5eead4;background:rgba(45,212,191,0.1);padding:1px 5px;border-radius:4px;">global_tabname.json</code>.</div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ── 10. A DAILY WORKFLOW ── -->
+  <section>
+    <div class="sec-label">10 · Putting It Together</div>
+    <h2 class="sec-title">A complete <em>daily journaling workflow</em></h2>
+    <p class="sec-body">Here's how all the pieces come together in a real session — from opening the app to leaving a fully customized day behind.</p>
+
+    <div class="workflow-steps" style="margin-top:28px;">
+
+      <div class="ws-item">
+        <div class="ws-num">1</div>
+        <div class="ws-content">
+          <div class="ws-title">Open today's date</div>
+          <div class="ws-body">ThoughtJunkie loads today automatically. Your <strong>Global tab</strong> is already there — persistent from yesterday, last week, whenever you last touched it. Your daily tab is fresh.</div>
+        </div>
+      </div>
+
+      <div class="ws-item">
+        <div class="ws-num">2</div>
+        <div class="ws-content">
+          <div class="ws-title">Plant the day's root node</div>
+          <div class="ws-body">Use a hotkey chain or right-click → Add Node. This becomes the anchor of the day's map. Name it something that captures the day's theme — "Big Meeting", "Rest Day", "Shipping Day."</div>
+          <div class="ws-tip"><strong>Customization moment:</strong> Set the shape, color, and size of this root node. A large, brightly glowing root tells you at a glance what kind of day it was.</div>
+        </div>
+      </div>
+
+      <div class="ws-item">
+        <div class="ws-num">3</div>
+        <div class="ws-content">
+          <div class="ws-title">Tag the mood</div>
+          <div class="ws-body">Right-click the root node → <strong>Tag Mood</strong>. Pick what fits. The color and glow update instantly — no extra clicks. Your emotional state is now baked into the map's visual.</div>
+        </div>
+      </div>
+
+      <div class="ws-item">
+        <div class="ws-num">4</div>
+        <div class="ws-content">
+          <div class="ws-title">Branch out your thoughts</div>
+          <div class="ws-body">Add child nodes as thoughts arrive. Give each one a label, then double-click to open its <strong>journal entry</strong> and write the fuller version. Use different shapes to signal categories: hexagons for questions, hearts for feelings, squares for tasks.</div>
+          <div class="ws-tip"><strong>Customization moment:</strong> Set a unique font on each node's label to give different types of thoughts a different visual voice.</div>
+        </div>
+      </div>
+
+      <div class="ws-item">
+        <div class="ws-num">5</div>
+        <div class="ws-content">
+          <div class="ws-title">Style the connections</div>
+          <div class="ws-body">Right-click any connection to set its style. High-energy connections get <strong>Electric Storm</strong>. Calm reflective links get <strong>Hand Drawn</strong>. The connections carry meaning too.</div>
+        </div>
+      </div>
+
+      <div class="ws-item">
+        <div class="ws-num">6</div>
+        <div class="ws-content">
+          <div class="ws-title">Add tasks where needed</div>
+          <div class="ws-body">On any node that represents a commitment, open <strong>Details & Files</strong> and add a task list. The badge appears on the node — you can check things off directly from the map as the day moves on.</div>
+        </div>
+      </div>
+
+      <div class="ws-item">
+        <div class="ws-num">7</div>
+        <div class="ws-content">
+          <div class="ws-title">Pin connections across time</div>
+          <div class="ws-body">If today's thought relates to something from another date, right-click → <strong>Add Date Pin</strong>. The node becomes a thread in your larger timeline, linking moments that belong together.</div>
+        </div>
+      </div>
+
+      <div class="ws-item">
+        <div class="ws-num">8</div>
+        <div class="ws-content">
+          <div class="ws-title">The snapshot saves itself</div>
+          <div class="ws-body">ThoughtJunkie autosaves as you work. When you come back tomorrow, today's map will be exactly as you left it. Navigate back to any date and you'll find that day's fully styled map waiting — colors, fonts, moods, entries, and all.</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ── 11. CHEAT SHEET ── -->
+  <section>
+    <div class="sec-label">11 · Quick Reference</div>
+    <h2 class="sec-title">Full <em>customization cheat sheet</em></h2>
+
+    <div class="cheat-table-wrap" style="margin-top:24px;">
+      <table class="cheat-table">
+        <thead>
+          <tr>
+            <th>What to Customize</th>
+            <th>Options / Range</th>
+            <th>How to Access</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Node Shape</strong></td><td>Circle · Square · Diamond · Hexagon · Heart</td><td class="how">Right-click → Shape</td></tr>
+          <tr><td><strong>Node Color</strong></td><td>Any hex value, 8 presets</td><td class="how">Right-click → Color</td></tr>
+          <tr><td><strong>Node Size</strong></td><td><span class="range">60px → 600px</span></td><td class="how">Drag bottom-right handle</td></tr>
+          <tr><td><strong>Glow Intensity</strong></td><td><span class="range">0 (none) → 5 (max)</span></td><td class="how">Right-click → Intensity / Hotkey chain</td></tr>
+          <tr><td><strong>Node Image</strong></td><td>PNG, JPG, GIF, WebP — clipped to shape</td><td class="how">Right-click → Set Image / Drag & drop</td></tr>
+          <tr><td><strong>Label Font Family</strong></td><td>Any installed system font</td><td class="how">Double-click node → Font controls</td></tr>
+          <tr><td><strong>Label Font Size</strong></td><td>Any point size</td><td class="how">Double-click node → Font controls</td></tr>
+          <tr><td><strong>Label Font Color</strong></td><td>Any hex value</td><td class="how">Double-click node → Font controls</td></tr>
+          <tr><td><strong>Label Bold / Italic</strong></td><td>Toggle per node</td><td class="how">Double-click node → B / I buttons</td></tr>
+          <tr><td><strong>Mood Tag</strong></td><td>8 presets (auto-sets color + glow)</td><td class="how">Right-click → Tag Mood</td></tr>
+          <tr><td><strong>Journal Entry</strong></td><td>Rich text, unlimited length</td><td class="how">Double-click node</td></tr>
+          <tr><td><strong>Task List</strong></td><td>Unlimited tasks, checkable from map</td><td class="how">Right-click → Details & Files</td></tr>
+          <tr><td><strong>Date Pins</strong></td><td>Link to any date in history</td><td class="how">Right-click → Add Date Pin</td></tr>
+          <tr><td><strong>Connection Style</strong></td><td>13 animated styles, per-connection</td><td class="how">Right-click any line</td></tr>
+          <tr><td><strong>Tab Color</strong></td><td>Any hex value per tab button</td><td class="how">Right-click tab → Change Color</td></tr>
+          <tr><td><strong>Tab Font</strong></td><td>Family · size · color · bold · italic per tab</td><td class="how">Right-click tab → Customize Font</td></tr>
+          <tr><td><strong>Tab Type</strong></td><td>Global (persistent) or Daily (date-specific)</td><td class="how">Right-click tab → Manage Tabs</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<!-- ══════════ FOOTER ══════════ -->
+<footer class="page-footer">
+  <div class="footer-brand">
+    <div class="bn">ThoughtJunkie</div>
+    <div class="bd">Daily Journaling with Date Tabs — Complete Guide</div>
+  </div>
+  <div class="footer-links">
+    <a href="index.html">← Back to Site</a>
+    <a href="ThoughtJunkie_Hotkey_Chains_Guide.html">Hotkey Chains</a>
+    <a href="ThoughtJunkie_Node_Image_Guide.html">Image AI Guide</a>
+    <a href="https://www.frienduit.com" target="_blank">frienduit.com</a>
+  </div>
+</footer>
+
+</div>
+</body>
+</html>
