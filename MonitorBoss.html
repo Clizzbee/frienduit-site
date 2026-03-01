@@ -3,690 +3,480 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CardioWatch — Telemetry Training Simulator</title>
+  <title>Monitor Boss — Telemetry Training Simulator</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet"/>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body, #root { height: 100%; }
-    body { background: #010a05; font-family: 'JetBrains Mono', monospace; }
-    button { cursor: pointer; font-family: inherit; background: none; border: none; }
-    input  { font-family: inherit; }
-
-    /* Tailwind-style utilities used in the component */
-    .min-h-screen   { min-height: 100vh; }
-    .flex           { display: flex; }
-    .flex-col       { flex-direction: column; }
-    .flex-1         { flex: 1 1 0%; }
-    .shrink-0       { flex-shrink: 0; }
-    .grid           { display: grid; }
-    .grid-cols-1    { grid-template-columns: repeat(1, minmax(0,1fr)); }
-    .grid-cols-2    { grid-template-columns: repeat(2, minmax(0,1fr)); }
-    .grid-cols-3    { grid-template-columns: repeat(3, minmax(0,1fr)); }
-    .grid-cols-4    { grid-template-columns: repeat(4, minmax(0,1fr)); }
-    .gap-2          { gap: 0.5rem; }
-    .gap-3          { gap: 0.75rem; }
-    .gap-4          { gap: 1rem; }
-    .items-center   { align-items: center; }
-    .items-start    { align-items: flex-start; }
-    .justify-between{ justify-content: space-between; }
-    .justify-center { justify-content: center; }
-    .text-center    { text-align: center; }
-    .text-left      { text-align: left; }
-    .relative       { position: relative; }
-    .absolute       { position: absolute; }
-    .fixed          { position: fixed; }
-    .inset-0        { top:0; right:0; bottom:0; left:0; }
-    .top-14         { top: 3.5rem; }
-    .right-4        { right: 1rem; }
-    .z-10           { z-index: 10; }
-    .z-40           { z-index: 40; }
-    .z-50           { z-index: 50; }
-    .w-full         { width: 100%; }
-    .max-w-sm       { max-width: 24rem; }
-    .max-w-md       { max-width: 28rem; }
-    .h-full         { height: 100%; }
-    .overflow-hidden{ overflow: hidden; }
-    .overflow-y-auto{ overflow-y: auto; }
-    .overflow-x-hidden { overflow-x: hidden; }
-    .pointer-events-none { pointer-events: none; }
-    .cursor-pointer { cursor: pointer; }
-    .block          { display: block; }
-    .hidden         { display: none; }
-
-    /* Spacing */
-    .p-2   { padding: 0.5rem; }
-    .p-3   { padding: 0.75rem; }
-    .p-4   { padding: 1rem; }
-    .p-6   { padding: 1.5rem; }
-    .px-2  { padding-left: 0.5rem; padding-right: 0.5rem; }
-    .px-3  { padding-left: 0.75rem; padding-right: 0.75rem; }
-    .px-4  { padding-left: 1rem; padding-right: 1rem; }
-    .px-5  { padding-left: 1.25rem; padding-right: 1.25rem; }
-    .px-6  { padding-left: 1.5rem; padding-right: 1.5rem; }
-    .py-1  { padding-top: 0.25rem; padding-bottom: 0.25rem; }
-    .py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
-    .py-2  { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-    .py-2\.5 { padding-top: 0.625rem; padding-bottom: 0.625rem; }
-    .py-3  { padding-top: 0.75rem; padding-bottom: 0.75rem; }
-    .py-3\.5 { padding-top: 0.875rem; padding-bottom: 0.875rem; }
-    .pl-3  { padding-left: 0.75rem; }
-    .mb-1  { margin-bottom: 0.25rem; }
-    .mb-1\.5 { margin-bottom: 0.375rem; }
-    .mb-2  { margin-bottom: 0.5rem; }
-    .mb-3  { margin-bottom: 0.75rem; }
-    .mb-4  { margin-bottom: 1rem; }
-    .mb-5  { margin-bottom: 1.25rem; }
-    .mb-6  { margin-bottom: 1.5rem; }
-    .mb-8  { margin-bottom: 2rem; }
-    .mt-0\.5 { margin-top: 0.125rem; }
-    .mt-1  { margin-top: 0.25rem; }
-    .mt-1\.5 { margin-top: 0.375rem; }
-    .mt-2  { margin-top: 0.5rem; }
-    .mt-6  { margin-top: 1.5rem; }
-    .ml-1  { margin-left: 0.25rem; }
-    .ml-3  { margin-left: 0.75rem; }
-
-    /* Typography */
-    .text-xs   { font-size: 0.75rem; line-height: 1rem; }
-    .text-sm   { font-size: 0.875rem; line-height: 1.25rem; }
-    .text-base { font-size: 1rem; line-height: 1.5rem; }
-    .text-2xl  { font-size: 1.5rem; line-height: 2rem; }
-    .text-3xl  { font-size: 1.875rem; line-height: 2.25rem; }
-    .text-4xl  { font-size: 2.25rem; line-height: 2.5rem; }
-    .text-5xl  { font-size: 3rem; line-height: 1; }
-    .text-6xl  { font-size: 3.75rem; line-height: 1; }
-    .font-bold  { font-weight: 700; }
-    .font-black { font-weight: 900; }
-    .font-mono  { font-family: 'JetBrains Mono', monospace; }
-    .leading-relaxed { line-height: 1.625; }
-    .tracking-wider  { letter-spacing: 0.05em; }
-    .tracking-widest { letter-spacing: 0.1em; }
-    .opacity-50 { opacity: 0.5; }
-
-    /* Colors */
-    .text-red-400    { color: #f87171; }
-    .text-yellow-400 { color: #facc15; }
-    .text-green-600  { color: #16a34a; }
-    .bg-green-950\/60 { background: rgba(5,46,22,0.6); }
-    .bg-red-950\/60   { background: rgba(69,10,10,0.6); }
-
-    /* Borders / Shapes */
-    .rounded    { border-radius: 0.25rem; }
-    .rounded-lg { border-radius: 0.5rem; }
-    .rounded-xl { border-radius: 0.75rem; }
-    .rounded-2xl{ border-radius: 1rem; }
-    .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0,0,0,.25); }
-
-    /* Space utilities */
-    .space-y-1 > * + * { margin-top: 0.25rem; }
-    .space-y-2 > * + * { margin-top: 0.5rem; }
-    .space-y-3 > * + * { margin-top: 0.75rem; }
-    .space-y-1\.5 > * + * { margin-top: 0.375rem; }
-
-    /* Transitions */
-    .transition        { transition: all 0.15s ease; }
-    .transition-all    { transition: all 0.15s ease; }
-    .transition-opacity{ transition: opacity 0.15s ease; }
-    .duration-150      { transition-duration: 150ms; }
-    .duration-300      { transition-duration: 300ms; }
-    .duration-500      { transition-duration: 500ms; }
-
-    /* Hover effects */
-    .hover\:opacity-70:hover { opacity: 0.7; }
-    .hover\:opacity-80:hover { opacity: 0.8; }
-    .hover\:opacity-90:hover { opacity: 0.9; }
-    .hover\:scale-\[1\.02\]:hover { transform: scale(1.02); }
-    .active\:scale-\[0\.98\]:active { transform: scale(0.98); }
-    .hover\:bg-green-950\/30:hover { background: rgba(5,46,22,0.3); }
-    .group:hover .group-hover\:opacity-100 { opacity: 1; }
-
-    /* Animation */
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
-    .animate-pulse { animation: pulse 2s cubic-bezier(.4,0,.6,1) infinite; }
-
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-track { background: #010a05; }
-    ::-webkit-scrollbar-thumb { background: #1a4a22; border-radius: 2px; }
-
-    /* Responsive: game beds layout */
-    @media (min-width: 768px) {
-      .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0,1fr)); }
-    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html,body,#root{height:100%}
+    body{background:#010a05;font-family:'JetBrains Mono',monospace}
+    button{cursor:pointer;font-family:inherit;background:none;border:none}
+    input{font-family:inherit}
+    .min-h-screen{min-height:100vh}
+    .flex{display:flex}.flex-col{flex-direction:column}.flex-1{flex:1 1 0%}
+    .shrink-0{flex-shrink:0}.flex-wrap{flex-wrap:wrap}
+    .grid{display:grid}
+    .grid-cols-1{grid-template-columns:repeat(1,minmax(0,1fr))}
+    .grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .grid-cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .grid-cols-5{grid-template-columns:repeat(5,minmax(0,1fr))}
+    .gap-1{gap:.25rem}.gap-2{gap:.5rem}.gap-3{gap:.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}
+    .items-center{align-items:center}.items-start{align-items:flex-start}.items-end{align-items:flex-end}
+    .justify-between{justify-content:space-between}.justify-center{justify-content:center}
+    .justify-start{justify-content:flex-start}
+    .text-center{text-align:center}.text-left{text-align:left}.text-right{text-align:right}
+    .relative{position:relative}.absolute{position:absolute}.fixed{position:fixed}
+    .inset-0{top:0;right:0;bottom:0;left:0}
+    .top-0{top:0}.top-14{top:3.5rem}.right-4{right:1rem}.bottom-0{bottom:0}.left-0{left:0}
+    .z-10{z-index:10}.z-20{z-index:20}.z-40{z-index:40}.z-50{z-index:50}
+    .w-full{width:100%}.w-2{width:.5rem}.w-3{width:.75rem}
+    .max-w-xs{max-width:20rem}.max-w-sm{max-width:24rem}.max-w-md{max-width:28rem}.max-w-lg{max-width:32rem}.max-w-2xl{max-width:42rem}
+    .h-full{height:100%}.h-1{height:.25rem}.h-2{height:.5rem}.h-px{height:1px}
+    .overflow-hidden{overflow:hidden}.overflow-y-auto{overflow-y:auto}.overflow-x-hidden{overflow-x:hidden}
+    .pointer-events-none{pointer-events:none}.cursor-pointer{cursor:pointer}
+    .block{display:block}.inline-block{display:inline-block}.hidden{display:none}
+    .select-none{user-select:none}
+    .p-2{padding:.5rem}.p-3{padding:.75rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}
+    .px-2{padding-left:.5rem;padding-right:.5rem}.px-3{padding-left:.75rem;padding-right:.75rem}
+    .px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}
+    .px-6{padding-left:1.5rem;padding-right:1.5rem}
+    .py-1{padding-top:.25rem;padding-bottom:.25rem}.py-1\.5{padding-top:.375rem;padding-bottom:.375rem}
+    .py-2{padding-top:.5rem;padding-bottom:.5rem}.py-2\.5{padding-top:.625rem;padding-bottom:.625rem}
+    .py-3{padding-top:.75rem;padding-bottom:.75rem}.py-3\.5{padding-top:.875rem;padding-bottom:.875rem}
+    .py-4{padding-top:1rem;padding-bottom:1rem}.py-8{padding-top:2rem;padding-bottom:2rem}
+    .pt-2{padding-top:.5rem}.pt-4{padding-top:1rem}.pb-2{padding-bottom:.5rem}
+    .mb-1{margin-bottom:.25rem}.mb-1\.5{margin-bottom:.375rem}.mb-2{margin-bottom:.5rem}
+    .mb-3{margin-bottom:.75rem}.mb-4{margin-bottom:1rem}.mb-5{margin-bottom:1.25rem}
+    .mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}.mb-10{margin-bottom:2.5rem}
+    .mt-0\.5{margin-top:.125rem}.mt-1{margin-top:.25rem}.mt-1\.5{margin-top:.375rem}
+    .mt-2{margin-top:.5rem}.mt-3{margin-top:.75rem}.mt-4{margin-top:1rem}.mt-6{margin-top:1.5rem}
+    .ml-1{margin-left:.25rem}.ml-2{margin-left:.5rem}.ml-3{margin-left:.75rem}.ml-auto{margin-left:auto}
+    .mr-2{margin-right:.5rem}.mx-auto{margin-left:auto;margin-right:auto}
+    .text-xs{font-size:.75rem;line-height:1rem}.text-sm{font-size:.875rem;line-height:1.25rem}
+    .text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}
+    .text-xl{font-size:1.25rem;line-height:1.75rem}.text-2xl{font-size:1.5rem;line-height:2rem}
+    .text-3xl{font-size:1.875rem;line-height:2.25rem}.text-4xl{font-size:2.25rem;line-height:2.5rem}
+    .text-5xl{font-size:3rem;line-height:1}.text-6xl{font-size:3.75rem;line-height:1}
+    .font-bold{font-weight:700}.font-black{font-weight:900}.font-medium{font-weight:500}
+    .font-mono{font-family:'JetBrains Mono',monospace}
+    .leading-relaxed{line-height:1.625}.leading-tight{line-height:1.25}
+    .tracking-wider{letter-spacing:.05em}.tracking-widest{letter-spacing:.1em}
+    .uppercase{text-transform:uppercase}
+    .opacity-0{opacity:0}.opacity-50{opacity:.5}.opacity-60{opacity:.6}.opacity-70{opacity:.7}
+    .text-red-400{color:#f87171}.text-yellow-400{color:#facc15}.text-green-600{color:#16a34a}
+    .bg-green-950\/60{background:rgba(5,46,22,.6)}.bg-red-950\/60{background:rgba(69,10,10,.6)}
+    .rounded{border-radius:.25rem}.rounded-md{border-radius:.375rem}.rounded-lg{border-radius:.5rem}
+    .rounded-xl{border-radius:.75rem}.rounded-2xl{border-radius:1rem}.rounded-full{border-radius:9999px}
+    .shadow-2xl{box-shadow:0 25px 50px -12px rgba(0,0,0,.25)}
+    .border{border-width:1px}
+    .space-y-1>*+*{margin-top:.25rem}.space-y-2>*+*{margin-top:.5rem}
+    .space-y-3>*+*{margin-top:.75rem}.space-y-1\.5>*+*{margin-top:.375rem}
+    .space-x-2>*+*{margin-left:.5rem}
+    .transition{transition:all .15s ease}.transition-all{transition:all .15s ease}
+    .transition-opacity{transition:opacity .15s ease}
+    .duration-150{transition-duration:150ms}.duration-300{transition-duration:300ms}
+    .duration-500{transition-duration:500ms}
+    .hover\:opacity-70:hover{opacity:.7}.hover\:opacity-80:hover{opacity:.8}
+    .hover\:opacity-90:hover{opacity:.9}
+    .hover\:scale-\[1\.02\]:hover{transform:scale(1.02)}
+    .active\:scale-\[0\.98\]:active{transform:scale(.98)}
+    .hover\:bg-green-950\/30:hover{background:rgba(5,46,22,.3)}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+    .animate-pulse{animation:pulse 2s cubic-bezier(.4,0,.6,1) infinite}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .animate-fadeIn{animation:fadeIn .3s ease forwards}
+    @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    .animate-slideUp{animation:slideUp .4s ease forwards}
+    @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+    ::-webkit-scrollbar{width:4px}
+    ::-webkit-scrollbar-track{background:#010a05}
+    ::-webkit-scrollbar-thumb{background:#1a4a22;border-radius:2px}
+    @media(min-width:768px){.md\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    /* Tutorial specific */
+    .tut-card{transition:all .2s ease}
+    .tut-card:hover{transform:translateY(-2px)}
+    .progress-bar{height:4px;background:#0d2818;border-radius:2px;overflow:hidden}
+    .progress-fill{height:100%;border-radius:2px;transition:width .4s ease}
+    /* Nav tabs */
+    .nav-tab{padding:.5rem 1rem;font-size:.75rem;font-weight:700;border-radius:.5rem;transition:all .15s ease;cursor:pointer;border:1px solid transparent}
+    .nav-tab.active{background:#22c55e18;border-color:#22c55e;color:#22c55e}
+    .nav-tab:not(.active){color:#2a6a3a}
+    .nav-tab:not(.active):hover{border-color:#1a4a22;color:#3a8a5a}
+    /* LB table */
+    .lb-row{display:flex;align-items:center;justify-content:space-between;padding:.625rem 1rem;border-top:1px solid #0d2818;font-size:.75rem;transition:background .15s}
+    .lb-row:hover{background:#0a1e0f}
+    .lb-row.me{background:#22c55e08;border-left:2px solid #22c55e44}
   </style>
 </head>
 <body>
-  <div id="root"></div>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
 
-  <script type="text/babel">
-    const { useState, useEffect, useRef, useCallback } = React;
+/* ── localStorage polyfill matching the storage API ── */
+window.storage = {
+  get:(k)=>{ try{ const v=localStorage.getItem('mb_'+k); return Promise.resolve(v?{key:k,value:v}:null); }catch{return Promise.resolve(null);} },
+  set:(k,v)=>{ try{ localStorage.setItem('mb_'+k,v); return Promise.resolve({key:k,value:v}); }catch{return Promise.resolve(null);} },
+  delete:(k)=>{ try{ localStorage.removeItem('mb_'+k); return Promise.resolve({key:k,deleted:true}); }catch{return Promise.resolve(null);} }
+};
 
-    /* Polyfill window.storage with localStorage for standalone HTML */
-    window.storage = {
-      get: (key) => {
-        try {
-          const v = localStorage.getItem('cw_' + key);
-          return Promise.resolve(v ? { key, value: v } : null);
-        } catch { return Promise.resolve(null); }
-      },
-      set: (key, value) => {
-        try {
-          localStorage.setItem('cw_' + key, value);
-          return Promise.resolve({ key, value });
-        } catch { return Promise.resolve(null); }
-      },
-      delete: (key) => {
-        try {
-          localStorage.removeItem('cw_' + key);
-          return Promise.resolve({ key, deleted: true });
-        } catch { return Promise.resolve(null); }
-      }
-    };
-
-/* ═══════════════════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════
    CONSTANTS
-═══════════════════════════════════════════════════════════════════ */
-const SR = 200;          // sample rate (samples/sec)
-const BUF_DUR = 20;      // buffer duration in seconds
-const BUF_SZ = SR * BUF_DUR;
-const DISP_DUR = 6;      // seconds of ECG visible
-const N_BEDS = 4;
-const ROUND_SECS = 300;
-/* ═══════════════════════════════════════════════════════════════════
-   HELPERS
-═══════════════════════════════════════════════════════════════════ */
-const gauss = (x, mu = 0, sig = 1) => Math.exp(-0.5 * ((x - mu) / sig) ** 2);
-const rnd   = (a, b) => a + Math.random() * (b - a);
-const fmt   = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-/* ═══════════════════════════════════════════════════════════════════
+════════════════════════════════════════════════ */
+const SR=200, BUF_DUR=20, BUF_SZ=SR*BUF_DUR, DISP_DUR=6, N_BEDS=4, ROUND_SECS=300;
+const gauss=(x,mu=0,sig=1)=>Math.exp(-0.5*((x-mu)/sig)**2);
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const fmt=s=>`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+/* ════════════════════════════════════════════════
    RHYTHM DATABASE
-═══════════════════════════════════════════════════════════════════ */
-const R = {
-  NSR: {
-    id:"NSR", name:"Normal Sinus Rhythm", cat:"Sinus",
-    sev:"normal", alarmCol:"#22c55e", diff:1,
-    hr:[60,100], reg:true, rrVar:0.04,
-    pA:0.25, pW:0.08, pr:0.16, pInv:false,
-    rA:1.0, qA:0.10, sA:0.25, qrsW:0.08,
-    tA:0.35, tW:0.16, noise:0.02, fib:0,
-    info:"Regular 60–100 bpm · Upright P wave before each QRS · PR 0.12–0.20 s · Narrow QRS <0.12 s · Regular RR intervals"
-  },
-  STACH: {
-    id:"STACH", name:"Sinus Tachycardia", cat:"Sinus",
-    sev:"benign", alarmCol:"#84cc16", diff:1,
-    hr:[101,160], reg:true, rrVar:0.03,
-    pA:0.22, pW:0.07, pr:0.14, pInv:false,
-    rA:1.0, qA:0.08, sA:0.22, qrsW:0.08,
-    tA:0.28, tW:0.13, noise:0.02, fib:0,
-    info:"Rate >100 bpm · P wave before each QRS · Narrow QRS · Shortened RR · Find underlying cause (pain, fever, hypovolemia, PE)"
-  },
-  SBRAD: {
-    id:"SBRAD", name:"Sinus Bradycardia", cat:"Sinus",
-    sev:"benign", alarmCol:"#eab308", diff:1,
-    hr:[38,59], reg:true, rrVar:0.04,
-    pA:0.25, pW:0.09, pr:0.18, pInv:false,
-    rA:1.0, qA:0.10, sA:0.25, qrsW:0.08,
-    tA:0.35, tW:0.18, noise:0.02, fib:0,
-    info:"Rate <60 bpm · Regular rhythm · Upright P waves · May be normal in athletes · Monitor for hemodynamic instability"
-  },
-  AFIB: {
-    id:"AFIB", name:"Atrial Fibrillation", cat:"Atrial",
-    sev:"concerning", alarmCol:"#f97316", diff:1,
-    hr:[80,145], reg:false, rrVar:0.35,
-    pA:0, pW:0, pr:0, pInv:false,
-    rA:0.85, qA:0.08, sA:0.20, qrsW:0.08,
-    tA:0.28, tW:0.14, noise:0.05, fib:0.10,
-    info:"Irregularly irregular rhythm · No identifiable P waves · Fibrillatory baseline · Variable RR intervals · Most common sustained arrhythmia"
-  },
-  AFLT: {
-    id:"AFLT", name:"Atrial Flutter", cat:"Atrial",
-    sev:"concerning", alarmCol:"#f97316", diff:2,
-    isFlutter:true, flutRate:300,
-    hr:[75,155], reg:true, rrVar:0.02,
-    pA:0, pW:0, pr:0, pInv:false,
-    rA:0.90, qA:0.08, sA:0.20, qrsW:0.08,
-    tA:0, tW:0, noise:0.02, fib:0,
-    info:"\"Sawtooth\" flutter waves at ~300/min · Regular ventricular rate · 2:1 or 4:1 AV block · No isoelectric baseline between flutter waves"
-  },
-  SVT: {
-    id:"SVT", name:"SVT / PSVT", cat:"Atrial",
-    sev:"concerning", alarmCol:"#f97316", diff:2,
-    hr:[160,220], reg:true, rrVar:0.01,
-    pA:0, pW:0, pr:0, pInv:false,
-    rA:0.95, qA:0.05, sA:0.15, qrsW:0.07,
-    tA:-0.22, tW:0.10, noise:0.02, fib:0,
-    info:"Rate 160–220 bpm · Narrow QRS · P waves retrograde or buried in T wave · Abrupt onset and termination · Regular rhythm"
-  },
-  JNC: {
-    id:"JNC", name:"Junctional Rhythm", cat:"Junctional",
-    sev:"concerning", alarmCol:"#f97316", diff:2,
-    hr:[40,60], reg:true, rrVar:0.03,
-    pA:0.15, pW:0.06, pr:0.10, pInv:true,
-    rA:0.90, qA:0.08, sA:0.20, qrsW:0.08,
-    tA:0.30, tW:0.15, noise:0.02, fib:0,
-    info:"Rate 40–60 bpm · Absent or inverted/retrograde P waves · Narrow QRS · Regular rhythm · AV node acting as pacemaker"
-  },
-  VT: {
-    id:"VT", name:"Ventricular Tachycardia", cat:"Ventricular",
-    sev:"dangerous", alarmCol:"#ef4444", diff:1,
-    hr:[150,250], reg:true, rrVar:0.02,
-    pA:0, pW:0, pr:0, pInv:false,
-    rA:1.5, qA:0, sA:0.50, qrsW:0.18,
-    tA:-0.50, tW:0.20, noise:0.03, fib:0,
-    info:"Rate 150–250 bpm · WIDE QRS >0.12 s (bizarre morphology) · No identifiable P waves · AV dissociation · ⚠️ May deteriorate to VF — intervene immediately"
-  },
-  VF: {
-    id:"VF", name:"Ventricular Fibrillation", cat:"Ventricular",
-    sev:"lethal", alarmCol:"#dc2626", diff:1,
-    isVF:true,
-    hr:[0,0], reg:false, rrVar:1,
-    pA:0, rA:0, tA:0, noise:0.5, fib:1,
-    info:"Chaotic irregular waveform · No identifiable P waves, QRS complexes, or T waves · No cardiac output · 🚨 IMMEDIATELY LETHAL — DEFIBRILLATE NOW"
-  },
-  ASY: {
-    id:"ASY", name:"Asystole", cat:"Ventricular",
-    sev:"lethal", alarmCol:"#dc2626", diff:1,
-    isAsystole:true,
-    hr:[0,0], reg:true, rrVar:0,
-    pA:0, rA:0, tA:0, noise:0.02, fib:0,
-    info:"Flat line · No electrical activity · No cardiac output · 🚨 IMMEDIATELY LETHAL — START CPR AND PREPARE EPINEPHRINE"
-  },
-  CHB: {
-    id:"CHB", name:"3rd Degree Heart Block", cat:"Blocks",
-    sev:"dangerous", alarmCol:"#ef4444", diff:3,
-    is3AVB:true, pRate:70,
-    hr:[30,45], reg:true, rrVar:0.03,
-    pA:0.22, pW:0.08, pr:0, pInv:false,
-    rA:0.90, qA:0.10, sA:0.35, qrsW:0.14,
-    tA:0.38, tW:0.22, noise:0.02, fib:0,
-    info:"P waves \"march through\" at ~70/min · Wide QRS escape rhythm at ~30–45/min · Complete AV dissociation — P and QRS independent · Requires emergent pacemaker"
-  },
-  MOBITZ2: {
-    id:"MOBITZ2", name:"2nd Degree Block (Mobitz II)", cat:"Blocks",
-    sev:"dangerous", alarmCol:"#ef4444", diff:3,
-    isMobitz2:true,
-    hr:[35,60], reg:false, rrVar:0.02,
-    pA:0.22, pW:0.08, pr:0.18, pInv:false,
-    rA:0.95, qA:0.10, sA:0.25, qrsW:0.10,
-    tA:0.35, tW:0.17, noise:0.02, fib:0,
-    info:"Constant PR interval · Periodic dropped QRS (every 2nd, 3rd, or 4th P wave) · May progress to complete heart block · Requires pacemaker"
-  },
+════════════════════════════════════════════════ */
+const R={
+  NSR:{id:"NSR",name:"Normal Sinus Rhythm",cat:"Sinus",sev:"normal",alarmCol:"#22c55e",
+    hr:[60,100],reg:true,rrVar:.04,pA:.25,pW:.08,pr:.16,pInv:false,
+    rA:1,qA:.1,sA:.25,qrsW:.08,tA:.35,tW:.16,noise:.02,fib:0,
+    info:"Regular 60–100 bpm · Upright P wave before each QRS · PR 0.12–0.20s · Narrow QRS <0.12s · Regular RR intervals",
+    keyFeatures:["Regular rhythm","P before every QRS","PR 0.12–0.20s","Narrow QRS <0.12s","Rate 60–100"]},
+  STACH:{id:"STACH",name:"Sinus Tachycardia",cat:"Sinus",sev:"benign",alarmCol:"#84cc16",
+    hr:[101,160],reg:true,rrVar:.03,pA:.22,pW:.07,pr:.14,pInv:false,
+    rA:1,qA:.08,sA:.22,qrsW:.08,tA:.28,tW:.13,noise:.02,fib:0,
+    info:"Rate >100 bpm · P wave before each QRS · Narrow QRS · Shortened RR · Find underlying cause",
+    keyFeatures:["Rate >100 bpm","P before every QRS","Narrow QRS","Regular","Shortened RR interval"]},
+  SBRAD:{id:"SBRAD",name:"Sinus Bradycardia",cat:"Sinus",sev:"benign",alarmCol:"#eab308",
+    hr:[38,59],reg:true,rrVar:.04,pA:.25,pW:.09,pr:.18,pInv:false,
+    rA:1,qA:.1,sA:.25,qrsW:.08,tA:.35,tW:.18,noise:.02,fib:0,
+    info:"Rate <60 bpm · Regular rhythm · Upright P waves · Monitor for hemodynamic instability",
+    keyFeatures:["Rate <60 bpm","Regular rhythm","Upright P waves","Narrow QRS","Prolonged RR interval"]},
+  AFIB:{id:"AFIB",name:"Atrial Fibrillation",cat:"Atrial",sev:"concerning",alarmCol:"#f97316",
+    hr:[80,145],reg:false,rrVar:.35,pA:0,pW:0,pr:0,pInv:false,
+    rA:.85,qA:.08,sA:.2,qrsW:.08,tA:.28,tW:.14,noise:.05,fib:.1,
+    info:"Irregularly irregular rhythm · No identifiable P waves · Fibrillatory baseline · Variable RR intervals",
+    keyFeatures:["No P waves","Irregularly irregular","Fibrillatory baseline","Variable RR","Narrow QRS (usually)"]},
+  AFLT:{id:"AFLT",name:"Atrial Flutter",cat:"Atrial",sev:"concerning",alarmCol:"#f97316",
+    isFlutter:true,flutRate:300,hr:[75,155],reg:true,rrVar:.02,pA:0,pW:0,pr:0,pInv:false,
+    rA:.9,qA:.08,sA:.2,qrsW:.08,tA:0,tW:0,noise:.02,fib:0,
+    info:"\"Sawtooth\" flutter waves at ~300/min · Regular ventricular rate · 2:1 or 4:1 AV block",
+    keyFeatures:["Sawtooth flutter waves","Regular ventricular rate","2:1 or 4:1 block","~300 atrial rate","No isoelectric baseline"]},
+  SVT:{id:"SVT",name:"SVT / PSVT",cat:"Atrial",sev:"concerning",alarmCol:"#f97316",
+    hr:[160,220],reg:true,rrVar:.01,pA:0,pW:0,pr:0,pInv:false,
+    rA:.95,qA:.05,sA:.15,qrsW:.07,tA:-.22,tW:.1,noise:.02,fib:0,
+    info:"Rate 160–220 bpm · Narrow QRS · P waves buried in T wave · Abrupt onset/termination",
+    keyFeatures:["Rate 160–220 bpm","Narrow QRS","Retrograde/buried P waves","Regular","Abrupt onset"]},
+  JNC:{id:"JNC",name:"Junctional Rhythm",cat:"Junctional",sev:"concerning",alarmCol:"#f97316",
+    hr:[40,60],reg:true,rrVar:.03,pA:.15,pW:.06,pr:.1,pInv:true,
+    rA:.9,qA:.08,sA:.2,qrsW:.08,tA:.3,tW:.15,noise:.02,fib:0,
+    info:"Rate 40–60 bpm · Absent or inverted P waves · Narrow QRS · AV node acting as pacemaker",
+    keyFeatures:["Rate 40–60 bpm","Inverted/absent P waves","Narrow QRS","Regular","AV node pacemaker"]},
+  VT:{id:"VT",name:"Ventricular Tachycardia",cat:"Ventricular",sev:"dangerous",alarmCol:"#ef4444",
+    hr:[150,250],reg:true,rrVar:.02,pA:0,pW:0,pr:0,pInv:false,
+    rA:1.5,qA:0,sA:.5,qrsW:.18,tA:-.5,tW:.2,noise:.03,fib:0,
+    info:"Rate 150–250 bpm · WIDE QRS >0.12s · No P waves · AV dissociation · May deteriorate to VF",
+    keyFeatures:["Rate 150–250 bpm","Wide QRS >0.12s","No identifiable P waves","Regular","Bizarre QRS morphology"]},
+  VF:{id:"VF",name:"Ventricular Fibrillation",cat:"Ventricular",sev:"lethal",alarmCol:"#dc2626",
+    isVF:true,hr:[0,0],reg:false,rrVar:1,pA:0,rA:0,tA:0,noise:.5,fib:1,
+    info:"Chaotic waveform · No P/QRS/T · No cardiac output · 🚨 DEFIBRILLATE IMMEDIATELY",
+    keyFeatures:["Chaotic irregular waveform","No P waves","No QRS complexes","No T waves","No cardiac output"]},
+  ASY:{id:"ASY",name:"Asystole",cat:"Ventricular",sev:"lethal",alarmCol:"#dc2626",
+    isAsystole:true,hr:[0,0],reg:true,rrVar:0,pA:0,rA:0,tA:0,noise:.02,fib:0,
+    info:"Flat line · No electrical activity · No cardiac output · 🚨 START CPR IMMEDIATELY",
+    keyFeatures:["Flat line","No electrical activity","No cardiac output","Isoelectric baseline","Occasional artifact only"]},
+  CHB:{id:"CHB",name:"3rd Degree Heart Block",cat:"Blocks",sev:"dangerous",alarmCol:"#ef4444",
+    is3AVB:true,pRate:70,hr:[30,45],reg:true,rrVar:.03,pA:.22,pW:.08,pr:0,pInv:false,
+    rA:.9,qA:.1,sA:.35,qrsW:.14,tA:.38,tW:.22,noise:.02,fib:0,
+    info:"P waves march through at ~70/min · Wide escape QRS at 30–45/min · Complete AV dissociation · Pacemaker required",
+    keyFeatures:["P rate ~70 independent of QRS","Wide escape QRS","Rate 30–45 bpm","AV dissociation","Requires pacemaker"]},
+  MOBITZ2:{id:"MOBITZ2",name:"2nd Degree Block (Mobitz II)",cat:"Blocks",sev:"dangerous",alarmCol:"#ef4444",
+    isMobitz2:true,hr:[35,60],reg:false,rrVar:.02,pA:.22,pW:.08,pr:.18,pInv:false,
+    rA:.95,qA:.1,sA:.25,qrsW:.1,tA:.35,tW:.17,noise:.02,fib:0,
+    info:"Constant PR · Periodic dropped QRS · May progress to complete block · Requires pacemaker",
+    keyFeatures:["Constant PR interval","Sudden dropped QRS","Regular P waves","Narrow or wide QRS","May progress to CHB"]},
 };
-/* ═══════════════════════════════════════════════════════════════════
-   ANSWER MENU STRUCTURE
-═══════════════════════════════════════════════════════════════════ */
-const MENU = [
-  { cat:"Sinus",       ids:["NSR","STACH","SBRAD"] },
-  { cat:"Atrial",      ids:["AFIB","AFLT","SVT"] },
-  { cat:"Junctional",  ids:["JNC"] },
-  { cat:"Ventricular", ids:["VT","VF","ASY"] },
-  { cat:"Blocks",      ids:["CHB","MOBITZ2"] },
+
+const MENU=[
+  {cat:"Sinus",       color:"#22c55e", ids:["NSR","STACH","SBRAD"]},
+  {cat:"Atrial",      color:"#fbbf24", ids:["AFIB","AFLT","SVT"]},
+  {cat:"Junctional",  color:"#a78bfa", ids:["JNC"]},
+  {cat:"Ventricular", color:"#ef4444", ids:["VT","VF","ASY"]},
+  {cat:"Blocks",      color:"#f97316", ids:["CHB","MOBITZ2"]},
 ];
-/* ═══════════════════════════════════════════════════════════════════
-   DIFFICULTY CONFIG
-═══════════════════════════════════════════════════════════════════ */
-const DIFF = {
-  beginner:     { pool:["NSR","STACH","SBRAD","AFIB","VT","VF","ASY"],                                label:"Beginner",     intv:[15,25], desc:"7 rhythms · 15–25s intervals" },
-  intermediate: { pool:["NSR","STACH","SBRAD","AFIB","AFLT","JNC","VT","VF","ASY"],                    label:"Intermediate", intv:[12,20], desc:"9 rhythms · 12–20s intervals" },
-  advanced:     { pool:Object.keys(R),                                                                  label:"Advanced",     intv:[7,14],  desc:"All rhythms · 7–14s intervals" },
+
+const DIFF={
+  beginner:    {pool:["NSR","STACH","SBRAD","AFIB","VT","VF","ASY"],          label:"Beginner",    intv:[15,25],desc:"7 rhythms · 15–25s"},
+  intermediate:{pool:["NSR","STACH","SBRAD","AFIB","AFLT","JNC","VT","VF","ASY"],label:"Intermediate",intv:[12,20],desc:"9 rhythms · 12–20s"},
+  advanced:    {pool:Object.keys(R),                                           label:"Advanced",    intv:[7,14], desc:"All 12 rhythms · 7–14s"},
 };
-/* ═══════════════════════════════════════════════════════════════════
-   WAVEFORM BUFFER GENERATOR
-═══════════════════════════════════════════════════════════════════ */
-function buildBuf(r, seed = 0) {
-  const buf = new Float32Array(BUF_SZ);
-  // ── Ventricular Fibrillation ──
-  if (r.isVF) {
-    for (let i = 0; i < BUF_SZ; i++) {
-      const t = i / SR;
-      const env = 0.65 + 0.35 * Math.sin(2 * Math.PI * 0.38 * t + seed);
-      buf[i] = env * (
-        0.70 * Math.sin(2 * Math.PI * 5.3  * t + seed * 1.1) +
-        0.45 * Math.sin(2 * Math.PI * 7.9  * t + seed * 2.3) +
-        0.30 * Math.sin(2 * Math.PI * 11.4 * t + seed * 0.7) +
-        0.22 * Math.sin(2 * Math.PI * 3.1  * t + seed * 3.2) +
-        0.16 * Math.sin(2 * Math.PI * 17.2 * t + seed * 1.5) +
-        0.10 * Math.sin(2 * Math.PI * 23.7 * t + seed * 0.9)
-      );
-    }
+
+const SEV_COL={normal:"#22c55e",benign:"#84cc16",concerning:"#fbbf24",dangerous:"#ef4444",lethal:"#dc2626"};
+const SEV_LABEL={normal:"Normal",benign:"Benign",concerning:"Concerning",dangerous:"⚠️ Dangerous",lethal:"🚨 Lethal"};
+
+/* ════════════════════════════════════════════════
+   WAVEFORM GENERATOR
+════════════════════════════════════════════════ */
+function buildBuf(r,seed=0){
+  const buf=new Float32Array(BUF_SZ);
+  if(r.isVF){
+    for(let i=0;i<BUF_SZ;i++){
+      const t=i/SR,env=.65+.35*Math.sin(2*Math.PI*.38*t+seed);
+      buf[i]=env*(.7*Math.sin(2*Math.PI*5.3*t+seed*1.1)+.45*Math.sin(2*Math.PI*7.9*t+seed*2.3)+
+        .3*Math.sin(2*Math.PI*11.4*t+seed*.7)+.22*Math.sin(2*Math.PI*3.1*t+seed*3.2)+
+        .16*Math.sin(2*Math.PI*17.2*t+seed*1.5)+.1*Math.sin(2*Math.PI*23.7*t+seed*.9));
+    } return buf;
+  }
+  if(r.isAsystole){
+    for(let i=0;i<BUF_SZ;i++) buf[i]=Math.sin(i*.007+seed)*.009+Math.sin(i*.031+seed*2)*.005;
     return buf;
   }
-  // ── Asystole ──
-  if (r.isAsystole) {
-    for (let i = 0; i < BUF_SZ; i++)
-      buf[i] = Math.sin(i * 0.007 + seed) * 0.009 + Math.sin(i * 0.031 + seed * 2) * 0.005;
-    return buf;
-  }
-  // ── Beat schedule ──
-  const beats = [];
-  if (r.is3AVB) {
-    // Two independent pacemakers
-    const pRR  = Math.round(SR * 60 / r.pRate);
-    const qRR  = Math.round(SR * 60 / ((r.hr[0] + r.hr[1]) / 2));
-    for (let s = Math.round(pRR * 0.3); s < BUF_SZ; s += pRR) beats.push({ s, t:"P" });
-    for (let s = Math.round(qRR * 0.7); s < BUF_SZ; s += qRR) beats.push({ s, t:"Q" });
-  } else if (r.isMobitz2) {
-    // 3:1 ratio — 3 P waves for every 2 QRS complexes (every 3rd dropped)
-    const baseHR = (r.hr[0] + r.hr[1]) / 2;
-    const pRR  = Math.round(SR * 60 / 70); // P at ~70/min
-    const qrsInterval = Math.round(pRR * 3); // QRS every 3 P intervals
-    for (let s = Math.round(pRR * 0.3); s < BUF_SZ; s += pRR) beats.push({ s, t:"P" });
-    for (let s = Math.round(qrsInterval * 0.5); s < BUF_SZ; s += qrsInterval) beats.push({ s, t:"Q" });
-  } else if (r.isFlutter) {
-    const fRR = Math.round(SR * 60 / r.flutRate);
-    const qRR = Math.round(SR * 60 / ((r.hr[0] + r.hr[1]) / 2));
-    for (let s = 5; s < BUF_SZ; s += fRR) beats.push({ s, t:"F" });
-    for (let s = Math.round(qRR * 0.5); s < BUF_SZ; s += qRR) beats.push({ s, t:"Q" });
+  const beats=[];
+  if(r.is3AVB){
+    const pRR=Math.round(SR*60/r.pRate),qRR=Math.round(SR*60/((r.hr[0]+r.hr[1])/2));
+    for(let s=Math.round(pRR*.3);s<BUF_SZ;s+=pRR) beats.push({s,t:"P"});
+    for(let s=Math.round(qRR*.7);s<BUF_SZ;s+=qRR) beats.push({s,t:"Q"});
+  } else if(r.isMobitz2){
+    const pRR=Math.round(SR*60/70),qrsInterval=Math.round(pRR*3);
+    for(let s=Math.round(pRR*.3);s<BUF_SZ;s+=pRR) beats.push({s,t:"P"});
+    for(let s=Math.round(qrsInterval*.5);s<BUF_SZ;s+=qrsInterval) beats.push({s,t:"Q"});
+  } else if(r.isFlutter){
+    const fRR=Math.round(SR*60/r.flutRate),qRR=Math.round(SR*60/((r.hr[0]+r.hr[1])/2));
+    for(let s=5;s<BUF_SZ;s+=fRR) beats.push({s,t:"F"});
+    for(let s=Math.round(qRR*.5);s<BUF_SZ;s+=qRR) beats.push({s,t:"Q"});
   } else {
-    const hr    = Math.max((r.hr[0] + r.hr[1]) / 2, 10);
-    const baseRR = SR * 60 / hr;
-    let s = Math.round(baseRR * 0.15), bi = 0;
-    while (s < BUF_SZ) {
-      beats.push({ s, t:"A" });
-      let rr = baseRR;
-      if (!r.reg) {
-        rr = baseRR * (0.52 + Math.abs(Math.sin(bi * 6.1 + seed * 3.7)) * 0.96);
-      } else {
-        rr = baseRR * (1 + Math.sin(bi * 1.7 + seed) * (r.rrVar || 0.03));
-      }
-      s += Math.max(Math.round(rr), Math.round(SR * 0.28));
-      bi++;
+    const hr=Math.max((r.hr[0]+r.hr[1])/2,10),baseRR=SR*60/hr;
+    let s=Math.round(baseRR*.15),bi=0;
+    while(s<BUF_SZ){
+      beats.push({s,t:"A"});
+      let rr=r.reg?baseRR*(1+Math.sin(bi*1.7+seed)*(r.rrVar||.03)):baseRR*(.52+Math.abs(Math.sin(bi*6.1+seed*3.7))*.96);
+      s+=Math.max(Math.round(rr),Math.round(SR*.28)); bi++;
     }
   }
-  // ── Render beats into buffer ──
-  for (const beat of beats) {
-    const cs = beat.s;
-    // Flutter sawtooth waves
-    if (beat.t === "F") {
-      const fw = Math.round(0.195 * SR);
-      for (let i = 0; i < fw && cs + i < BUF_SZ; i++) {
-        const ph = i / fw;
-        buf[cs + i] += ph < 0.65 ? -0.28 * (ph / 0.65) : 0.28 * ((1 - ph) / 0.35);
-      }
+  for(const beat of beats){
+    const cs=beat.s;
+    if(beat.t==="F"){
+      const fw=Math.round(.195*SR);
+      for(let i=0;i<fw&&cs+i<BUF_SZ;i++){const ph=i/fw;buf[cs+i]+=ph<.65?-.28*(ph/.65):.28*((1-ph)/.35);}
       continue;
     }
-    const doP   = r.pA && r.pA !== 0 && (beat.t === "A" || beat.t === "P");
-    const doQRS = r.rA && r.rA !== 0 && (beat.t === "A" || beat.t === "Q");
-    // P wave
-    if (doP) {
-      const pW   = (r.pW || 0.08) * SR;
-      const prW  = (r.pr || 0.16) * SR;
-      const pAmp = r.pInv ? -(r.pA) : r.pA;
-      const pc   = cs - Math.round(prW);
-      const sp   = Math.ceil(pW * 2.8);
-      for (let i = -sp; i <= sp; i++) {
-        const si = pc + i;
-        if (si >= 0 && si < BUF_SZ) buf[si] += pAmp * gauss(i, 0, pW * 0.38);
-      }
+    const doP=r.pA&&r.pA!==0&&(beat.t==="A"||beat.t==="P");
+    const doQRS=r.rA&&r.rA!==0&&(beat.t==="A"||beat.t==="Q");
+    if(doP){
+      const pW=(r.pW||.08)*SR,prW=(r.pr||.16)*SR,pAmp=r.pInv?-(r.pA):r.pA,pc=cs-Math.round(prW),sp=Math.ceil(pW*2.8);
+      for(let i=-sp;i<=sp;i++){const si=pc+i;if(si>=0&&si<BUF_SZ) buf[si]+=pAmp*gauss(i,0,pW*.38);}
     }
-    // QRS + T
-    if (doQRS) {
-      const qW = (r.qrsW || 0.08) * SR;
-      // Q wave
-      if (r.qA > 0) {
-        const qo = -Math.round(qW * 0.55);
-        for (let i = qo - 9; i <= qo + 9; i++) {
-          const si = cs + i;
-          if (si >= 0 && si < BUF_SZ) buf[si] -= r.qA * gauss(i, qo, qW * 0.18);
-        }
-      }
-      // R wave
-      const rs  = qW * 0.30;
-      const rsp = Math.ceil(rs * 3.8);
-      for (let i = -rsp; i <= rsp; i++) {
-        const si = cs + i;
-        if (si >= 0 && si < BUF_SZ) buf[si] += r.rA * gauss(i, 0, rs);
-      }
-      // S wave
-      if (r.sA > 0) {
-        const so = Math.round(qW * 0.55);
-        for (let i = so - 8; i <= so + 12; i++) {
-          const si = cs + i;
-          if (si >= 0 && si < BUF_SZ) buf[si] -= r.sA * gauss(i, so, qW * 0.20);
-        }
-      }
-      // T wave
-      if (r.tA && r.tA !== 0) {
-        const tW  = (r.tW || 0.16) * SR;
-        const tc  = Math.round(cs + qW * 0.85 + tW * 1.05);
-        const ts  = tW * 0.45;
-        const tsp = Math.ceil(ts * 3.2);
-        for (let i = -tsp; i <= tsp; i++) {
-          const si = tc + i;
-          if (si >= 0 && si < BUF_SZ) buf[si] += r.tA * gauss(i, 0, ts);
-        }
+    if(doQRS){
+      const qW=(r.qrsW||.08)*SR;
+      if(r.qA>0){const qo=-Math.round(qW*.55);for(let i=qo-9;i<=qo+9;i++){const si=cs+i;if(si>=0&&si<BUF_SZ)buf[si]-=r.qA*gauss(i,qo,qW*.18);}}
+      const rs=qW*.3,rsp=Math.ceil(rs*3.8);
+      for(let i=-rsp;i<=rsp;i++){const si=cs+i;if(si>=0&&si<BUF_SZ)buf[si]+=r.rA*gauss(i,0,rs);}
+      if(r.sA>0){const so=Math.round(qW*.55);for(let i=so-8;i<=so+12;i++){const si=cs+i;if(si>=0&&si<BUF_SZ)buf[si]-=r.sA*gauss(i,so,qW*.2);}}
+      if(r.tA&&r.tA!==0){
+        const tW=(r.tW||.16)*SR,tc=Math.round(cs+qW*.85+tW*1.05),ts=tW*.45,tsp=Math.ceil(ts*3.2);
+        for(let i=-tsp;i<=tsp;i++){const si=tc+i;if(si>=0&&si<BUF_SZ)buf[si]+=r.tA*gauss(i,0,ts);}
       }
     }
   }
-  // ── Baseline noise (deterministic – avoids visual discontinuity) ──
-  const n = r.noise || 0.02;
-  for (let i = 0; i < BUF_SZ; i++) {
-    buf[i] += n * (
-      Math.sin(i * 0.009 + seed * 5) * 0.50 +
-      Math.sin(i * 0.047 + seed * 1.3) * 0.30 +
-      Math.sin(i * 0.233 + seed) * 0.15 +
-      Math.sin(i * 0.611 + seed * 2.1) * 0.05
-    );
-  }
-  // ── Fibrillatory baseline (A-Fib) ──
-  if (r.fib > 0) {
-    for (let i = 0; i < BUF_SZ; i++) {
-      const t = i / SR;
-      buf[i] += r.fib * (
-        0.45 * Math.sin(2 * Math.PI * 6.1  * t + seed) +
-        0.30 * Math.sin(2 * Math.PI * 9.7  * t + seed * 1.3) +
-        0.20 * Math.sin(2 * Math.PI * 14.2 * t + seed * 0.8) +
-        0.12 * Math.sin(2 * Math.PI * 21.5 * t + seed * 2.1)
-      ) * 0.38;
+  const n=r.noise||.02;
+  for(let i=0;i<BUF_SZ;i++) buf[i]+=n*(Math.sin(i*.009+seed*5)*.5+Math.sin(i*.047+seed*1.3)*.3+Math.sin(i*.233+seed)*.15+Math.sin(i*.611+seed*2.1)*.05);
+  if(r.fib>0){
+    for(let i=0;i<BUF_SZ;i++){
+      const t=i/SR;
+      buf[i]+=r.fib*(.45*Math.sin(2*Math.PI*6.1*t+seed)+.3*Math.sin(2*Math.PI*9.7*t+seed*1.3)+.2*Math.sin(2*Math.PI*14.2*t+seed*.8)+.12*Math.sin(2*Math.PI*21.5*t+seed*2.1))*.38;
     }
   }
   return buf;
 }
-/* ═══════════════════════════════════════════════════════════════════
+
+/* ════════════════════════════════════════════════
    ECG CANVAS PAINTER
-═══════════════════════════════════════════════════════════════════ */
-function paintECG(canvas, buf, pos, sev, isSelected) {
-  if (!canvas || !buf) return;
-  const ctx = canvas.getContext("2d");
-  const W = canvas.width, H = canvas.height;
-  // Background
-  ctx.fillStyle = "#020e07";
-  ctx.fillRect(0, 0, W, H);
-  // Grid — minor
-  const gm = W / 30;
-  ctx.lineWidth = 0.4;
-  ctx.strokeStyle = "#051a0d";
-  for (let x = 0; x <= W; x += gm) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
-  for (let y = 0; y <= H; y += gm) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
-  // Grid — major
-  ctx.lineWidth = 0.7;
-  ctx.strokeStyle = "#092b17";
-  for (let x = 0; x <= W; x += gm * 5) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
-  for (let y = 0; y <= H; y += gm * 5) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
-  // ECG trace
-  const dispSamp = DISP_DUR * SR;
-  const midY = H * 0.5;
-  const scl  = H * 0.265;
-  const col  = sev === "lethal" ? "#ff2040" : sev === "dangerous" ? "#ff8800" : sev === "concerning" ? "#fbbf24" : "#00e87a";
-  ctx.beginPath();
-  ctx.strokeStyle = col;
-  ctx.lineWidth = isSelected ? 2.2 : 1.8;
-  ctx.shadowBlur = isSelected ? 14 : 9;
-  ctx.shadowColor = col;
-  ctx.lineJoin = "round";
-  for (let px = 0; px < W; px++) {
-    const si = (Math.floor(pos) + Math.floor(px / W * dispSamp)) % BUF_SZ;
-    const y  = midY - clamp(buf[si], -2.5, 2.5) * scl;
-    px === 0 ? ctx.moveTo(px, y) : ctx.lineTo(px, y);
+════════════════════════════════════════════════ */
+function paintECG(canvas,buf,pos,sev,isSelected){
+  if(!canvas||!buf) return;
+  const ctx=canvas.getContext("2d"),W=canvas.width,H=canvas.height;
+  ctx.fillStyle="#020e07"; ctx.fillRect(0,0,W,H);
+  const gm=W/30;
+  ctx.lineWidth=.4; ctx.strokeStyle="#051a0d";
+  for(let x=0;x<=W;x+=gm){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<=H;y+=gm){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  ctx.lineWidth=.7; ctx.strokeStyle="#092b17";
+  for(let x=0;x<=W;x+=gm*5){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<=H;y+=gm*5){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  const dispSamp=DISP_DUR*SR,midY=H*.5,scl=H*.265;
+  const col=sev==="lethal"?"#ff2040":sev==="dangerous"?"#ff8800":sev==="concerning"?"#fbbf24":"#00e87a";
+  ctx.beginPath(); ctx.strokeStyle=col; ctx.lineWidth=isSelected?2.2:1.8;
+  ctx.shadowBlur=isSelected?14:9; ctx.shadowColor=col; ctx.lineJoin="round";
+  for(let px=0;px<W;px++){
+    const si=(Math.floor(pos)+Math.floor(px/W*dispSamp))%BUF_SZ;
+    const y=midY-clamp(buf[si],-2.5,2.5)*scl;
+    px===0?ctx.moveTo(px,y):ctx.lineTo(px,y);
   }
-  ctx.stroke();
-  ctx.shadowBlur = 0;
+  ctx.stroke(); ctx.shadowBlur=0;
 }
-/* ═══════════════════════════════════════════════════════════════════
+
+/* ════════════════════════════════════════════════
    SCORING
-═══════════════════════════════════════════════════════════════════ */
-function calcPts(correct, rhythm, timeSec, streak) {
-  if (!correct) return { pts: -5, msg: "−5  Incorrect" };
-  let pts = 10, extra = "";
-  if (timeSec < 4)       { pts += 5; extra += " ⚡Fast!"; }
-  else if (timeSec < 9)  { pts += 2; extra += " Quick"; }
-  const newStreak = streak + 1;
-  if      (newStreak >= 7) { pts += 15; extra += " 🔥×7 MEGA!"; }
-  else if (newStreak >= 5) { pts += 10; extra += " 🔥×5 STREAK!"; }
-  else if (newStreak >= 3) { pts += 5;  extra += " 🔥×3"; }
-  if (rhythm.sev === "lethal" || rhythm.sev === "dangerous") { pts += 3; extra += " ⚠️+3"; }
-  return { pts, msg: `+${pts}${extra}  Correct!` };
+════════════════════════════════════════════════ */
+function calcPts(correct,rhythm,timeSec,streak){
+  if(!correct) return{pts:-5,msg:"−5  Incorrect"};
+  let pts=10,extra="";
+  if(timeSec<4){pts+=5;extra+=" ⚡Fast!";}else if(timeSec<9){pts+=2;extra+=" Quick";}
+  const ns=streak+1;
+  if(ns>=7){pts+=15;extra+=" 🔥×7 MEGA!";}else if(ns>=5){pts+=10;extra+=" 🔥×5 STREAK!";}else if(ns>=3){pts+=5;extra+=" 🔥×3";}
+  if(rhythm.sev==="lethal"||rhythm.sev==="dangerous"){pts+=3;extra+=" ⚠️+3";}
+  return{pts,msg:`+${pts}${extra}  Correct!`};
 }
-/* ═══════════════════════════════════════════════════════════════════
-   SEVERITY STYLING
-═══════════════════════════════════════════════════════════════════ */
-const SEV_COL = {
-  normal:     "#22c55e",
-  benign:     "#84cc16",
-  concerning: "#fbbf24",
-  dangerous:  "#ef4444",
-  lethal:     "#dc2626",
-};
-const SEV_LABEL = {
-  normal:     "Normal",
-  benign:     "Benign",
-  concerning: "Concerning",
-  dangerous:  "⚠️ Dangerous",
-  lethal:     "🚨 Lethal",
-};
-/* ═══════════════════════════════════════════════════════════════════
-   BED HEADER (vitals bar)
-═══════════════════════════════════════════════════════════════════ */
-function BedVitals({ bed }) {
-  const r = bed.rhythm;
-  const isLethal    = r.sev === "lethal";
-  const isDangerous = r.sev === "dangerous";
-  const midHR       = r.hr[0] === 0 && r.hr[1] === 0 ? null : Math.floor((r.hr[0] + r.hr[1]) / 2);
-  const spo2        = isLethal ? null : isDangerous ? 89 : r.sev === "concerning" ? 93 : 98;
-  const hrDisp      = midHR == null ? "---" : `${midHR}`;
-  const spo2Disp    = spo2  == null ? "---" : `${spo2}%`;
-  const isAlarm     = !bed.answered && (r.sev === "dangerous" || r.sev === "lethal");
-  return (
-    <div className="flex items-center justify-between px-3 py-1.5" style={{ background: "#030f08", borderBottom: "1px solid #0d2818" }}>
+
+/* ════════════════════════════════════════════════
+   MINI ECG (static snapshot)
+════════════════════════════════════════════════ */
+function MiniECG({rhythmId,height=40,seed}){
+  const ref=useRef(null);
+  useEffect(()=>{
+    const c=ref.current; if(!c) return;
+    const buf=buildBuf(R[rhythmId],(seed||0)+Math.random()*200);
+    const ctx=c.getContext("2d");
+    ctx.fillStyle="#020e07"; ctx.fillRect(0,0,c.width,c.height);
+    const r=R[rhythmId],col=r.sev==="lethal"?"#ff2040":r.sev==="dangerous"?"#ff8800":r.sev==="concerning"?"#fbbf24":"#00e87a";
+    const midY=c.height/2,scl=c.height*.30;
+    ctx.beginPath(); ctx.strokeStyle=col; ctx.lineWidth=1.8;
+    ctx.shadowBlur=6; ctx.shadowColor=col;
+    const dispS=Math.min(4*SR,BUF_SZ);
+    for(let px=0;px<c.width;px++){
+      const si=Math.floor(px/c.width*dispS);
+      const y=midY-clamp(buf[si],-2.5,2.5)*scl;
+      px===0?ctx.moveTo(px,y):ctx.lineTo(px,y);
+    }
+    ctx.stroke();
+  },[rhythmId,seed]);
+  return <canvas ref={ref} width={280} height={height} style={{display:"block",width:"100%",height:`${height}px`,borderRadius:"4px"}}/>;
+}
+
+/* ════════════════════════════════════════════════
+   BED VITALS BAR
+════════════════════════════════════════════════ */
+function BedVitals({bed}){
+  const r=bed.rhythm;
+  const isLethal=r.sev==="lethal",isDangerous=r.sev==="dangerous";
+  const midHR=r.hr[0]===0&&r.hr[1]===0?null:Math.floor((r.hr[0]+r.hr[1])/2);
+  const spo2=isLethal?null:isDangerous?89:r.sev==="concerning"?93:98;
+  const isAlarm=!bed.answered&&(r.sev==="dangerous"||r.sev==="lethal");
+  return(
+    <div className="flex items-center justify-between px-3 py-1.5" style={{background:"#030f08",borderBottom:"1px solid #0d2818"}}>
       <div className="flex items-center gap-2">
-        <span className="text-xs font-bold" style={{ color: "#3a8a5a", fontFamily: "monospace" }}>BED {bed.id + 1}</span>
-        {isAlarm && (
-          <span className="text-xs font-bold px-1.5 py-0.5 rounded animate-pulse"
-            style={{ background: r.alarmCol + "25", color: r.alarmCol, border: `1px solid ${r.alarmCol}88` }}>
-            {r.sev === "lethal" ? "🚨 ALARM" : "⚠️ ALERT"}
-          </span>
-        )}
-        {bed.answered && !isAlarm && bed.rhythm.id !== "NSR" && (
-          <span className="text-xs" style={{ color: "#1a4a28" }}>✓ Reviewed</span>
-        )}
+        <span className="text-xs font-bold" style={{color:"#3a8a5a",fontFamily:"monospace"}}>BED {bed.id+1}</span>
+        {isAlarm&&<span className="text-xs font-bold px-1.5 py-0.5 rounded animate-pulse"
+          style={{background:r.alarmCol+"25",color:r.alarmCol,border:`1px solid ${r.alarmCol}88`}}>
+          {r.sev==="lethal"?"🚨 ALARM":"⚠️ ALERT"}
+        </span>}
+        {bed.answered&&!isAlarm&&bed.rhythm.id!=="NSR"&&<span className="text-xs" style={{color:"#1a4a28"}}>✓ Reviewed</span>}
       </div>
       <div className="flex items-center gap-3 text-xs font-mono">
-        <span style={{ color: spo2 !== null && spo2 < 93 ? "#ef4444" : "#22c55e" }}>SpO₂ {spo2Disp}</span>
-        <span style={{ color: isLethal ? "#ef4444" : "#fbbf24" }}>HR {hrDisp}</span>
-        <span style={{ color: "#1a5a30" }}>BP {isLethal ? "---/---" : isDangerous ? "88/52" : "118/74"}</span>
+        <span style={{color:spo2!==null&&spo2<93?"#ef4444":"#22c55e"}}>SpO₂ {spo2==null?"---":`${spo2}%`}</span>
+        <span style={{color:isLethal?"#ef4444":"#fbbf24"}}>HR {midHR==null?"---":midHR}</span>
+        <span style={{color:"#1a5a30"}}>BP {isLethal?"---/---":isDangerous?"88/52":"118/74"}</span>
       </div>
     </div>
   );
 }
-/* ═══════════════════════════════════════════════════════════════════
+
+/* ════════════════════════════════════════════════
+   SCORE NOTIF
+════════════════════════════════════════════════ */
+function Notif({notif}){
+  const [op,setOp]=useState(1);
+  useEffect(()=>{const t=setTimeout(()=>setOp(0),1800);return()=>clearTimeout(t);},[]);
+  return(
+    <div className="text-sm font-bold px-3 py-2 rounded-lg pointer-events-none transition-opacity duration-500"
+      style={{opacity:op,background:notif.col+"22",border:`1px solid ${notif.col}77`,color:notif.col,fontFamily:"monospace"}}>
+      {notif.msg}
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════
    ANSWER POPUP
-═══════════════════════════════════════════════════════════════════ */
-function AnswerPopup({ bed, onAnswer, onClose, expandedCat, setExpandedCat, feedback }) {
-  if (!bed) return null;
-  const isAlready = bed.answered && !feedback;
-  return (
+════════════════════════════════════════════════ */
+function AnswerPopup({bed,onAnswer,onClose,expandedCat,setExpandedCat,feedback}){
+  if(!bed) return null;
+  const isAlready=bed.answered&&!feedback;
+  return(
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4"
-      style={{ background: "rgba(0,8,3,0.82)", backdropFilter: "blur(3px)" }}>
-      <div className="w-full max-w-md rounded-2xl overflow-hidden shadow-2xl"
-        style={{ background: "#03100a", border: "1px solid #1a4a2a", boxShadow: "0 0 60px #00ff7710" }}>
-        {/* Header */}
+      style={{background:"rgba(0,8,3,.82)",backdropFilter:"blur(3px)"}}>
+      <div className="w-full max-w-md rounded-2xl overflow-hidden shadow-2xl animate-slideUp"
+        style={{background:"#03100a",border:"1px solid #1a4a2a",boxShadow:"0 0 60px #00ff7710"}}>
         <div className="flex items-center justify-between px-5 py-3"
-          style={{ background: "#020c07", borderBottom: "1px solid #1a3a20" }}>
+          style={{background:"#020c07",borderBottom:"1px solid #1a3a20"}}>
           <div>
-            <div className="font-bold text-sm" style={{ color: "#22c55e", fontFamily: "monospace" }}>
-              🖥 BED {bed.id + 1} — Identify Rhythm
+            <div className="font-bold text-sm" style={{color:"#22c55e",fontFamily:"monospace"}}>
+              🖥 BED {bed.id+1} — Identify Rhythm
             </div>
-            <div className="text-xs mt-0.5" style={{ color: "#2a5a35" }}>
-              Select the rhythm displayed on the monitor
-            </div>
+            <div className="text-xs mt-0.5" style={{color:"#2a5a35"}}>Select the rhythm displayed on the monitor</div>
           </div>
-          <button onClick={onClose} className="transition hover:opacity-70"
-            style={{ color: "#2a6a3a", fontSize: "18px", lineHeight: 1 }}>✕</button>
+          <button onClick={onClose} className="transition hover:opacity-70" style={{color:"#2a6a3a",fontSize:"18px",lineHeight:1}}>✕</button>
         </div>
-        {/* Body */}
-        {feedback ? (
-          /* ── Feedback View ── */
+        {feedback?(
           <div className="p-4 space-y-3">
-            <div className={`rounded-xl p-3 ${feedback.correct ? "bg-green-950/60" : "bg-red-950/60"}`}
-              style={{ border: `1px solid ${feedback.correct ? "#22c55e55" : "#ef444455"}` }}>
-              <div className="font-black text-sm mb-1" style={{ color: feedback.correct ? "#22c55e" : "#ef4444" }}>
-                {feedback.correct ? "✓  CORRECT IDENTIFICATION" : "✗  INCORRECT"}
+            <div className={`rounded-xl p-3 ${feedback.correct?"bg-green-950/60":"bg-red-950/60"}`}
+              style={{border:`1px solid ${feedback.correct?"#22c55e55":"#ef444455"}`}}>
+              <div className="font-black text-sm mb-1" style={{color:feedback.correct?"#22c55e":"#ef4444"}}>
+                {feedback.correct?"✓  CORRECT IDENTIFICATION":"✗  INCORRECT"}
               </div>
-              <div className="text-sm" style={{ color: "#a0c0a8" }}>{feedback.msg}</div>
-              {!feedback.correct && (
-                <div className="text-xs mt-1.5" style={{ color: "#5a8a6a" }}>
-                  Correct answer: <span style={{ color: SEV_COL[feedback.rhythm.sev] }}>{feedback.rhythm.name}</span>
-                </div>
-              )}
+              <div className="text-sm" style={{color:"#a0c0a8"}}>{feedback.msg}</div>
+              {!feedback.correct&&<div className="text-xs mt-1.5" style={{color:"#5a8a6a"}}>
+                Correct: <span style={{color:SEV_COL[feedback.rhythm.sev]}}>{feedback.rhythm.name}</span>
+              </div>}
             </div>
-            <div className="rounded-xl p-3" style={{ background: "#020c07", border: "1px solid #1a3a1a" }}>
+            <div className="rounded-xl p-3" style={{background:"#020c07",border:"1px solid #1a3a1a"}}>
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-bold" style={{ color: "#22c55e", fontFamily: "monospace" }}>🔍 KEY FEATURES</span>
+                <span className="text-xs font-bold" style={{color:"#22c55e",fontFamily:"monospace"}}>🔍 KEY FEATURES</span>
                 <span className="text-xs px-2 py-0.5 rounded"
-                  style={{ background: SEV_COL[feedback.rhythm.sev] + "18", color: SEV_COL[feedback.rhythm.sev], border: `1px solid ${SEV_COL[feedback.rhythm.sev]}44` }}>
+                  style={{background:SEV_COL[feedback.rhythm.sev]+"18",color:SEV_COL[feedback.rhythm.sev],border:`1px solid ${SEV_COL[feedback.rhythm.sev]}44`}}>
                   {SEV_LABEL[feedback.rhythm.sev]}
                 </span>
               </div>
-              <div className="font-bold text-sm mb-1.5" style={{ color: SEV_COL[feedback.rhythm.sev] }}>
-                {feedback.rhythm.name}
-              </div>
-              <div className="text-xs leading-relaxed" style={{ color: "#5a8a6a" }}>{feedback.rhythm.info}</div>
+              <div className="font-bold text-sm mb-1.5" style={{color:SEV_COL[feedback.rhythm.sev]}}>{feedback.rhythm.name}</div>
+              <div className="text-xs leading-relaxed" style={{color:"#5a8a6a"}}>{feedback.rhythm.info}</div>
             </div>
-            <button onClick={onClose}
-              className="w-full py-2.5 rounded-xl text-sm font-bold transition hover:opacity-90"
-              style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)", color: "#03100a" }}>
+            <button onClick={onClose} className="w-full py-2.5 rounded-xl text-sm font-bold transition hover:opacity-90"
+              style={{background:"linear-gradient(135deg,#22c55e,#16a34a)",color:"#03100a"}}>
               Continue Monitoring →
             </button>
           </div>
-        ) : isAlready ? (
-          /* ── Already answered ── */
+        ):isAlready?(
           <div className="p-6 text-center">
             <div className="text-4xl mb-3">✓</div>
-            <div className="text-sm font-bold mb-1" style={{ color: "#22c55e" }}>Already Reviewed</div>
-            <div className="text-xs mb-4" style={{ color: "#2a6a3a" }}>This bed has been answered. Wait for the next rhythm change.</div>
+            <div className="text-sm font-bold mb-1" style={{color:"#22c55e"}}>Already Reviewed</div>
+            <div className="text-xs mb-4" style={{color:"#2a6a3a"}}>Waiting for next rhythm change.</div>
             <button onClick={onClose} className="px-6 py-2 rounded-xl text-sm font-bold"
-              style={{ border: "1px solid #1a4a2a", color: "#3a8a5a" }}>Close</button>
+              style={{border:"1px solid #1a4a2a",color:"#3a8a5a"}}>Close</button>
           </div>
-        ) : (
-          /* ── Answer Options ── */
-          <div className="p-3 space-y-1.5 overflow-y-auto" style={{ maxHeight: "420px" }}>
-            {MENU.map(({ cat, ids }) => (
-              <div key={cat} className="rounded-xl overflow-hidden" style={{ border: "1px solid #1a3a20" }}>
-                <button
-                  onClick={() => setExpandedCat(expandedCat === cat ? null : cat)}
+        ):(
+          <div className="p-3 space-y-1.5 overflow-y-auto" style={{maxHeight:"420px"}}>
+            {MENU.map(({cat,color,ids})=>(
+              <div key={cat} className="rounded-xl overflow-hidden" style={{border:"1px solid #1a3a20"}}>
+                <button onClick={()=>setExpandedCat(expandedCat===cat?null:cat)}
                   className="w-full flex items-center justify-between px-4 py-2.5 transition hover:bg-green-950/30"
-                  style={{ background: "#030e08" }}>
-                  <span className="text-sm font-bold" style={{ color: "#3a9a5a" }}>{cat}</span>
-                  <span style={{ color: "#1a5a28", fontSize: "11px" }}>{expandedCat === cat ? "▲" : "▼"}</span>
+                  style={{background:"#030e08"}}>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full" style={{background:color,boxShadow:`0 0 6px ${color}88`}}/>
+                    <span className="text-sm font-bold" style={{color}}>{cat}</span>
+                  </div>
+                  <span style={{color:"#1a5a28",fontSize:"11px"}}>{expandedCat===cat?"▲":"▼"}</span>
                 </button>
-                {expandedCat === cat && (
-                  <div className="space-y-1 p-2" style={{ background: "#020c07" }}>
-                    {ids.map(id => {
-                      const rhythm = R[id];
-                      return (
-                        <button key={id} onClick={() => onAnswer(id)}
-                          className="w-full text-left px-3 py-2.5 rounded-lg flex items-center justify-between transition group"
-                          style={{ border: "1px solid transparent" }}
-                          onMouseEnter={e => e.currentTarget.style.cssText += "background:#0a2a15;border-color:#1a4a22"}
-                          onMouseLeave={e => e.currentTarget.style.cssText += "background:transparent;border-color:transparent"}>
-                          <span className="text-sm" style={{ color: "#a0c0a8" }}>{rhythm.name}</span>
+                {expandedCat===cat&&(
+                  <div className="space-y-1 p-2" style={{background:"#020c07"}}>
+                    {ids.map(id=>{
+                      const rhythm=R[id];
+                      return(
+                        <button key={id} onClick={()=>onAnswer(id)}
+                          className="w-full text-left px-3 py-2.5 rounded-lg flex items-center justify-between transition"
+                          style={{border:"1px solid transparent"}}
+                          onMouseEnter={e=>Object.assign(e.currentTarget.style,{background:"#0a2a15",borderColor:"#1a4a22"})}
+                          onMouseLeave={e=>Object.assign(e.currentTarget.style,{background:"transparent",borderColor:"transparent"})}>
+                          <span className="text-sm" style={{color:"#a0c0a8"}}>{rhythm.name}</span>
                           <span className="text-xs px-2 py-0.5 rounded"
-                            style={{ background: SEV_COL[rhythm.sev] + "18", color: SEV_COL[rhythm.sev], border: `1px solid ${SEV_COL[rhythm.sev]}40` }}>
+                            style={{background:SEV_COL[rhythm.sev]+"18",color:SEV_COL[rhythm.sev],border:`1px solid ${SEV_COL[rhythm.sev]}40`}}>
                             {rhythm.sev}
                           </span>
                         </button>
@@ -702,316 +492,675 @@ function AnswerPopup({ bed, onAnswer, onClose, expandedCat, setExpandedCat, feed
     </div>
   );
 }
-/* ═══════════════════════════════════════════════════════════════════
-   SCORE NOTIFICATION
-═══════════════════════════════════════════════════════════════════ */
-function Notif({ notif }) {
-  const [opacity, setOpacity] = useState(1);
-  useEffect(() => {
-    const t = setTimeout(() => setOpacity(0), 1800);
-    return () => clearTimeout(t);
-  }, []);
-  return (
-    <div className="text-sm font-bold px-3 py-2 rounded-lg pointer-events-none transition-opacity duration-500"
-      style={{ opacity, background: notif.col + "22", border: `1px solid ${notif.col}77`, color: notif.col, fontFamily: "monospace" }}>
-      {notif.msg}
+
+/* ════════════════════════════════════════════════
+   TUTORIAL DATA
+════════════════════════════════════════════════ */
+const TUT_LESSONS=[
+  {
+    id:"intro",title:"How to Read an ECG",icon:"📡",
+    sections:[
+      {heading:"What is an ECG?",body:"An ECG (electrocardiogram) records the electrical activity of the heart. Each bump and dip represents a different phase of the heartbeat. You're reading Lead II, which gives the clearest view of P waves and the overall rhythm."},
+      {heading:"The PQRST Complex",body:"Every normal beat has 5 components: P wave (atrial depolarization), Q wave (small dip before R), R wave (the tall spike — ventricular depolarization), S wave (dip after R), and T wave (ventricular repolarization)."},
+      {heading:"What to Measure",body:"Rate: Count R waves in 6 seconds × 10. Regularity: Are R-R intervals equal? P waves: Present? Upright? One per QRS? PR interval: 0.12–0.20s (3–5 small boxes). QRS width: <0.12s is narrow (supraventricular). QRS >0.12s = wide (ventricular origin or bundle branch block)."},
+    ],
+    quiz:null,
+  },
+  {
+    id:"sinus",title:"Sinus Rhythms",icon:"💚",
+    sections:[
+      {heading:"Normal Sinus Rhythm (NSR)",body:"Rate 60–100 bpm. Regular. Upright P wave before every QRS. PR interval 0.12–0.20s. Narrow QRS. This is your baseline — everything else is compared to NSR."},
+      {heading:"Sinus Tachycardia",body:"Same morphology as NSR but rate >100 bpm. P waves still present and upright. Always ask WHY — pain, fever, hypovolemia, PE, anxiety, drugs. Treat the cause, not just the rate."},
+      {heading:"Sinus Bradycardia",body:"Same as NSR but rate <60 bpm. Common in athletes (normal), during sleep, or with vagal stimulation. Concerning if patient is symptomatic (hypotension, syncope, chest pain)."},
+    ],
+    quiz:{question:"A patient has a rate of 48, regular rhythm, upright P before each QRS, narrow QRS. What is this?",options:["Sinus Tachycardia","Normal Sinus Rhythm","Sinus Bradycardia","Atrial Fibrillation"],answer:2},
+  },
+  {
+    id:"atrial",title:"Atrial Rhythms",icon:"💛",
+    sections:[
+      {heading:"Atrial Fibrillation (A-Fib)",body:"Most common sustained arrhythmia. Hallmark: IRREGULARLY IRREGULAR rhythm with NO identifiable P waves. Instead you see a chaotic, undulating baseline. QRS is usually narrow. Rate variable. Risk: stroke, hemodynamic instability."},
+      {heading:"Atrial Flutter",body:"Atrial rate ~300/min creating a classic SAWTOOTH pattern (flutter waves). The ventricles respond at 150 (2:1 block), 100 (3:1), or 75 (4:1). Regular ventricular rate. No isoelectric baseline between flutter waves."},
+      {heading:"SVT / PSVT",body:"Rate 160–220 bpm. Narrow QRS. P waves are retrograde (inverted) or buried in T waves. Abrupt onset and termination — patients often describe sudden palpitations. Vagal maneuvers or adenosine can break it."},
+    ],
+    quiz:{question:"No P waves, irregularly irregular, rate ~110. What is this?",options:["Sinus Tachycardia","Atrial Flutter","SVT","Atrial Fibrillation"],answer:3},
+  },
+  {
+    id:"ventricular",title:"Ventricular Rhythms",icon:"❤️",
+    sections:[
+      {heading:"Ventricular Tachycardia (VT)",body:"Rate 150–250 bpm. KEY FEATURE: WIDE, BIZARRE QRS complexes (>0.12s). No identifiable P waves. Regular. AV dissociation may be present. DANGEROUS — can deteriorate into VF. Treat immediately."},
+      {heading:"Ventricular Fibrillation (VF)",body:"Completely chaotic, disorganized waveform. No P waves, no QRS, no T waves — just a chaotic mess. No cardiac output. IMMEDIATELY LETHAL. DEFIBRILLATE NOW. Every second counts."},
+      {heading:"Asystole",body:"Flat line. Occasionally some artifact. No electrical activity at all. No cardiac output. Start CPR immediately. Prepare epinephrine. Confirm in two leads — make sure it's not fine VF or a lead disconnect."},
+    ],
+    quiz:{question:"Wide bizarre QRS at 180/min, no P waves, regular. What is this?",options:["SVT","Sinus Tachycardia","Ventricular Tachycardia","Atrial Flutter"],answer:2},
+  },
+  {
+    id:"blocks",title:"Heart Blocks",icon:"🟠",
+    sections:[
+      {heading:"Mobitz II (2nd Degree)",body:"CONSTANT PR interval, then suddenly a P wave is NOT followed by a QRS (dropped beat). The key is the PR does NOT lengthen before the drop (that would be Mobitz I/Wenckebach). Dangerous — can progress unpredictably to complete block. Needs pacemaker."},
+      {heading:"3rd Degree / Complete Heart Block",body:"Complete AV dissociation. P waves 'march through' at their own rate (~70/min) completely independent of QRS complexes. The ventricles beat on their own escape rhythm (30–45/min), often wide. REQUIRES emergent pacemaker."},
+      {heading:"Junctional Rhythm",body:"AV node takes over as pacemaker. Rate 40–60 bpm. Absent, inverted, or retrograde P waves (before, during, or after QRS). Narrow QRS. Concerning if patient is symptomatic."},
+    ],
+    quiz:{question:"P waves present but completely independent of wide QRS complexes. Rate 38. What is this?",options:["Junctional Rhythm","Mobitz II","3rd Degree Heart Block","Sinus Bradycardia"],answer:2},
+  },
+  {
+    id:"alarm",title:"Alarm Management",icon:"🚨",
+    sections:[
+      {heading:"Priority Triage",body:"Not all alarms are equal. LETHAL (VF, Asystole) = immediate resuscitation. DANGEROUS (VT, CHB, Mobitz II) = urgent intervention within minutes. CONCERNING (A-Fib, Flutter, SVT, Junctional) = rapid assessment. BENIGN (STach, SBrad) = monitor and investigate cause."},
+      {heading:"The 5-Step Approach",body:"1. Look at the patient first — are they awake and talking? 2. Assess rate and regularity. 3. Find P waves — present? morphology? 4. Measure PR interval. 5. Assess QRS width. Narrow = supraventricular origin. Wide = ventricular or aberrant conduction."},
+      {heading:"Never Ignore These",body:"VF and Asystole require immediate action. VT with no pulse = treat as VF. 3rd degree block with hemodynamic instability = transcutaneous pacing NOW. A-Fib with RVR causing hypotension = rate control urgently. If in doubt, call for help immediately."},
+    ],
+    quiz:{question:"Which rhythm requires IMMEDIATE defibrillation?",options:["Atrial Fibrillation","Sinus Bradycardia","Ventricular Fibrillation","Junctional Rhythm"],answer:2},
+  },
+];
+
+/* ════════════════════════════════════════════════
+   TUTORIAL SCREEN
+════════════════════════════════════════════════ */
+function TutorialScreen({onBack}){
+  const [lessonIdx,setLessonIdx]=useState(0);
+  const [sectionIdx,setSectionIdx]=useState(0);
+  const [quizAns,setQuizAns]=useState(null);
+  const [completedLessons,setCompletedLessons]=useState(()=>{
+    try{return JSON.parse(localStorage.getItem('mb_tut_completed')||'[]');}catch{return[];}
+  });
+
+  const lesson=TUT_LESSONS[lessonIdx];
+  const section=lesson.sections[sectionIdx];
+  const isLastSection=sectionIdx===lesson.sections.length-1;
+  const isLastLesson=lessonIdx===TUT_LESSONS.length-1;
+
+  function markComplete(idx){
+    const next=[...new Set([...completedLessons,idx])];
+    setCompletedLessons(next);
+    try{localStorage.setItem('mb_tut_completed',JSON.stringify(next));}catch{}
+  }
+
+  function goNext(){
+    if(!isLastSection){setSectionIdx(s=>s+1);setQuizAns(null);}
+    else if(lesson.quiz&&quizAns===null){/* show quiz */}
+    else{
+      markComplete(lessonIdx);
+      if(!isLastLesson){setLessonIdx(l=>l+1);setSectionIdx(0);setQuizAns(null);}
+    }
+  }
+
+  const showQuiz=isLastSection&&lesson.quiz&&quizAns===null;
+  const quizDone=isLastSection&&lesson.quiz&&quizAns!==null;
+  const progress=(sectionIdx+1)/lesson.sections.length;
+
+  // Rhythms to show in each lesson
+  const lessonRhythms={
+    intro:["NSR"],sinus:["NSR","STACH","SBRAD"],atrial:["AFIB","AFLT","SVT"],
+    ventricular:["VT","VF","ASY"],blocks:["MOBITZ2","CHB","JNC"],alarm:["VF","VT","AFIB","NSR"],
+  };
+  const previewRhythms=lessonRhythms[lesson.id]||[];
+
+  return(
+    <div className="min-h-screen flex flex-col" style={{background:"#010a05",fontFamily:"monospace"}}>
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 shrink-0"
+        style={{background:"#020d06",borderBottom:"1px solid #0d2818"}}>
+        <div className="flex items-center gap-3">
+          <button onClick={onBack} className="text-xs px-3 py-1.5 rounded-lg transition hover:opacity-80"
+            style={{border:"1px solid #1a4a22",color:"#3a8a5a"}}>← Back</button>
+          <span className="text-sm font-black" style={{color:"#22c55e"}}>🫀 MONITOR BOSS</span>
+          <span className="text-xs px-2 py-0.5 rounded" style={{background:"#0a2a10",color:"#2a7a3a",border:"1px solid #1a4a1a"}}>Training</span>
+        </div>
+        <div className="text-xs" style={{color:"#2a6a3a"}}>
+          {completedLessons.length}/{TUT_LESSONS.length} complete
+        </div>
+      </div>
+
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar — lesson list */}
+        <div className="shrink-0 overflow-y-auto" style={{width:"220px",background:"#020d06",borderRight:"1px solid #0d2818"}}>
+          <div className="p-3 text-xs font-bold tracking-wider" style={{color:"#1a5a2a",borderBottom:"1px solid #0d2818"}}>LESSONS</div>
+          {TUT_LESSONS.map((l,i)=>{
+            const done=completedLessons.includes(i);
+            const active=i===lessonIdx;
+            return(
+              <button key={l.id} onClick={()=>{setLessonIdx(i);setSectionIdx(0);setQuizAns(null);}}
+                className="w-full text-left px-3 py-2.5 transition"
+                style={{
+                  background:active?"#22c55e0d":"transparent",
+                  borderLeft:`2px solid ${active?"#22c55e":done?"#16a34a44":"transparent"}`,
+                  borderBottom:"1px solid #0a1e0f"
+                }}>
+                <div className="flex items-center gap-2">
+                  <span>{done?"✅":l.icon}</span>
+                  <span className="text-xs" style={{color:active?"#22c55e":done?"#3a8a5a":"#2a6a3a"}}>{l.title}</span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Main content */}
+        <div className="flex-1 overflow-y-auto p-5">
+          <div className="max-w-2xl mx-auto">
+            {/* Lesson header */}
+            <div className="mb-5">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="text-2xl">{lesson.icon}</span>
+                <h2 className="text-lg font-black" style={{color:"#22c55e"}}>{lesson.title}</h2>
+                {completedLessons.includes(lessonIdx)&&<span className="text-xs px-2 py-0.5 rounded"
+                  style={{background:"#22c55e18",color:"#22c55e",border:"1px solid #22c55e44"}}>✓ Completed</span>}
+              </div>
+              {/* Progress bar */}
+              <div className="progress-bar">
+                <div className="progress-fill" style={{width:`${progress*100}%`,background:"linear-gradient(90deg,#22c55e,#16a34a)"}}/>
+              </div>
+              <div className="text-xs mt-1" style={{color:"#1a5a2a"}}>Section {sectionIdx+1} of {lesson.sections.length}</div>
+            </div>
+
+            {/* Section tabs */}
+            <div className="flex gap-1 mb-4 flex-wrap">
+              {lesson.sections.map((s,i)=>(
+                <button key={i} onClick={()=>{setSectionIdx(i);setQuizAns(null);}}
+                  className={`nav-tab ${i===sectionIdx?"active":""}`}>
+                  {i+1}. {s.heading.split(' ').slice(0,3).join(' ')}…
+                </button>
+              ))}
+              {lesson.quiz&&<button onClick={()=>{setSectionIdx(lesson.sections.length-1);}}
+                className={`nav-tab ${quizAns!==null?"active":""}`} style={{color:quizAns!==null?"#fbbf24":undefined}}>
+                📝 Quiz
+              </button>}
+            </div>
+
+            {/* Section content */}
+            {!showQuiz&&(
+              <div className="animate-fadeIn">
+                <div className="rounded-xl p-4 mb-4" style={{background:"#020c07",border:"1px solid #1a3a1a"}}>
+                  <h3 className="text-sm font-black mb-3" style={{color:"#22c55e"}}>{section.heading}</h3>
+                  <p className="text-sm leading-relaxed" style={{color:"#7aaa8a"}}>{section.body}</p>
+                </div>
+
+                {/* ECG previews for this lesson */}
+                {previewRhythms.length>0&&(
+                  <div className="rounded-xl overflow-hidden mb-4" style={{border:"1px solid #1a3a1a"}}>
+                    <div className="px-4 py-2 text-xs font-bold" style={{background:"#020c07",color:"#3a8a5a"}}>
+                      📺 Rhythm Reference — {lesson.title}
+                    </div>
+                    <div className="p-3 grid gap-2" style={{gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))"}}>
+                      {previewRhythms.map((rid,i)=>{
+                        const r=R[rid];
+                        return(
+                          <div key={rid} className="rounded-lg p-2.5 tut-card"
+                            style={{background:"#030f08",border:`1px solid ${SEV_COL[r.sev]}33`}}>
+                            <div className="flex items-center justify-between mb-1.5">
+                              <span className="text-xs font-bold" style={{color:SEV_COL[r.sev]}}>{r.name}</span>
+                              <span className="text-xs px-1.5 py-0.5 rounded"
+                                style={{background:SEV_COL[r.sev]+"18",color:SEV_COL[r.sev],border:`1px solid ${SEV_COL[r.sev]}40`,fontSize:"10px"}}>
+                                {r.sev}
+                              </span>
+                            </div>
+                            <MiniECG rhythmId={rid} height={44} seed={i*333}/>
+                            <div className="mt-2">
+                              {(r.keyFeatures||[]).slice(0,3).map((f,fi)=>(
+                                <div key={fi} className="text-xs mt-0.5" style={{color:"#2a6a3a"}}>· {f}</div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Nav buttons */}
+                <div className="flex items-center gap-3">
+                  {sectionIdx>0&&(
+                    <button onClick={()=>{setSectionIdx(s=>s-1);setQuizAns(null);}}
+                      className="px-4 py-2 rounded-xl text-sm font-bold transition hover:opacity-80"
+                      style={{border:"1px solid #1a4a22",color:"#3a8a5a"}}>← Prev</button>
+                  )}
+                  <button onClick={goNext}
+                    className="flex-1 py-2.5 rounded-xl text-sm font-bold transition hover:opacity-90"
+                    style={{background:"linear-gradient(135deg,#22c55e,#15803d)",color:"#020e07"}}>
+                    {isLastSection&&lesson.quiz?"Take Quiz →":isLastSection&&isLastLesson?"✓ Finish":isLastSection?"Next Lesson →":"Next Section →"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Quiz */}
+            {showQuiz&&!quizDone&&(
+              <div className="animate-fadeIn">
+                <div className="rounded-xl p-4 mb-4" style={{background:"#020c07",border:"1px solid #1a4a22"}}>
+                  <div className="text-xs font-bold mb-3 tracking-wider" style={{color:"#fbbf24"}}>📝 QUICK CHECK</div>
+                  <p className="text-sm font-bold mb-4" style={{color:"#a0c0a8"}}>{lesson.quiz.question}</p>
+                  <div className="space-y-2">
+                    {lesson.quiz.options.map((opt,i)=>(
+                      <button key={i} onClick={()=>setQuizAns(i)}
+                        className="w-full text-left px-4 py-3 rounded-xl text-sm transition"
+                        style={{background:"#030e07",border:"1px solid #1a3a1a",color:"#7aaa8a"}}
+                        onMouseEnter={e=>Object.assign(e.currentTarget.style,{background:"#0a2a15",borderColor:"#22c55e44"})}
+                        onMouseLeave={e=>Object.assign(e.currentTarget.style,{background:"#030e07",borderColor:"#1a3a1a"})}>
+                        <span style={{color:"#2a6a3a"}}>{String.fromCharCode(65+i)}.</span> {opt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Quiz result */}
+            {quizDone&&(
+              <div className="animate-fadeIn">
+                <div className={`rounded-xl p-4 mb-4 ${quizAns===lesson.quiz.answer?"bg-green-950/60":"bg-red-950/60"}`}
+                  style={{border:`1px solid ${quizAns===lesson.quiz.answer?"#22c55e55":"#ef444455"}`}}>
+                  <div className="font-black text-sm mb-2" style={{color:quizAns===lesson.quiz.answer?"#22c55e":"#ef4444"}}>
+                    {quizAns===lesson.quiz.answer?"✓ Correct!":"✗ Not quite — review the lesson above"}
+                  </div>
+                  <p className="text-sm" style={{color:"#a0c0a8"}}>
+                    {quizAns===lesson.quiz.answer?"Great work! ":`The correct answer is: `}
+                    <span style={{color:"#22c55e",fontWeight:700}}>
+                      {lesson.quiz.options[lesson.quiz.answer]}
+                    </span>
+                  </p>
+                </div>
+                <div className="flex gap-3">
+                  <button onClick={()=>{setSectionIdx(0);setQuizAns(null);}}
+                    className="px-4 py-2.5 rounded-xl text-sm font-bold transition hover:opacity-80"
+                    style={{border:"1px solid #1a4a22",color:"#3a8a5a"}}>↩ Review</button>
+                  <button onClick={()=>{
+                    markComplete(lessonIdx);
+                    if(!isLastLesson){setLessonIdx(l=>l+1);setSectionIdx(0);setQuizAns(null);}
+                    else onBack();
+                  }} className="flex-1 py-2.5 rounded-xl text-sm font-bold transition hover:opacity-90"
+                    style={{background:"linear-gradient(135deg,#22c55e,#15803d)",color:"#020e07"}}>
+                    {isLastLesson?"🎓 Finish Training":"Next Lesson →"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
-/* ═══════════════════════════════════════════════════════════════════
-   MINI ECG PREVIEW (summary)
-═══════════════════════════════════════════════════════════════════ */
-function MiniECG({ rhythmId }) {
-  const ref = useRef(null);
-  useEffect(() => {
-    const c = ref.current;
-    if (!c) return;
-    const buf = buildBuf(R[rhythmId], Math.random() * 500);
-    const ctx = c.getContext("2d");
-    ctx.fillStyle = "#020e07";
-    ctx.fillRect(0, 0, c.width, c.height);
-    const r = R[rhythmId];
-    const col = r.sev === "lethal" ? "#ff2040" : r.sev === "dangerous" ? "#ff8800" : r.sev === "concerning" ? "#fbbf24" : "#00e87a";
-    const midY = c.height / 2, scl = c.height * 0.30;
-    ctx.beginPath(); ctx.strokeStyle = col; ctx.lineWidth = 1.5;
-    const dispS = Math.min(4 * SR, BUF_SZ);
-    for (let px = 0; px < c.width; px++) {
-      const si = Math.floor(px / c.width * dispS);
-      const y = midY - clamp(buf[si], -2.5, 2.5) * scl;
-      px === 0 ? ctx.moveTo(px, y) : ctx.lineTo(px, y);
-    }
-    ctx.stroke();
-  }, [rhythmId]);
-  return <canvas ref={ref} width={200} height={40} style={{ width: "100%", height: "40px", borderRadius: "4px" }} />;
-}
-/* ═══════════════════════════════════════════════════════════════════
-   MAIN APP
-═══════════════════════════════════════════════════════════════════ */
-function CardiacMonitor() {
-  const [screen,      setScreen]      = useState("menu");
-  const [diff,        setDiff]        = useState("beginner");
-  const [playerName,  setPlayerName]  = useState("");
-  const [score,       setScore]       = useState(0);
-  const [streak,      setStreak]      = useState(0);
-  const [timeLeft,    setTimeLeft]    = useState(ROUND_SECS);
-  const [beds,        setBeds]        = useState([]);
-  const [selBed,      setSelBed]      = useState(null);
-  const [expandedCat, setExpandedCat] = useState(null);
-  const [feedbacks,   setFeedbacks]   = useState({});
-  const [notifs,      setNotifs]      = useState([]);
-  const [leaderboard, setLeaderboard] = useState([]);
-  const [stats,       setStats]       = useState({ correct:0, incorrect:0, missed:0 });
-  const [blinkState,  setBlinkState]  = useState(true);
-  // Canvas refs — array of plain objects simulating refs
-  const canvasRefs = useRef(Array.from({ length: N_BEDS }, () => ({ current: null })));
-  const bufs       = useRef(new Array(N_BEDS).fill(null));
-  const posRef     = useRef(new Array(N_BEDS).fill(0));
-  // Mutable game state refs (avoid stale closures)
-  const bedsRef     = useRef([]);
-  const scoreRef    = useRef(0);
-  const streakRef   = useRef(0);
-  const statsRef    = useRef({ correct:0, incorrect:0, missed:0 });
-  const feedbacksR  = useRef({});
-  const selBedRef   = useRef(null);
-  const animRef     = useRef(null);
-  const lastTsRef   = useRef(null);
-  const injRef      = useRef(null);
-  const gameTmrRef  = useRef(null);
-  const blinkRef    = useRef(null);
-  // ── Sync selBed to ref ──
-  useEffect(() => { selBedRef.current = selBed; }, [selBed]);
-  // ── Load leaderboard ──
-  useEffect(() => {
-    (async () => {
-      try {
-        const r = await window.storage.get("cardiac_lb_v2");
-        if (r) setLeaderboard(JSON.parse(r.value));
-      } catch {}
+
+/* ════════════════════════════════════════════════
+   LEADERBOARD SCREEN
+════════════════════════════════════════════════ */
+function LeaderboardScreen({onBack,currentPlayer}){
+  const [lb,setLb]=useState([]);
+  const [filterDiff,setFilterDiff]=useState("all");
+
+  useEffect(()=>{
+    (async()=>{
+      try{const r=await window.storage.get("lb_v3");if(r) setLb(JSON.parse(r.value));}catch{}
     })();
-  }, []);
-  async function saveLB(name, sc) {
-    const entry = { name: name || "Anonymous", score: sc, date: new Date().toLocaleDateString(), diff };
-    setLeaderboard(prev => {
-      const next = [...prev, entry].sort((a, b) => b.score - a.score).slice(0, 10);
-      window.storage.set("cardiac_lb_v2", JSON.stringify(next)).catch(() => {});
+  },[]);
+
+  function clearLb(){
+    if(window.confirm("Clear all scores? This cannot be undone.")) {
+      window.storage.delete("lb_v3").catch(()=>{});
+      setLb([]);
+    }
+  }
+
+  const filtered=filterDiff==="all"?lb:lb.filter(e=>e.diff===filterDiff);
+  const top=filtered.slice(0,20);
+  const myBest=lb.filter(e=>e.name===currentPlayer).sort((a,b)=>b.score-a.score)[0];
+
+  const medals=["🥇","🥈","🥉"];
+
+  return(
+    <div className="min-h-screen flex flex-col" style={{background:"#010a05",fontFamily:"monospace"}}>
+      <div className="flex items-center justify-between px-4 py-3 shrink-0"
+        style={{background:"#020d06",borderBottom:"1px solid #0d2818"}}>
+        <div className="flex items-center gap-3">
+          <button onClick={onBack} className="text-xs px-3 py-1.5 rounded-lg transition hover:opacity-80"
+            style={{border:"1px solid #1a4a22",color:"#3a8a5a"}}>← Back</button>
+          <span className="text-sm font-black" style={{color:"#22c55e"}}>🏆 HALL OF FAME</span>
+        </div>
+        <button onClick={clearLb} className="text-xs px-3 py-1.5 rounded-lg transition hover:opacity-80"
+          style={{border:"1px solid #7f1d1d",color:"#7f3030"}}>Clear All</button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-4">
+        <div className="max-w-lg mx-auto">
+          {/* Personal best */}
+          {myBest&&(
+            <div className="rounded-xl p-4 mb-5 animate-fadeIn"
+              style={{background:"#22c55e0a",border:"1px solid #22c55e33"}}>
+              <div className="text-xs font-bold mb-2 tracking-wider" style={{color:"#22c55e"}}>⭐ YOUR PERSONAL BEST</div>
+              <div className="flex items-end justify-between">
+                <div>
+                  <div className="text-3xl font-black" style={{color:"#22c55e",textShadow:"0 0 20px #22c55e44"}}>{myBest.score}</div>
+                  <div className="text-xs mt-1" style={{color:"#3a8a5a"}}>{myBest.name} · {myBest.diff} · {myBest.date}</div>
+                </div>
+                <div className="text-4xl">🏅</div>
+              </div>
+            </div>
+          )}
+
+          {/* Filter */}
+          <div className="flex gap-2 mb-4 flex-wrap">
+            {["all","beginner","intermediate","advanced"].map(d=>(
+              <button key={d} onClick={()=>setFilterDiff(d)}
+                className={`nav-tab ${filterDiff===d?"active":""}`} style={{textTransform:"capitalize"}}>
+                {d==="all"?"All Modes":d}
+              </button>
+            ))}
+          </div>
+
+          {/* Table */}
+          <div className="rounded-xl overflow-hidden" style={{border:"1px solid #1a4a22"}}>
+            <div className="flex items-center justify-between px-4 py-2 text-xs font-bold"
+              style={{background:"#020c07",color:"#3a8a5a",borderBottom:"1px solid #1a3a20"}}>
+              <span>PLAYER</span>
+              <div className="flex gap-6">
+                <span>DIFF</span>
+                <span>DATE</span>
+                <span>SCORE</span>
+              </div>
+            </div>
+            {top.length===0?(
+              <div className="py-12 text-center text-sm" style={{color:"#1a5a2a"}}>
+                No scores yet. Play a game to appear here!
+              </div>
+            ):top.map((e,i)=>{
+              const isMe=e.name===currentPlayer;
+              return(
+                <div key={i} className={`lb-row ${isMe?"me":""}`}>
+                  <div className="flex items-center gap-2">
+                    <span style={{color:i<3?"transparent":"#1a5a2a",fontSize:"16px",width:"24px"}}>
+                      {i<3?medals[i]:`${i+1}`}
+                    </span>
+                    {i<3&&<span style={{fontSize:"16px",marginLeft:"-24px",width:"24px"}}>{medals[i]}</span>}
+                    <span style={{color:isMe?"#22c55e":"#4a8a6a"}}>{e.name}</span>
+                    {isMe&&<span className="text-xs" style={{color:"#22c55e55"}}>← you</span>}
+                  </div>
+                  <div className="flex items-center gap-6 text-xs">
+                    <span className="capitalize" style={{color:"#2a6a3a",minWidth:"80px",textAlign:"right"}}>{e.diff||"?"}</span>
+                    <span style={{color:"#1a5a2a",minWidth:"72px",textAlign:"right"}}>{e.date}</span>
+                    <span className="font-black" style={{color:isMe?"#22c55e":"#3a8a5a",minWidth:"48px",textAlign:"right"}}>{e.score}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {lb.length>20&&<p className="text-xs text-center mt-3" style={{color:"#1a5a2a"}}>Showing top 20 of {lb.length} scores</p>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════
+   MAIN APP
+════════════════════════════════════════════════ */
+function MonitorBoss(){
+  const [screen,setScreen]=useState("menu");
+  const [diff,setDiff]=useState("beginner");
+  const [playerName,setPlayerName]=useState(()=>{ try{return localStorage.getItem('mb_playername')||"";}catch{return "";} });
+  const [score,setScore]=useState(0);
+  const [streak,setStreak]=useState(0);
+  const [timeLeft,setTimeLeft]=useState(ROUND_SECS);
+  const [beds,setBeds]=useState([]);
+  const [selBed,setSelBed]=useState(null);
+  const [expandedCat,setExpandedCat]=useState(null);
+  const [feedbacks,setFeedbacks]=useState({});
+  const [notifs,setNotifs]=useState([]);
+  const [leaderboard,setLeaderboard]=useState([]);
+  const [stats,setStats]=useState({correct:0,incorrect:0,missed:0});
+  const [blinkState,setBlinkState]=useState(true);
+
+  const canvasRefs=useRef(Array.from({length:N_BEDS},()=>({current:null})));
+  const bufs=useRef(new Array(N_BEDS).fill(null));
+  const posRef=useRef(new Array(N_BEDS).fill(0));
+  const bedsRef=useRef([]);
+  const scoreRef=useRef(0);
+  const streakRef=useRef(0);
+  const statsRef=useRef({correct:0,incorrect:0,missed:0});
+  const feedbacksR=useRef({});
+  const selBedRef=useRef(null);
+  const animRef=useRef(null);
+  const lastTsRef=useRef(null);
+  const injRef=useRef(null);
+  const gameTmrRef=useRef(null);
+  const blinkRef=useRef(null);
+
+  useEffect(()=>{selBedRef.current=selBed;},[selBed]);
+
+  // Persist player name
+  useEffect(()=>{
+    try{localStorage.setItem('mb_playername',playerName);}catch{}
+  },[playerName]);
+
+  // Load leaderboard
+  useEffect(()=>{
+    (async()=>{try{const r=await window.storage.get("lb_v3");if(r) setLeaderboard(JSON.parse(r.value));}catch{}})();
+  },[]);
+
+  async function saveLB(name,sc){
+    const entry={name:name||"Anonymous",score:sc,date:new Date().toLocaleDateString(),diff};
+    setLeaderboard(prev=>{
+      const next=[...prev,entry].sort((a,b)=>b.score-a.score).slice(0,50);
+      window.storage.set("lb_v3",JSON.stringify(next)).catch(()=>{});
       return next;
     });
   }
-  function addNotif(msg, col = "#22c55e") {
-    const id = Date.now() + Math.random();
-    setNotifs(p => [...p, { id, msg, col }]);
-    setTimeout(() => setNotifs(p => p.filter(n => n.id !== id)), 3000);
+
+  function addNotif(msg,col="#22c55e"){
+    const id=Date.now()+Math.random();
+    setNotifs(p=>[...p,{id,msg,col}]);
+    setTimeout(()=>setNotifs(p=>p.filter(n=>n.id!==id)),3000);
   }
-  // ── Init game ──
-  function initGame() {
-    const init = Array.from({ length: N_BEDS }, (_, i) => ({
-      id: i, rhythm: R.NSR, injectedAt: Date.now() - 9e5, answered: true,
-    }));
-    bedsRef.current = init;
-    setBeds([...init]);
-    bufs.current = init.map((_, i) => buildBuf(R.NSR, i * 200 + 7));
-    posRef.current = new Array(N_BEDS).fill(0);
-    scoreRef.current = 0;  setScore(0);
-    streakRef.current = 0; setStreak(0);
-    statsRef.current  = { correct:0, incorrect:0, missed:0 }; setStats({ correct:0, incorrect:0, missed:0 });
-    feedbacksR.current = {}; setFeedbacks({});
+
+  function initGame(){
+    const init=Array.from({length:N_BEDS},(_,i)=>({id:i,rhythm:R.NSR,injectedAt:Date.now()-9e5,answered:true}));
+    bedsRef.current=init; setBeds([...init]);
+    bufs.current=init.map((_,i)=>buildBuf(R.NSR,i*200+7));
+    posRef.current=new Array(N_BEDS).fill(0);
+    scoreRef.current=0; setScore(0);
+    streakRef.current=0; setStreak(0);
+    statsRef.current={correct:0,incorrect:0,missed:0}; setStats({correct:0,incorrect:0,missed:0});
+    feedbacksR.current={}; setFeedbacks({});
     setSelBed(null); setExpandedCat(null); setNotifs([]);
     setTimeLeft(ROUND_SECS);
     setScreen("game");
   }
-  // ── Animation loop ──
-  useEffect(() => {
-    if (screen !== "game") return;
-    lastTsRef.current = null;
-    const animate = ts => {
-      if (!lastTsRef.current) lastTsRef.current = ts;
-      const dt = Math.min((ts - lastTsRef.current) / 1000, 0.05);
-      lastTsRef.current = ts;
-      for (let i = 0; i < N_BEDS; i++) {
-        posRef.current[i] = (posRef.current[i] + dt * SR) % BUF_SZ;
-        const canvas = canvasRefs.current[i]?.current;
-        const bed    = bedsRef.current[i];
-        if (canvas && bufs.current[i] && bed) {
-          paintECG(canvas, bufs.current[i], posRef.current[i], bed.rhythm.sev, selBedRef.current === i);
-        }
+
+  // Animation loop
+  useEffect(()=>{
+    if(screen!=="game") return;
+    lastTsRef.current=null;
+    const animate=ts=>{
+      if(!lastTsRef.current) lastTsRef.current=ts;
+      const dt=Math.min((ts-lastTsRef.current)/1000,.05);
+      lastTsRef.current=ts;
+      for(let i=0;i<N_BEDS;i++){
+        posRef.current[i]=(posRef.current[i]+dt*SR)%BUF_SZ;
+        const canvas=canvasRefs.current[i]?.current;
+        const bed=bedsRef.current[i];
+        if(canvas&&bufs.current[i]&&bed) paintECG(canvas,bufs.current[i],posRef.current[i],bed.rhythm.sev,selBedRef.current===i);
       }
-      animRef.current = requestAnimationFrame(animate);
+      animRef.current=requestAnimationFrame(animate);
     };
-    animRef.current = requestAnimationFrame(animate);
-    return () => { if (animRef.current) cancelAnimationFrame(animRef.current); };
-  }, [screen]);
-  // ── Alarm blink ──
-  useEffect(() => {
-    if (screen !== "game") return;
-    blinkRef.current = setInterval(() => setBlinkState(b => !b), 600);
-    return () => clearInterval(blinkRef.current);
-  }, [screen]);
-  // ── Game timer ──
-  useEffect(() => {
-    if (screen !== "game") return;
-    gameTmrRef.current = setInterval(() => {
-      setTimeLeft(t => {
-        if (t <= 1) { endGame(); return 0; }
-        return t - 1;
-      });
-    }, 1000);
-    return () => clearInterval(gameTmrRef.current);
-  }, [screen]);
-  // ── Rhythm injector ──
-  useEffect(() => {
-    if (screen !== "game") return;
-    const cfg = DIFF[diff];
-    function inject() {
-      // Penalize unanswered dangerous/lethal
-      bedsRef.current.forEach(bed => {
-        if (!bed.answered && (bed.rhythm.sev === "dangerous" || bed.rhythm.sev === "lethal")) {
-          const pen = bed.rhythm.sev === "lethal" ? -15 : -10;
-          scoreRef.current = Math.max(0, scoreRef.current + pen);
+    animRef.current=requestAnimationFrame(animate);
+    return()=>{ if(animRef.current) cancelAnimationFrame(animRef.current); };
+  },[screen]);
+
+  // Blink
+  useEffect(()=>{
+    if(screen!=="game") return;
+    blinkRef.current=setInterval(()=>setBlinkState(b=>!b),600);
+    return()=>clearInterval(blinkRef.current);
+  },[screen]);
+
+  // Game timer
+  useEffect(()=>{
+    if(screen!=="game") return;
+    gameTmrRef.current=setInterval(()=>setTimeLeft(t=>{if(t<=1){endGame();return 0;}return t-1;}),1000);
+    return()=>clearInterval(gameTmrRef.current);
+  },[screen]);
+
+  // Rhythm injector
+  useEffect(()=>{
+    if(screen!=="game") return;
+    const cfg=DIFF[diff];
+    function inject(){
+      bedsRef.current.forEach(bed=>{
+        if(!bed.answered&&(bed.rhythm.sev==="dangerous"||bed.rhythm.sev==="lethal")){
+          const pen=bed.rhythm.sev==="lethal"?-15:-10;
+          scoreRef.current=Math.max(0,scoreRef.current+pen);
           setScore(scoreRef.current);
-          streakRef.current = 0; setStreak(0);
-          statsRef.current.missed++;
-          setStats({ ...statsRef.current });
-          addNotif(`${pen} Missed ${bed.rhythm.sev === "lethal" ? "💀" : "⚠️"} ${bed.rhythm.name}`, "#dc2626");
+          streakRef.current=0; setStreak(0);
+          statsRef.current.missed++; setStats({...statsRef.current});
+          addNotif(`${pen} Missed ${bed.rhythm.sev==="lethal"?"💀":"⚠️"} ${bed.rhythm.name}`,"#dc2626");
         }
       });
-      // Pick a random bed
-      const bidx = Math.floor(Math.random() * N_BEDS);
-      const pool  = cfg.pool.filter(id => id !== bedsRef.current[bidx]?.rhythm?.id);
-      const newR  = R[pool[Math.floor(Math.random() * pool.length)]];
-      const newBed = { ...bedsRef.current[bidx], rhythm: newR, injectedAt: Date.now(), answered: false };
-      const nb     = [...bedsRef.current];
-      nb[bidx]     = newBed;
-      bedsRef.current = nb;
-      setBeds([...nb]);
-      bufs.current[bidx] = buildBuf(newR, Math.random() * 9999);
-      // Clear old feedback for this bed
-      delete feedbacksR.current[bidx];
-      setFeedbacks({ ...feedbacksR.current });
-      // If this bed is currently selected, close popup
-      if (selBedRef.current === bidx) { setSelBed(null); setExpandedCat(null); }
-      const [mn, mx] = cfg.intv;
-      injRef.current = setTimeout(inject, rnd(mn, mx) * 1000);
+      const bidx=Math.floor(Math.random()*N_BEDS);
+      const pool=cfg.pool.filter(id=>id!==bedsRef.current[bidx]?.rhythm?.id);
+      const newR=R[pool[Math.floor(Math.random()*pool.length)]];
+      const newBed={...bedsRef.current[bidx],rhythm:newR,injectedAt:Date.now(),answered:false};
+      const nb=[...bedsRef.current]; nb[bidx]=newBed;
+      bedsRef.current=nb; setBeds([...nb]);
+      bufs.current[bidx]=buildBuf(newR,Math.random()*9999);
+      delete feedbacksR.current[bidx]; setFeedbacks({...feedbacksR.current});
+      if(selBedRef.current===bidx){setSelBed(null);setExpandedCat(null);}
+      const [mn,mx]=cfg.intv;
+      injRef.current=setTimeout(inject,rnd(mn,mx)*1000);
     }
-    const [mn, mx] = cfg.intv;
-    injRef.current = setTimeout(inject, rnd(mn, mx) * 1000);
-    return () => clearTimeout(injRef.current);
-  }, [screen, diff]);
-  function endGame() {
+    const [mn,mx]=cfg.intv;
+    injRef.current=setTimeout(inject,rnd(mn,mx)*1000);
+    return()=>clearTimeout(injRef.current);
+  },[screen,diff]);
+
+  function endGame(){
     clearInterval(gameTmrRef.current);
     clearTimeout(injRef.current);
-    if (animRef.current) cancelAnimationFrame(animRef.current);
-    lastTsRef.current = null;
-    saveLB(playerName, scoreRef.current);
+    if(animRef.current) cancelAnimationFrame(animRef.current);
+    lastTsRef.current=null;
+    saveLB(playerName,scoreRef.current);
     setScreen("summary");
   }
-  function handleAnswer(rhythmId) {
-    const bed = bedsRef.current[selBed];
-    if (!bed || feedbacksR.current[selBed] || bed.answered) return;
-    const correct = rhythmId === bed.rhythm.id;
-    const tSec    = (Date.now() - bed.injectedAt) / 1000;
-    const { pts, msg } = calcPts(correct, bed.rhythm, tSec, streakRef.current);
-    scoreRef.current = Math.max(0, scoreRef.current + pts);
-    setScore(scoreRef.current);
-    if (correct) { streakRef.current++; statsRef.current.correct++; }
-    else         { streakRef.current = 0; statsRef.current.incorrect++; }
-    setStreak(streakRef.current);
-    setStats({ ...statsRef.current });
-    const nb = [...bedsRef.current];
-    nb[selBed] = { ...bed, answered: true };
-    bedsRef.current = nb;
-    setBeds([...nb]);
-    const fb = { correct, msg, rhythm: bed.rhythm };
-    feedbacksR.current[selBed] = fb;
-    setFeedbacks({ ...feedbacksR.current });
-    addNotif(msg, correct ? "#22c55e" : "#ef4444");
+
+  function handleAnswer(rhythmId){
+    const bed=bedsRef.current[selBed];
+    if(!bed||feedbacksR.current[selBed]||bed.answered) return;
+    const correct=rhythmId===bed.rhythm.id;
+    const tSec=(Date.now()-bed.injectedAt)/1000;
+    const{pts,msg}=calcPts(correct,bed.rhythm,tSec,streakRef.current);
+    scoreRef.current=Math.max(0,scoreRef.current+pts); setScore(scoreRef.current);
+    if(correct){streakRef.current++;statsRef.current.correct++;}else{streakRef.current=0;statsRef.current.incorrect++;}
+    setStreak(streakRef.current); setStats({...statsRef.current});
+    const nb=[...bedsRef.current]; nb[selBed]={...bed,answered:true};
+    bedsRef.current=nb; setBeds([...nb]);
+    const fb={correct,msg,rhythm:bed.rhythm};
+    feedbacksR.current[selBed]=fb; setFeedbacks({...feedbacksR.current});
+    addNotif(msg,correct?"#22c55e":"#ef4444");
   }
-  /* ──────────────────── MENU SCREEN ──────────────────── */
-  if (screen === "menu") {
-    return (
+
+  /* ──── SCREENS ──── */
+  if(screen==="tutorial") return <TutorialScreen onBack={()=>setScreen("menu")}/>;
+  if(screen==="leaderboard") return <LeaderboardScreen onBack={()=>setScreen("menu")} currentPlayer={playerName||"Anonymous"}/>;
+
+  /* ──── MENU ──── */
+  if(screen==="menu"){
+    const topScores=leaderboard.slice(0,5);
+    return(
       <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden"
-        style={{ background: "radial-gradient(ellipse at 50% 60%, #041a0c 0%, #010a05 100%)", fontFamily: "monospace" }}>
-        {/* Scanline overlay */}
+        style={{background:"radial-gradient(ellipse at 50% 60%, #041a0c 0%, #010a05 100%)",fontFamily:"monospace"}}>
         <div className="absolute inset-0 pointer-events-none" style={{
-          backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,80,0.015) 2px, rgba(0,255,80,0.015) 4px)",
-          zIndex: 0
-        }} />
+          backgroundImage:"repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,80,.015) 2px,rgba(0,255,80,.015) 4px)",zIndex:0}}/>
         <div className="relative z-10 w-full max-w-sm">
-          {/* Title */}
-          <div className="text-center mb-8">
-            <div className="text-5xl mb-3">🫀</div>
-            <h1 className="text-3xl font-black mb-1" style={{ color: "#00e87a", textShadow: "0 0 30px #22c55e88", letterSpacing: "0.05em" }}>
-              CARDIO<span style={{ color: "#16a34a" }}>WATCH</span>
+          {/* Logo */}
+          <div className="text-center mb-7">
+            <div className="text-5xl mb-2">🫀</div>
+            <h1 className="font-black mb-1" style={{fontSize:"2rem",color:"#00e87a",textShadow:"0 0 30px #22c55e88",letterSpacing:".06em",lineHeight:1}}>
+              MONITOR<span style={{color:"#16a34a"}}>BOSS</span>
             </h1>
-            <p className="text-xs" style={{ color: "#2a6a3a", letterSpacing: "0.15em" }}>TELEMETRY TRAINING SIMULATOR</p>
+            <p className="text-xs tracking-widest" style={{color:"#2a6a3a"}}>TELEMETRY TRAINING SIMULATOR</p>
           </div>
-          {/* Player name */}
+
+          {/* Callsign */}
           <div className="mb-4">
-            <label className="block text-xs mb-1.5 tracking-wider" style={{ color: "#2a6a3a" }}>CALLSIGN</label>
-            <input
-              value={playerName}
-              onChange={e => setPlayerName(e.target.value)}
-              placeholder="Enter your name..."
+            <label className="block text-xs mb-1.5 tracking-wider" style={{color:"#2a6a3a"}}>CALLSIGN</label>
+            <input value={playerName} onChange={e=>setPlayerName(e.target.value)}
+              placeholder="Enter your name…"
               className="w-full px-4 py-2.5 rounded-xl text-sm outline-none transition"
-              style={{ background: "#030e07", border: "1px solid #1a4a22", color: "#a0d0a8",
-                       boxShadow: "inset 0 0 20px #00000040" }}
-              onFocus={e => e.target.style.borderColor = "#22c55e"}
-              onBlur={e  => e.target.style.borderColor = "#1a4a22"}
-            />
+              style={{background:"#030e07",border:"1px solid #1a4a22",color:"#a0d0a8"}}
+              onFocus={e=>e.target.style.borderColor="#22c55e"}
+              onBlur={e=>e.target.style.borderColor="#1a4a22"}/>
           </div>
+
           {/* Difficulty */}
-          <div className="mb-6">
-            <label className="block text-xs mb-2 tracking-wider" style={{ color: "#2a6a3a" }}>DIFFICULTY</label>
+          <div className="mb-5">
+            <label className="block text-xs mb-2 tracking-wider" style={{color:"#2a6a3a"}}>DIFFICULTY</label>
             <div className="grid grid-cols-3 gap-2">
-              {Object.entries(DIFF).map(([key, { label, desc }]) => (
-                <button key={key} onClick={() => setDiff(key)}
+              {Object.entries(DIFF).map(([key,{label,desc}])=>(
+                <button key={key} onClick={()=>setDiff(key)}
                   className="py-2.5 px-2 rounded-xl text-xs font-bold transition-all"
                   style={{
-                    background: diff === key ? "#22c55e18" : "#030e07",
-                    border: `1px solid ${diff === key ? "#22c55e" : "#1a4a22"}`,
-                    color: diff === key ? "#22c55e" : "#3a7a4a",
-                    boxShadow: diff === key ? "0 0 15px #22c55e22" : "none"
-                  }}>
-                  {label}
-                </button>
+                    background:diff===key?"#22c55e18":"#030e07",
+                    border:`1px solid ${diff===key?"#22c55e":"#1a4a22"}`,
+                    color:diff===key?"#22c55e":"#3a7a4a",
+                    boxShadow:diff===key?"0 0 15px #22c55e22":"none"
+                  }}>{label}</button>
               ))}
             </div>
-            <p className="text-xs mt-2 text-center" style={{ color: "#1a5a2a" }}>{DIFF[diff].desc}</p>
+            <p className="text-xs mt-2 text-center" style={{color:"#1a5a2a"}}>{DIFF[diff].desc}</p>
           </div>
-          {/* Scoring info */}
-          <div className="rounded-xl p-3 mb-5 text-xs" style={{ background: "#020c07", border: "1px solid #1a3a1a" }}>
-            <div className="text-center font-bold mb-2" style={{ color: "#3a8a5a", letterSpacing: "0.1em" }}>SCORING SYSTEM</div>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1" style={{ color: "#2a6a3a" }}>
-              <span>✓ Correct identification</span>          <span style={{ color: "#22c55e" }}>+10 pts</span>
-              <span>⚡ Fast response (&lt;4s)</span>         <span style={{ color: "#22c55e" }}>+5 bonus</span>
-              <span>🔥 3-streak bonus</span>                 <span style={{ color: "#fbbf24" }}>+5 pts</span>
-              <span>🔥 5-streak bonus</span>                 <span style={{ color: "#fbbf24" }}>+10 pts</span>
-              <span>✗ Incorrect answer</span>                <span style={{ color: "#ef4444" }}>−5 pts</span>
-              <span>⚠️ Missed dangerous</span>               <span style={{ color: "#ef4444" }}>−10 pts</span>
-              <span>🚨 Missed lethal</span>                  <span style={{ color: "#dc2626" }}>−15 pts</span>
+
+          {/* Scoring */}
+          <div className="rounded-xl p-3 mb-4 text-xs" style={{background:"#020c07",border:"1px solid #1a3a1a"}}>
+            <div className="text-center font-bold mb-2" style={{color:"#3a8a5a",letterSpacing:".1em"}}>SCORING</div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1" style={{color:"#2a6a3a"}}>
+              <span>✓ Correct ID</span>        <span style={{color:"#22c55e"}}>+10 pts</span>
+              <span>⚡ Fast (&lt;4s)</span>    <span style={{color:"#22c55e"}}>+5 bonus</span>
+              <span>🔥 ×3 streak</span>        <span style={{color:"#fbbf24"}}>+5 pts</span>
+              <span>🔥 ×5 streak</span>        <span style={{color:"#fbbf24"}}>+10 pts</span>
+              <span>✗ Wrong answer</span>      <span style={{color:"#ef4444"}}>−5 pts</span>
+              <span>⚠️ Miss dangerous</span>   <span style={{color:"#ef4444"}}>−10 pts</span>
+              <span>🚨 Miss lethal</span>      <span style={{color:"#dc2626"}}>−15 pts</span>
             </div>
           </div>
-          {/* Start */}
+
+          {/* Action buttons */}
           <button onClick={initGame}
-            className="w-full py-3.5 rounded-xl font-black text-base transition hover:scale-[1.02] active:scale-[0.98]"
-            style={{ background: "linear-gradient(135deg, #22c55e, #15803d)", color: "#020e07",
-                     boxShadow: "0 0 40px #22c55e44, 0 4px 20px #00000060", letterSpacing: "0.1em" }}>
+            className="w-full py-3.5 rounded-xl font-black text-base transition hover:scale-[1.02] active:scale-[0.98] mb-3"
+            style={{background:"linear-gradient(135deg,#22c55e,#15803d)",color:"#020e07",
+              boxShadow:"0 0 40px #22c55e44,0 4px 20px #00000060",letterSpacing:".1em"}}>
             ▶ START MONITORING
           </button>
-          {/* Leaderboard */}
-          {leaderboard.length > 0 && (
-            <div className="mt-6 rounded-xl overflow-hidden" style={{ border: "1px solid #1a4a22" }}>
-              <div className="px-4 py-2 text-xs font-bold tracking-wider" style={{ background: "#020c07", color: "#3a8a5a" }}>
-                🏆 HALL OF FAME
+
+          <div className="grid grid-cols-2 gap-2 mb-5">
+            <button onClick={()=>setScreen("tutorial")}
+              className="py-2.5 rounded-xl text-sm font-bold transition hover:opacity-80"
+              style={{border:"1px solid #1a6a3a",color:"#3a9a5a",background:"#020c07"}}>
+              📚 Training
+            </button>
+            <button onClick={()=>setScreen("leaderboard")}
+              className="py-2.5 rounded-xl text-sm font-bold transition hover:opacity-80"
+              style={{border:"1px solid #4a4a1a",color:"#8a8a3a",background:"#020c07"}}>
+              🏆 Leaderboard
+            </button>
+          </div>
+
+          {/* Mini leaderboard */}
+          {topScores.length>0&&(
+            <div className="rounded-xl overflow-hidden" style={{border:"1px solid #1a4a22"}}>
+              <div className="px-4 py-2 flex items-center justify-between"
+                style={{background:"#020c07",borderBottom:"1px solid #1a3a20"}}>
+                <span className="text-xs font-bold tracking-wider" style={{color:"#3a8a5a"}}>🏆 TOP SCORES</span>
+                <button onClick={()=>setScreen("leaderboard")} className="text-xs transition hover:opacity-70"
+                  style={{color:"#2a6a3a"}}>See all →</button>
               </div>
-              {leaderboard.slice(0, 5).map((e, i) => (
+              {topScores.map((e,i)=>(
                 <div key={i} className="flex items-center justify-between px-4 py-1.5 text-xs"
-                  style={{ borderTop: "1px solid #0d2818", color: "#2a6a3a" }}>
+                  style={{borderTop:i>0?"1px solid #0d2818":"none",color:"#2a6a3a"}}>
                   <span>
-                    <span style={{ color: i === 0 ? "#fbbf24" : i === 1 ? "#94a3b8" : "#92400e" }}>#{i + 1}</span>
+                    <span style={{color:i===0?"#fbbf24":i===1?"#94a3b8":"#92400e"}}>#{i+1}</span>
                     {" "}{e.name}
-                    <span className="ml-1 opacity-50">[{e.diff || "?"}]</span>
+                    <span className="ml-1 opacity-50">[{e.diff||"?"}]</span>
                   </span>
-                  <span className="font-bold" style={{ color: "#22c55e" }}>{e.score}</span>
+                  <span className="font-bold" style={{color:"#22c55e"}}>{e.score}</span>
                 </div>
               ))}
             </div>
@@ -1020,209 +1169,174 @@ function CardiacMonitor() {
       </div>
     );
   }
-  /* ──────────────────── GAME SCREEN ──────────────────── */
-  if (screen === "game") {
-    const alarmBeds = beds.filter(b => !b.answered && (b.rhythm.sev === "dangerous" || b.rhythm.sev === "lethal"));
-    return (
-      <div className="min-h-screen flex flex-col" style={{ background: "#010a05", fontFamily: "monospace" }}>
+
+  /* ──── GAME ──── */
+  if(screen==="game"){
+    const alarmBeds=beds.filter(b=>!b.answered&&(b.rhythm.sev==="dangerous"||b.rhythm.sev==="lethal"));
+    return(
+      <div className="min-h-screen flex flex-col" style={{background:"#010a05",fontFamily:"monospace"}}>
         {/* Top bar */}
         <div className="flex items-center justify-between px-4 py-2 shrink-0"
-          style={{ background: "#020d06", borderBottom: "1px solid #0d2818" }}>
+          style={{background:"#020d06",borderBottom:"1px solid #0d2818"}}>
           <div className="flex items-center gap-2">
-            <span className="text-sm font-black" style={{ color: "#22c55e" }}>🫀 CARDIOWATCH</span>
-            <span className="text-xs px-2 py-0.5 rounded" style={{ background: "#0a2a10", color: "#2a7a3a", border: "1px solid #1a4a1a" }}>
-              {DIFF[diff].label}
-            </span>
+            <span className="text-sm font-black" style={{color:"#22c55e"}}>🫀 MONITOR BOSS</span>
+            <span className="text-xs px-2 py-0.5 rounded" style={{background:"#0a2a10",color:"#2a7a3a",border:"1px solid #1a4a1a"}}>{DIFF[diff].label}</span>
+            {playerName&&<span className="text-xs" style={{color:"#1a5a2a"}}>// {playerName}</span>}
           </div>
           <div className="flex items-center gap-4 text-xs">
-            {/* Alarm indicator */}
-            {alarmBeds.length > 0 && (
-              <span className="font-bold px-2 py-0.5 rounded transition-opacity" style={{
-                color: "#dc2626", border: "1px solid #dc262688",
-                background: "#dc262615", opacity: blinkState ? 1 : 0.3
-              }}>
-                🚨 {alarmBeds.length} ALARM{alarmBeds.length > 1 ? "S" : ""}
+            {alarmBeds.length>0&&(
+              <span className="font-bold px-2 py-0.5 rounded transition-opacity"
+                style={{color:"#dc2626",border:"1px solid #dc262688",background:"#dc262615",opacity:blinkState?1:.3}}>
+                🚨 {alarmBeds.length} ALARM{alarmBeds.length>1?"S":""}
               </span>
             )}
-            <span style={{ color: "#fbbf24" }}>🔥 ×{streak}</span>
-            <span className="font-bold text-base" style={{ color: "#22c55e" }}>{score} pts</span>
-            <span className={`font-bold ${timeLeft < 60 ? "text-red-400" : timeLeft < 120 ? "text-yellow-400" : "text-green-600"}`}
-              style={{ minWidth: "48px", textAlign: "right" }}>
-              ⏱ {fmt(timeLeft)}
-            </span>
-            <span style={{ color: "#1a5a2a" }}>✓{stats.correct} ✗{stats.incorrect}</span>
+            <span style={{color:"#fbbf24"}}>🔥 ×{streak}</span>
+            <span className="font-bold text-base" style={{color:"#22c55e"}}>{score} pts</span>
+            <span className={`font-bold ${timeLeft<60?"text-red-400":timeLeft<120?"text-yellow-400":"text-green-600"}`}
+              style={{minWidth:"48px",textAlign:"right"}}>⏱ {fmt(timeLeft)}</span>
+            <span style={{color:"#1a5a2a"}}>✓{stats.correct} ✗{stats.incorrect}</span>
             <button onClick={endGame} className="text-xs px-2 py-0.5 rounded transition hover:opacity-80"
-              style={{ border: "1px solid #7f1d1d", color: "#7f3030" }}>
-              END
-            </button>
+              style={{border:"1px solid #7f1d1d",color:"#7f3030"}}>END</button>
           </div>
         </div>
-        {/* Beds */}
+
         <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-2 p-2">
-          {beds.map((bed, i) => {
-            const isAlarm = !bed.answered && (bed.rhythm.sev === "dangerous" || bed.rhythm.sev === "lethal");
-            const isLethal = bed.rhythm.sev === "lethal";
-            const alarmCol = bed.rhythm.alarmCol;
-            return (
-              <div key={i}
-                onClick={() => { setSelBed(i); setExpandedCat(null); }}
+          {beds.map((bed,i)=>{
+            const isAlarm=!bed.answered&&(bed.rhythm.sev==="dangerous"||bed.rhythm.sev==="lethal");
+            const alarmCol=bed.rhythm.alarmCol;
+            return(
+              <div key={i} onClick={()=>{setSelBed(i);setExpandedCat(null);}}
                 className="relative rounded-xl overflow-hidden cursor-pointer transition-all duration-150"
                 style={{
-                  border: `2px solid ${selBed === i ? "#60a5fa" : isAlarm ? alarmCol : "#0d2818"}`,
-                  boxShadow: selBed === i
-                    ? "0 0 20px #60a5fa44"
-                    : isAlarm
-                    ? `0 0 20px ${alarmCol}44`
-                    : "none",
+                  border:`2px solid ${selBed===i?"#60a5fa":isAlarm?alarmCol:"#0d2818"}`,
+                  boxShadow:selBed===i?"0 0 20px #60a5fa44":isAlarm?`0 0 20px ${alarmCol}44`:"none",
                 }}>
-                {/* Alarm flash overlay */}
-                {isAlarm && (
-                  <div className="absolute inset-0 pointer-events-none transition-opacity duration-300"
-                    style={{ background: alarmCol + "08", opacity: blinkState ? 1 : 0, zIndex: 1 }} />
-                )}
-                <BedVitals bed={bed} />
-                {/* Canvas */}
+                {isAlarm&&<div className="absolute inset-0 pointer-events-none transition-opacity duration-300"
+                  style={{background:alarmCol+"08",opacity:blinkState?1:0,zIndex:1}}/>}
+                <BedVitals bed={bed}/>
                 <canvas
-                  ref={el => { if (canvasRefs.current[i]) canvasRefs.current[i].current = el; }}
-                  width={900}
-                  height={140}
-                  style={{ display: "block", width: "100%", height: "140px" }}
-                />
-                {/* Footer */}
+                  ref={el=>{if(canvasRefs.current[i]) canvasRefs.current[i].current=el;}}
+                  width={900} height={140}
+                  style={{display:"block",width:"100%",height:"140px"}}/>
                 <div className="flex items-center justify-between px-3 py-1 text-xs"
-                  style={{ background: "#010a05", borderTop: "1px solid #0a1e0f", color: "#0f3a1a" }}>
+                  style={{background:"#010a05",borderTop:"1px solid #0a1e0f",color:"#0f3a1a"}}>
                   <span>Lead II · 25mm/s · 1mV/cm</span>
-                  {feedbacksR.current[i] ? (
-                    <span style={{ color: feedbacksR.current[i].correct ? "#22c55e55" : "#ef444455" }}>
-                      {feedbacksR.current[i].correct ? "✓ Correct" : "✗ Wrong"}
+                  {feedbacksR.current[i]?(
+                    <span style={{color:feedbacksR.current[i].correct?"#22c55e55":"#ef444455"}}>
+                      {feedbacksR.current[i].correct?"✓ Correct":"✗ Wrong"}
                     </span>
-                  ) : !bed.answered ? (
-                    <span style={{ color: "#1a5a2a" }}>▶ Click to identify</span>
-                  ) : (
-                    <span style={{ color: "#0f3a1a" }}>Awaiting change…</span>
+                  ):!bed.answered?(
+                    <span style={{color:"#1a5a2a"}}>▶ Click to identify</span>
+                  ):(
+                    <span style={{color:"#0f3a1a"}}>Awaiting change…</span>
                   )}
                 </div>
               </div>
             );
           })}
         </div>
-        {/* Score notifications */}
+
         <div className="fixed top-14 right-4 space-y-2 pointer-events-none z-40">
-          {notifs.map(n => <Notif key={n.id} notif={n} />)}
+          {notifs.map(n=><Notif key={n.id} notif={n}/>)}
         </div>
-        {/* Answer popup */}
-        {selBed !== null && beds[selBed] && (
-          <AnswerPopup
-            bed={beds[selBed]}
-            onAnswer={handleAnswer}
-            onClose={() => { setSelBed(null); setExpandedCat(null); }}
-            expandedCat={expandedCat}
-            setExpandedCat={setExpandedCat}
-            feedback={feedbacksR.current[selBed]}
-          />
+
+        {selBed!==null&&beds[selBed]&&(
+          <AnswerPopup bed={beds[selBed]} onAnswer={handleAnswer}
+            onClose={()=>{setSelBed(null);setExpandedCat(null);}}
+            expandedCat={expandedCat} setExpandedCat={setExpandedCat}
+            feedback={feedbacksR.current[selBed]}/>
         )}
       </div>
     );
   }
-  /* ──────────────────── SUMMARY SCREEN ──────────────────── */
-  if (screen === "summary") {
-    const total = stats.correct + stats.incorrect + stats.missed;
-    const acc   = total ? Math.round(stats.correct / total * 100) : 0;
-    const grade = acc >= 90 ? { g:"A", col:"#22c55e" } : acc >= 75 ? { g:"B", col:"#84cc16" }
-                : acc >= 60 ? { g:"C", col:"#fbbf24" } : acc >= 40 ? { g:"D", col:"#f97316" }
-                : { g:"F", col:"#ef4444" };
-    const myName = playerName || "Anonymous";
-    const myRank = leaderboard.findIndex(e => e.name === myName && e.score === scoreRef.current);
-    return (
+
+  /* ──── SUMMARY ──── */
+  if(screen==="summary"){
+    const total=stats.correct+stats.incorrect+stats.missed;
+    const acc=total?Math.round(stats.correct/total*100):0;
+    const grade=acc>=90?{g:"A",col:"#22c55e"}:acc>=75?{g:"B",col:"#84cc16"}:acc>=60?{g:"C",col:"#fbbf24"}:acc>=40?{g:"D",col:"#f97316"}:{g:"F",col:"#ef4444"};
+    const myName=playerName||"Anonymous";
+    const myRank=leaderboard.findIndex(e=>e.name===myName&&e.score===scoreRef.current);
+    const isHighScore=myRank===0;
+
+    return(
       <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden"
-        style={{ background: "radial-gradient(ellipse at 50% 40%, #041a0c 0%, #010a05 100%)", fontFamily: "monospace" }}>
+        style={{background:"radial-gradient(ellipse at 50% 40%, #041a0c 0%, #010a05 100%)",fontFamily:"monospace"}}>
         <div className="relative z-10 w-full max-w-md">
-          {/* Header */}
           <div className="text-center mb-6">
-            <p className="text-xs tracking-widest mb-2" style={{ color: "#2a6a3a" }}>MONITORING SESSION COMPLETE</p>
-            <div className="text-6xl font-black mb-1" style={{ color: "#22c55e", textShadow: "0 0 40px #22c55e66" }}>
+            {isHighScore&&<div className="text-2xl mb-2 animate-pulse">🏆 NEW HIGH SCORE! 🏆</div>}
+            <p className="text-xs tracking-widest mb-2" style={{color:"#2a6a3a"}}>SESSION COMPLETE</p>
+            <div className="text-6xl font-black mb-1" style={{color:"#22c55e",textShadow:"0 0 40px #22c55e66"}}>
               {scoreRef.current}
             </div>
-            <p className="text-sm" style={{ color: "#3a8a5a" }}>points</p>
-            {myRank >= 0 && (
-              <p className="text-xs mt-1" style={{ color: "#fbbf24" }}>
-                #{myRank + 1} on Leaderboard
-              </p>
-            )}
+            <p className="text-sm" style={{color:"#3a8a5a"}}>points · {myName}</p>
+            {myRank>=0&&<p className="text-xs mt-1" style={{color:"#fbbf24"}}>#{myRank+1} on Leaderboard</p>}
           </div>
-          {/* Grade + stats */}
+
           <div className="grid grid-cols-4 gap-2 mb-5">
-            <div className="rounded-xl p-3 text-center" style={{ background: grade.col + "14", border: `1px solid ${grade.col}44` }}>
-              <div className="text-3xl font-black" style={{ color: grade.col }}>{grade.g}</div>
-              <div className="text-xs mt-0.5" style={{ color: grade.col + "99" }}>Grade</div>
+            <div className="rounded-xl p-3 text-center" style={{background:grade.col+"14",border:`1px solid ${grade.col}44`}}>
+              <div className="text-3xl font-black" style={{color:grade.col}}>{grade.g}</div>
+              <div className="text-xs mt-0.5" style={{color:grade.col+"99"}}>Grade</div>
             </div>
-            {[
-              { label:"Correct",   val:stats.correct,   col:"#22c55e" },
-              { label:"Incorrect", val:stats.incorrect, col:"#ef4444" },
-              { label:"Missed",    val:stats.missed,    col:"#f97316" },
-            ].map(({ label, val, col }) => (
-              <div key={label} className="rounded-xl p-3 text-center"
-                style={{ background: col + "11", border: `1px solid ${col}44` }}>
-                <div className="text-2xl font-black" style={{ color: col }}>{val}</div>
-                <div className="text-xs mt-0.5" style={{ color: col + "99" }}>{label}</div>
+            {[{label:"Correct",val:stats.correct,col:"#22c55e"},{label:"Wrong",val:stats.incorrect,col:"#ef4444"},{label:"Missed",val:stats.missed,col:"#f97316"}].map(({label,val,col})=>(
+              <div key={label} className="rounded-xl p-3 text-center" style={{background:col+"11",border:`1px solid ${col}44`}}>
+                <div className="text-2xl font-black" style={{color}}>{val}</div>
+                <div className="text-xs mt-0.5" style={{color:col+"99"}}>{label}</div>
               </div>
             ))}
           </div>
+
           <div className="text-center mb-5">
-            <span className="text-sm" style={{ color: "#3a8a5a" }}>Accuracy: </span>
-            <span className="text-sm font-bold" style={{ color: grade.col }}>{acc}%</span>
-            <span className="text-xs ml-3" style={{ color: "#1a5a2a" }}>({total} rhythms presented)</span>
+            <span className="text-sm" style={{color:"#3a8a5a"}}>Accuracy: </span>
+            <span className="text-sm font-bold" style={{color:grade.col}}>{acc}%</span>
+            <span className="text-xs ml-3" style={{color:"#1a5a2a"}}>({total} rhythms)</span>
           </div>
-          {/* Mini ECG reference panel */}
-          <div className="rounded-xl overflow-hidden mb-5" style={{ border: "1px solid #1a3a1a" }}>
-            <div className="px-4 py-2 text-xs font-bold tracking-wider" style={{ background: "#020c07", color: "#3a8a5a" }}>
-              📖 RHYTHM REFERENCE
-            </div>
+
+          {/* Reference panel */}
+          <div className="rounded-xl overflow-hidden mb-5" style={{border:"1px solid #1a3a1a"}}>
+            <div className="px-4 py-2 text-xs font-bold tracking-wider" style={{background:"#020c07",color:"#3a8a5a"}}>📖 RHYTHM REFERENCE</div>
             <div className="p-2 grid grid-cols-2 gap-2">
-              {Object.values(R).slice(0, 6).map(r => (
-                <div key={r.id} className="rounded-lg p-2" style={{ background: "#020c07", border: "1px solid #1a2a1a" }}>
-                  <div className="text-xs font-bold mb-1" style={{ color: SEV_COL[r.sev] }}>{r.name}</div>
-                  <MiniECG rhythmId={r.id} />
+              {Object.values(R).slice(0,6).map((r,i)=>(
+                <div key={r.id} className="rounded-lg p-2" style={{background:"#020c07",border:"1px solid #1a2a1a"}}>
+                  <div className="text-xs font-bold mb-1" style={{color:SEV_COL[r.sev]}}>{r.name}</div>
+                  <MiniECG rhythmId={r.id} height={36} seed={i*111}/>
                 </div>
               ))}
             </div>
           </div>
-          {/* Leaderboard */}
-          {leaderboard.length > 0 && (
-            <div className="rounded-xl overflow-hidden mb-5" style={{ border: "1px solid #1a4a22" }}>
-              <div className="px-4 py-2 text-xs font-bold tracking-wider" style={{ background: "#020c07", color: "#3a8a5a" }}>
-                🏆 TOP SCORES
+
+          {/* Top scores */}
+          {leaderboard.length>0&&(
+            <div className="rounded-xl overflow-hidden mb-5" style={{border:"1px solid #1a4a22"}}>
+              <div className="px-4 py-2 flex items-center justify-between"
+                style={{background:"#020c07",borderBottom:"1px solid #1a3a20"}}>
+                <span className="text-xs font-bold tracking-wider" style={{color:"#3a8a5a"}}>🏆 TOP SCORES</span>
+                <button onClick={()=>setScreen("leaderboard")} className="text-xs transition hover:opacity-70"
+                  style={{color:"#2a6a3a"}}>Full board →</button>
               </div>
-              {leaderboard.slice(0, 8).map((e, i) => {
-                const isMe = e.name === myName && e.score === scoreRef.current;
-                return (
-                  <div key={i} className="flex items-center justify-between px-4 py-2 text-xs"
-                    style={{ borderTop: "1px solid #0d2818", background: isMe ? "#22c55e0a" : "transparent" }}>
-                    <span style={{ color: isMe ? "#22c55e" : "#2a6a3a" }}>
-                      <span style={{ color: i === 0 ? "#fbbf24" : i === 1 ? "#94a3b8" : i === 2 ? "#92400e" : "#2a6a3a" }}>
-                        #{i + 1}
-                      </span>
+              {leaderboard.slice(0,5).map((e,i)=>{
+                const isMe=e.name===myName&&e.score===scoreRef.current;
+                return(
+                  <div key={i} className="lb-row" style={{background:isMe?"#22c55e0a":"transparent",borderLeft:isMe?"2px solid #22c55e44":"none"}}>
+                    <span style={{color:isMe?"#22c55e":"#2a6a3a"}}>
+                      <span style={{color:i===0?"#fbbf24":i===1?"#94a3b8":i===2?"#92400e":"#2a6a3a"}}>#{i+1}</span>
                       {" "}{e.name}
-                      {isMe && <span style={{ color: "#22c55e99" }}> ← YOU</span>}
+                      {isMe&&<span style={{color:"#22c55e55"}}> ← YOU</span>}
                     </span>
-                    <span style={{ color: isMe ? "#22c55e" : "#3a8a5a", fontWeight: isMe ? "bold" : "normal" }}>{e.score}</span>
+                    <span style={{color:isMe?"#22c55e":"#3a8a5a",fontWeight:isMe?"bold":"normal"}}>{e.score}</span>
                   </div>
                 );
               })}
             </div>
           )}
-          {/* Actions */}
-          <div className="grid grid-cols-2 gap-3">
-            <button onClick={() => setScreen("menu")}
-              className="py-3 rounded-xl text-sm font-bold transition hover:opacity-80"
-              style={{ border: "1px solid #1a4a22", color: "#3a8a5a", background: "#030e07" }}>
-              ← Menu
-            </button>
-            <button onClick={initGame}
-              className="py-3 rounded-xl text-sm font-bold transition hover:opacity-90"
-              style={{ background: "linear-gradient(135deg, #22c55e, #15803d)", color: "#020e07" }}>
-              ▶ Play Again
-            </button>
+
+          <div className="grid grid-cols-3 gap-2">
+            <button onClick={()=>setScreen("menu")} className="py-2.5 rounded-xl text-sm font-bold transition hover:opacity-80"
+              style={{border:"1px solid #1a4a22",color:"#3a8a5a",background:"#030e07"}}>← Menu</button>
+            <button onClick={()=>setScreen("leaderboard")} className="py-2.5 rounded-xl text-sm font-bold transition hover:opacity-80"
+              style={{border:"1px solid #4a4a1a",color:"#8a8a3a",background:"#030e07"}}>🏆 Board</button>
+            <button onClick={initGame} className="py-2.5 rounded-xl text-sm font-bold transition hover:opacity-90"
+              style={{background:"linear-gradient(135deg,#22c55e,#15803d)",color:"#020e07"}}>▶ Again</button>
           </div>
         </div>
       </div>
@@ -1231,8 +1345,8 @@ function CardiacMonitor() {
   return null;
 }
 
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<CardiacMonitor />);
+const root=ReactDOM.createRoot(document.getElementById('root'));
+root.render(<MonitorBoss/>);
   </script>
 </body>
 </html>
