@@ -119,6 +119,19 @@
     .music-btn{position:fixed;bottom:1rem;right:1rem;z-index:60;width:2.5rem;height:2.5rem;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:all .2s;border:1px solid #1a4a22;background:#020c07;color:#3a8a5a;box-shadow:0 4px 20px rgba(0,0,0,.4)}
     .music-btn:hover{border-color:#22c55e;color:#22c55e;box-shadow:0 0 15px #22c55e22}
     .music-btn.on{border-color:#22c55e44;color:#22c55e;background:#22c55e0a}
+
+    /* Global LB / Setup */
+    .global-badge{display:inline-flex;align-items:center;gap:.25rem;padding:.15rem .5rem;border-radius:.375rem;font-size:.65rem;font-weight:700;letter-spacing:.05em}
+    .setup-overlay{position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;padding:1rem;background:rgba(0,8,3,.88);backdrop-filter:blur(4px)}
+    .setup-card{width:100%;max-width:520px;border-radius:1rem;overflow:hidden;background:#03100a;border:1px solid #1a4a2a;box-shadow:0 0 60px #00ff7710}
+    .setup-step{display:flex;gap:.75rem;padding:.75rem;border-radius:.75rem;background:#020c07;border:1px solid #1a3a1a;margin-bottom:.5rem}
+    .step-num{flex-shrink:0;width:1.5rem;height:1.5rem;border-radius:50%;background:#22c55e18;border:1px solid #22c55e44;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#22c55e}
+    .code-block{font-family:'JetBrains Mono',monospace;font-size:.68rem;background:#010a05;border:1px solid #0d2818;border-radius:.5rem;padding:.75rem;color:#5aaa6a;white-space:pre-wrap;overflow-x:auto;line-height:1.5}
+    .input-field{width:100%;padding:.625rem .875rem;border-radius:.625rem;background:#020c07;border:1px solid #1a4a22;color:#a0d0a8;font-family:'JetBrains Mono',monospace;font-size:.8rem;outline:none;transition:border-color .15s}
+    .input-field:focus{border-color:#22c55e}
+    .input-field::placeholder{color:#1a5a2a}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .spin{animation:spin .8s linear infinite;display:inline-block}
   </style>
 </head>
 <body>
@@ -135,6 +148,28 @@ window.storage = {
   get:(k)=>{ try{ const v=localStorage.getItem('mb_'+k); return Promise.resolve(v?{key:k,value:v}:null); }catch{return Promise.resolve(null);} },
   set:(k,v)=>{ try{ localStorage.setItem('mb_'+k,v); return Promise.resolve({key:k,value:v}); }catch{return Promise.resolve(null);} },
   delete:(k)=>{ try{ localStorage.removeItem('mb_'+k); return Promise.resolve({key:k,deleted:true}); }catch{return Promise.resolve(null);} }
+};
+
+/* ── Global Leaderboard via Cloudflare Worker ── */
+window.GLB = {
+  _url: ()=>{ try{return localStorage.getItem('mb_cf_url')||'';}catch{return '';} },
+  configured: ()=>!!window.GLB._url(),
+  save: (url)=>{ try{localStorage.setItem('mb_cf_url',url.trim().replace(/\/+$/,''));}catch{} },
+  clear: ()=>{ try{localStorage.removeItem('mb_cf_url');}catch{} },
+  getScores: async (diff)=>{
+    const base=window.GLB._url();
+    if(!base) throw new Error('Not configured');
+    const url=diff&&diff!=='all'?`${base}/scores?diff=${encodeURIComponent(diff)}`:`${base}/scores`;
+    const r=await fetch(url);
+    if(!r.ok) throw new Error('Fetch failed: '+r.status);
+    return r.json();
+  },
+  postScore: async (entry)=>{
+    const base=window.GLB._url();
+    if(!base) throw new Error('Not configured');
+    const r=await fetch(`${base}/scores`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(entry)});
+    if(!r.ok) throw new Error('Post failed: '+r.status);
+  }
 };
 
 /* ════════════════════════════════════════
@@ -725,40 +760,370 @@ function TutorialScreen({onBack}){
 }
 
 /* ════════════════════════════════════════
-   LEADERBOARD SCREEN
+   SETUP MODAL
 ════════════════════════════════════════ */
+/* ════════════════════════════════════════
+   SETUP MODAL  (Cloudflare Worker)
+════════════════════════════════════════ */
+const CF_WORKER_CODE=`export default {
+  async fetch(request, env) {
+    const cors = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    };
+    if (request.method === 'OPTIONS')
+      return new Response(null, { headers: cors });
+
+    const { pathname, searchParams } = new URL(request.url);
+
+    // GET /scores  — return leaderboard
+    if (request.method === 'GET' && pathname === '/scores') {
+      const diff = searchParams.get('diff');
+      const raw  = await env.MB_SCORES.get('scores');
+      let scores = raw ? JSON.parse(raw) : [];
+      if (diff) scores = scores.filter(s => s.diff === diff);
+      return new Response(JSON.stringify(scores.slice(0, 100)), {
+        headers: { ...cors, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // POST /scores  — add a score
+    if (request.method === 'POST' && pathname === '/scores') {
+      const body = await request.json().catch(() => null);
+      if (!body || !body.name || typeof body.score !== 'number')
+        return new Response('Bad Request', { status: 400, headers: cors });
+
+      const entry = {
+        name:  String(body.name).slice(0, 32),
+        score: Math.max(0, Math.min(999999, Math.floor(body.score))),
+        diff:  ['beginner','intermediate','advanced'].includes(body.diff) ? body.diff : 'beginner',
+        date:  new Date().toLocaleDateString('en-US'),
+      };
+      const raw    = await env.MB_SCORES.get('scores');
+      let scores   = raw ? JSON.parse(raw) : [];
+      scores.push(entry);
+      scores.sort((a, b) => b.score - a.score);
+      scores = scores.slice(0, 200);
+      await env.MB_SCORES.put('scores', JSON.stringify(scores));
+      return new Response(JSON.stringify(entry), {
+        status: 201,
+        headers: { ...cors, 'Content-Type': 'application/json' },
+      });
+    }
+
+    return new Response('Not Found', { status: 404, headers: cors });
+  },
+};`;
+
+function SetupModal({onDone,onSkip}){
+  const [step,setStep]=useState(1);
+  const [workerUrl,setWorkerUrl]=useState(()=>{try{return localStorage.getItem('mb_cf_url')||'';}catch{return '';}});
+  const [testing,setTesting]=useState(false);
+  const [testResult,setTestResult]=useState(null);
+  const [copied,setCopied]=useState(false);
+
+  function copyCode(){
+    navigator.clipboard.writeText(CF_WORKER_CODE).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2000);}).catch(()=>{});
+  }
+
+  async function testConnection(){
+    setTesting(true); setTestResult(null);
+    try{
+      const url=workerUrl.trim().replace(/\/+$/,'');
+      const r=await fetch(url+'/scores',{signal:AbortSignal.timeout(6000)});
+      if(r.ok){ window.GLB.save(url); setTestResult('success'); }
+      else setTestResult('error:'+r.status);
+    } catch(e){ setTestResult('error:network'); }
+    setTesting(false);
+  }
+
+  function finish(){ window.GLB.save(workerUrl); onDone(); }
+
+  const steps=[
+    {n:1,label:"Create Worker"},
+    {n:2,label:"Add KV store"},
+    {n:3,label:"Paste & deploy"},
+    {n:4,label:"Connect"},
+  ];
+
+  return(
+    <div className="setup-overlay">
+      <div className="setup-card animate-slideUp">
+        <div className="flex items-center justify-between px-5 py-3.5" style={{background:"#020c07",borderBottom:"1px solid #1a3a20"}}>
+          <div>
+            <div className="font-black text-sm" style={{color:"#22c55e"}}>🌐 Global Leaderboard Setup</div>
+            <div className="text-xs mt-0.5" style={{color:"#2a5a35"}}>Cloudflare Workers — free, ~5 minutes</div>
+          </div>
+          <button onClick={onSkip} className="transition hover:opacity-70" style={{color:"#2a6a3a",fontSize:"18px"}}>✕</button>
+        </div>
+
+        <div className="p-4 overflow-y-auto" style={{maxHeight:"calc(100vh - 140px)"}}>
+          {/* Step progress */}
+          <div className="flex items-center gap-1 mb-5">
+            {steps.map((s,i)=>(
+              <React.Fragment key={s.n}>
+                <div className="flex flex-col items-center gap-1">
+                  <div style={{width:"26px",height:"26px",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:".7rem",fontWeight:"700",flexShrink:0,
+                    background:step>s.n?"#22c55e":step===s.n?"#22c55e18":"#0a1e0f",
+                    border:`1px solid ${step>=s.n?"#22c55e":"#1a3a1a"}`,
+                    color:step>=s.n?"#22c55e":"#2a5a35"}}>
+                    {step>s.n?"✓":s.n}
+                  </div>
+                  <span style={{fontSize:".6rem",color:step>=s.n?"#22c55e":"#1a5a2a",whiteSpace:"nowrap"}}>{s.label}</span>
+                </div>
+                {i<steps.length-1&&<div style={{flex:1,height:"1px",background:step>s.n?"#22c55e44":"#1a3a1a",marginBottom:"14px"}}/>}
+              </React.Fragment>
+            ))}
+          </div>
+
+          {/* ── Step 1 ── */}
+          {step===1&&(
+            <div className="animate-fadeIn">
+              <div className="setup-step">
+                <div className="step-num">1</div>
+                <div>
+                  <div className="text-xs font-bold mb-1" style={{color:"#22c55e"}}>Go to dash.cloudflare.com</div>
+                  <div className="text-xs leading-relaxed" style={{color:"#5a8a6a"}}>Sign in (or create a free account — no credit card needed). In the left sidebar click <span style={{color:"#22c55e"}}>Workers &amp; Pages</span>.</div>
+                </div>
+              </div>
+              <div className="setup-step">
+                <div className="step-num">2</div>
+                <div>
+                  <div className="text-xs font-bold mb-1" style={{color:"#22c55e"}}>Create a new Worker</div>
+                  <div className="text-xs leading-relaxed" style={{color:"#5a8a6a"}}>Click <span style={{color:"#22c55e"}}>Create → Create Worker</span>. Name it <span style={{color:"#fbbf24",fontFamily:"monospace"}}>monitor-boss-lb</span>. Click <span style={{color:"#22c55e"}}>Deploy</span> (ignore the default code for now).</div>
+                </div>
+              </div>
+              <div className="flex gap-2 mt-3">
+                <a href="https://dash.cloudflare.com" target="_blank" rel="noopener noreferrer"
+                  className="flex-1 py-3 rounded-xl text-sm font-bold transition hover:opacity-90 flex items-center justify-center gap-2"
+                  style={{background:"linear-gradient(135deg,#f97316,#c2410c)",color:"#fff",display:"flex"}}>
+                  Open Cloudflare ↗
+                </a>
+                <button onClick={()=>setStep(2)} className="flex-1 py-3 rounded-xl text-sm font-bold transition hover:opacity-80"
+                  style={{border:"1px solid #1a4a22",color:"#3a8a5a"}}>Already done → Next</button>
+              </div>
+            </div>
+          )}
+
+          {/* ── Step 2 ── */}
+          {step===2&&(
+            <div className="animate-fadeIn">
+              <div className="setup-step">
+                <div className="step-num">1</div>
+                <div>
+                  <div className="text-xs font-bold mb-1" style={{color:"#22c55e"}}>Create a KV Namespace</div>
+                  <div className="text-xs leading-relaxed" style={{color:"#5a8a6a"}}>In the sidebar go to <span style={{color:"#22c55e"}}>Workers &amp; Pages → KV</span> → click <span style={{color:"#22c55e"}}>Create a namespace</span>. Name it exactly: <span style={{color:"#fbbf24",fontFamily:"monospace"}}>MB_SCORES</span>. Click Add.</div>
+                </div>
+              </div>
+              <div className="setup-step">
+                <div className="step-num">2</div>
+                <div>
+                  <div className="text-xs font-bold mb-1" style={{color:"#22c55e"}}>Bind it to your Worker</div>
+                  <div className="text-xs leading-relaxed" style={{color:"#5a8a6a"}}>Go to your <span style={{color:"#22c55e"}}>monitor-boss-lb</span> worker → <span style={{color:"#22c55e"}}>Settings → Variables → KV Namespace Bindings</span> → Add binding:</div>
+                  <div className="rounded-lg p-2 mt-2" style={{background:"#010a05",border:"1px solid #0d2818",fontFamily:"monospace",fontSize:".7rem"}}>
+                    <div style={{color:"#5a8a6a"}}>Variable name: <span style={{color:"#fbbf24"}}>MB_SCORES</span></div>
+                    <div style={{color:"#5a8a6a"}}>KV Namespace: <span style={{color:"#fbbf24"}}>MB_SCORES</span></div>
+                  </div>
+                  <div className="text-xs mt-1.5" style={{color:"#5a8a6a"}}>Click <span style={{color:"#22c55e"}}>Save</span>.</div>
+                </div>
+              </div>
+              <div className="flex gap-2 mt-3">
+                <button onClick={()=>setStep(1)} className="px-4 py-2.5 rounded-xl text-sm font-bold transition hover:opacity-80" style={{border:"1px solid #1a4a22",color:"#3a8a5a"}}>← Back</button>
+                <button onClick={()=>setStep(3)} className="flex-1 py-2.5 rounded-xl text-sm font-bold transition hover:opacity-90" style={{background:"linear-gradient(135deg,#22c55e,#15803d)",color:"#020e07"}}>Done → Next</button>
+              </div>
+            </div>
+          )}
+
+          {/* ── Step 3 ── */}
+          {step===3&&(
+            <div className="animate-fadeIn">
+              <div className="setup-step">
+                <div className="step-num">1</div>
+                <div className="flex-1">
+                  <div className="text-xs font-bold mb-1" style={{color:"#22c55e"}}>Copy the Worker code</div>
+                  <div className="text-xs mb-2" style={{color:"#5a8a6a"}}>Click the button below to copy, then open your worker → <span style={{color:"#22c55e"}}>Edit Code</span> → select all → paste → <span style={{color:"#22c55e"}}>Deploy</span>.</div>
+                  <button onClick={copyCode} className="text-xs px-4 py-2 rounded-lg font-bold transition hover:opacity-80"
+                    style={{background:copied?"#22c55e18":"#0a2a15",border:`1px solid ${copied?"#22c55e":"#1a4a22"}`,color:copied?"#22c55e":"#3a8a5a"}}>
+                    {copied?"✓ Copied to clipboard!":"📋 Copy Worker Code"}
+                  </button>
+                </div>
+              </div>
+              <div className="setup-step">
+                <div className="step-num">2</div>
+                <div>
+                  <div className="text-xs font-bold mb-1" style={{color:"#22c55e"}}>Preview the code</div>
+                  <div className="text-xs mb-2" style={{color:"#5a8a6a"}}>The worker handles GET &amp; POST <span style={{color:"#fbbf24",fontFamily:"monospace"}}>/scores</span> with full CORS. Scores stored in KV, top 200 kept.</div>
+                  <div className="code-block" style={{maxHeight:"140px",overflowY:"auto",fontSize:".6rem"}}>{CF_WORKER_CODE}</div>
+                </div>
+              </div>
+              <div className="flex gap-2 mt-3">
+                <button onClick={()=>setStep(2)} className="px-4 py-2.5 rounded-xl text-sm font-bold transition hover:opacity-80" style={{border:"1px solid #1a4a22",color:"#3a8a5a"}}>← Back</button>
+                <button onClick={()=>setStep(4)} className="flex-1 py-2.5 rounded-xl text-sm font-bold transition hover:opacity-90" style={{background:"linear-gradient(135deg,#22c55e,#15803d)",color:"#020e07"}}>Deployed → Next</button>
+              </div>
+            </div>
+          )}
+
+          {/* ── Step 4 ── */}
+          {step===4&&(
+            <div className="animate-fadeIn">
+              <div className="setup-step mb-4">
+                <div className="step-num">1</div>
+                <div className="flex-1">
+                  <div className="text-xs font-bold mb-1" style={{color:"#22c55e"}}>Find your Worker URL</div>
+                  <div className="text-xs mb-2 leading-relaxed" style={{color:"#5a8a6a"}}>In your Worker's overview page, the URL is shown at the top — looks like:<br/>
+                    <span style={{color:"#fbbf24",fontFamily:"monospace",fontSize:".68rem"}}>https://monitor-boss-lb.YOUR-NAME.workers.dev</span>
+                  </div>
+                  <input className="input-field" placeholder="https://monitor-boss-lb.your-name.workers.dev"
+                    value={workerUrl} onChange={e=>setWorkerUrl(e.target.value)}/>
+                </div>
+              </div>
+
+              {testResult==='success'&&(
+                <div className="rounded-xl p-3 mb-3" style={{background:"#22c55e0a",border:"1px solid #22c55e44"}}>
+                  <div className="text-xs font-bold" style={{color:"#22c55e"}}>✓ Connected! Global leaderboard is live.</div>
+                </div>
+              )}
+              {testResult&&testResult.startsWith('error:')&&(
+                <div className="rounded-xl p-3 mb-3" style={{background:"#ef44440a",border:"1px solid #ef444433"}}>
+                  <div className="text-xs font-bold mb-0.5" style={{color:"#ef4444"}}>✗ Connection failed ({testResult.split(':')[1]})</div>
+                  <div className="text-xs" style={{color:"#8a4a4a"}}>Double-check the URL is correct and the Worker is deployed.</div>
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <button onClick={()=>setStep(3)} className="px-4 py-2.5 rounded-xl text-sm font-bold transition hover:opacity-80" style={{border:"1px solid #1a4a22",color:"#3a8a5a"}}>← Back</button>
+                <button onClick={testConnection} disabled={!workerUrl||testing}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-bold transition hover:opacity-90"
+                  style={{background:"#0a2a15",border:"1px solid #22c55e44",color:"#22c55e",opacity:!workerUrl?0.4:1}}>
+                  {testing?<span><span className="spin">↻</span> Testing…</span>:"Test Connection"}
+                </button>
+                {testResult==='success'&&(
+                  <button onClick={finish} className="flex-1 py-2.5 rounded-xl text-sm font-bold transition hover:opacity-90"
+                    style={{background:"linear-gradient(135deg,#22c55e,#15803d)",color:"#020e07"}}>🌐 Go Live!</button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
 function LeaderboardScreen({onBack,currentPlayer}){
   const [lb,setLb]=useState([]);
+  const [localLb,setLocalLb]=useState([]);
   const [filterDiff,setFilterDiff]=useState("all");
-  useEffect(()=>{(async()=>{try{const r=await window.storage.get("lb_v3");if(r) setLb(JSON.parse(r.value));}catch{}})();},[]);
-  function clearLb(){if(window.confirm("Clear all scores?")){window.storage.delete("lb_v3").catch(()=>{});setLb([]);}}
-  const filtered=filterDiff==="all"?lb:lb.filter(e=>e.diff===filterDiff);
-  const top=filtered.slice(0,20);
-  const myBest=lb.filter(e=>e.name===(currentPlayer||"Anonymous")).sort((a,b)=>b.score-a.score)[0];
+  const [showSetup,setShowSetup]=useState(false);
+  const [loading,setLoading]=useState(false);
+  const [error,setError]=useState(null);
+  const [mode,setMode]=useState(()=>window.GLB.configured()?"global":"local");
+
+  // Load local
+  useEffect(()=>{
+    (async()=>{try{const r=await window.storage.get("lb_v3");if(r) setLocalLb(JSON.parse(r.value));}catch{}})();
+  },[]);
+
+  // Load global
+  async function fetchGlobal(){
+    if(!window.GLB.configured()) return;
+    setLoading(true); setError(null);
+    try{
+      const data=await window.GLB.getScores(filterDiff==="all"?null:filterDiff);
+      setLb(data||[]);
+    } catch(e){ setError("Could not reach global leaderboard."); setMode("local"); }
+    setLoading(false);
+  }
+
+  useEffect(()=>{ if(mode==="global") fetchGlobal(); },[mode,filterDiff]);
+
+  function clearLocalLb(){
+    if(window.confirm("Clear your local scores?")){
+      window.storage.delete("lb_v3").catch(()=>{});
+      setLocalLb([]);
+    }
+  }
+  function disconnectGlobal(){
+    if(window.confirm("Disconnect global leaderboard?")){
+      window.GLB.clear(); setMode("local"); setLb([]);
+    }
+  }
+
+  const displayLb = mode==="global" ? lb : localLb;
+  const filtered = mode==="global" ? displayLb : (filterDiff==="all"?localLb:localLb.filter(e=>e.diff===filterDiff));
+  const top = filtered.slice(0,50);
+  const myBest = (mode==="global"?lb:localLb).filter(e=>e.name===(currentPlayer||"Anonymous")).sort((a,b)=>b.score-a.score)[0];
   const medals=["🥇","🥈","🥉"];
+  const isGlobal=mode==="global"&&window.GLB.configured();
+
   return(
     <div className="min-h-screen flex flex-col" style={{background:"#010a05"}}>
+      {showSetup&&<SetupModal onDone={()=>{setShowSetup(false);setMode("global");fetchGlobal();}} onSkip={()=>setShowSetup(false)}/>}
       <div className="flex items-center justify-between px-4 py-3 shrink-0" style={{background:"#020d06",borderBottom:"1px solid #0d2818"}}>
         <div className="flex items-center gap-3">
           <button onClick={onBack} className="text-xs px-3 py-1.5 rounded-lg transition hover:opacity-80" style={{border:"1px solid #1a4a22",color:"#3a8a5a"}}>← Back</button>
           <span className="text-sm font-black" style={{color:"#22c55e"}}>🏆 HALL OF FAME</span>
+          {isGlobal
+            ?<span className="global-badge" style={{background:"#3b82f618",border:"1px solid #3b82f644",color:"#60a5fa"}}>🌐 GLOBAL</span>
+            :<span className="global-badge" style={{background:"#2a6a3a18",border:"1px solid #1a4a2244",color:"#3a8a5a"}}>💾 LOCAL</span>}
         </div>
-        <button onClick={clearLb} className="text-xs px-3 py-1.5 rounded-lg transition hover:opacity-80" style={{border:"1px solid #7f1d1d",color:"#7f3030"}}>Clear All</button>
+        <div className="flex items-center gap-2">
+          {isGlobal
+            ?<button onClick={disconnectGlobal} className="text-xs px-2 py-1 rounded-lg transition hover:opacity-80" style={{border:"1px solid #7f1d1d",color:"#7f3030"}}>Disconnect</button>
+            :<button onClick={clearLocalLb} className="text-xs px-2 py-1 rounded-lg transition hover:opacity-80" style={{border:"1px solid #7f1d1d",color:"#7f3030"}}>Clear</button>}
+          {!isGlobal&&<button onClick={()=>setShowSetup(true)} className="text-xs px-2 py-1 rounded-lg transition hover:opacity-90"
+            style={{background:"#3b82f618",border:"1px solid #3b82f644",color:"#60a5fa"}}>🌐 Go Global</button>}
+          {isGlobal&&<button onClick={fetchGlobal} disabled={loading} className="text-xs px-2 py-1 rounded-lg transition hover:opacity-80"
+            style={{border:"1px solid #1a4a22",color:loading?"#1a5a2a":"#3a8a5a"}}>{loading?<span className="spin">↻</span>:"↻ Refresh"}</button>}
+        </div>
       </div>
+
+      {/* Mode toggle */}
+      {window.GLB.configured()&&(
+        <div className="flex px-4 pt-3 gap-2 shrink-0" style={{background:"#010a05"}}>
+          {["global","local"].map(m=>(
+            <button key={m} onClick={()=>setMode(m)} className={`nav-tab ${mode===m?"active":""}`}
+              style={{color:m==="global"&&mode===m?"#60a5fa":undefined,borderColor:m==="global"&&mode===m?"#3b82f6":undefined,background:m==="global"&&mode===m?"#3b82f618":undefined}}>
+              {m==="global"?"🌐 Global":"💾 Local"}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="flex-1 overflow-y-auto p-4">
         <div className="max-w-lg mx-auto">
+          {/* Personal best */}
           {myBest&&(
-            <div className="rounded-xl p-4 mb-5 animate-fadeIn" style={{background:"#22c55e0a",border:"1px solid #22c55e33"}}>
+            <div className="rounded-xl p-4 mb-4 animate-fadeIn" style={{background:"#22c55e0a",border:"1px solid #22c55e33"}}>
               <div className="text-xs font-bold mb-2 tracking-wider" style={{color:"#22c55e"}}>⭐ YOUR PERSONAL BEST</div>
               <div className="flex items-end justify-between">
                 <div>
                   <div className="text-3xl font-black" style={{color:"#22c55e",textShadow:"0 0 20px #22c55e44"}}>{myBest.score}</div>
-                  <div className="text-xs mt-1" style={{color:"#3a8a5a"}}>{myBest.name} · {myBest.diff} · {myBest.date}</div>
+                  <div className="text-xs mt-1" style={{color:"#3a8a5a"}}>{myBest.name} · {myBest.diff||"?"} · {myBest.date}</div>
                 </div>
                 <div className="text-4xl">🏅</div>
               </div>
             </div>
           )}
+
+          {/* Global promo if local */}
+          {!window.GLB.configured()&&(
+            <div className="rounded-xl p-4 mb-4" style={{background:"#3b82f60a",border:"1px solid #3b82f633"}}>
+              <div className="flex items-center gap-3">
+                <div className="text-3xl">🌐</div>
+                <div className="flex-1">
+                  <div className="text-sm font-bold mb-0.5" style={{color:"#60a5fa"}}>Compete Globally</div>
+                  <div className="text-xs leading-relaxed" style={{color:"#4a7aaa"}}>Connect a Cloudflare Worker to share scores with all players worldwide. Free, fast, no server needed.</div>
+                </div>
+                <button onClick={()=>setShowSetup(true)} className="text-xs px-3 py-2 rounded-lg font-bold transition hover:opacity-90 shrink-0"
+                  style={{background:"#3b82f618",border:"1px solid #3b82f644",color:"#60a5fa"}}>Set Up →</button>
+              </div>
+            </div>
+          )}
+
+          {/* Diff filter */}
           <div className="flex gap-2 mb-4 flex-wrap">
             {["all","beginner","intermediate","advanced"].map(d=>(
               <button key={d} onClick={()=>setFilterDiff(d)} className={`nav-tab ${filterDiff===d?"active":""}`} style={{textTransform:"capitalize"}}>
@@ -766,16 +1131,24 @@ function LeaderboardScreen({onBack,currentPlayer}){
               </button>
             ))}
           </div>
-          <div className="rounded-xl overflow-hidden" style={{border:"1px solid #1a4a22"}}>
-            <div className="flex items-center justify-between px-4 py-2 text-xs font-bold" style={{background:"#020c07",color:"#3a8a5a",borderBottom:"1px solid #1a3a20"}}>
-              <span>PLAYER</span>
+
+          {/* Error */}
+          {error&&<div className="rounded-xl p-3 mb-4 text-xs" style={{background:"#ef44440a",border:"1px solid #ef444433",color:"#ef4444"}}>{error}</div>}
+
+          {/* Table */}
+          <div className="rounded-xl overflow-hidden" style={{border:`1px solid ${isGlobal?"#3b82f633":"#1a4a22"}`}}>
+            <div className="flex items-center justify-between px-4 py-2 text-xs font-bold"
+              style={{background:"#020c07",color:isGlobal?"#60a5fa":"#3a8a5a",borderBottom:`1px solid ${isGlobal?"#1a2a4a":"#1a3a20"}`}}>
+              <span>{isGlobal?"🌐 GLOBAL RANKINGS":"💾 LOCAL SCORES"}</span>
               <div className="flex gap-6"><span>DIFF</span><span>DATE</span><span>SCORE</span></div>
             </div>
-            {top.length===0?<div className="py-12 text-center text-sm" style={{color:"#1a5a2a"}}>No scores yet. Play a game!</div>
-            :top.map((e,i)=>{
+            {loading&&<div className="py-8 text-center text-sm" style={{color:"#1a5a2a"}}><span className="spin">↻</span> Loading global scores…</div>}
+            {!loading&&top.length===0&&<div className="py-12 text-center text-sm" style={{color:"#1a5a2a"}}>No scores yet. Play a game!</div>}
+            {!loading&&top.map((e,i)=>{
               const isMe=e.name===(currentPlayer||"Anonymous");
               return(
-                <div key={i} className={`lb-row ${isMe?"me":""}`}>
+                <div key={e.id||i} className={`lb-row ${isMe?"me":""}`}
+                  style={{borderLeft:isMe?"2px solid #22c55e44":"none",background:isMe?"#22c55e08":"transparent"}}>
                   <div className="flex items-center gap-2">
                     <span style={{width:"22px",textAlign:"center"}}>{i<3?medals[i]:<span style={{color:"#1a5a2a",fontSize:".7rem"}}>#{i+1}</span>}</span>
                     <span style={{color:isMe?"#22c55e":"#4a8a6a"}}>{e.name}</span>
@@ -784,13 +1157,13 @@ function LeaderboardScreen({onBack,currentPlayer}){
                   <div className="flex items-center gap-6 text-xs">
                     <span className="capitalize" style={{color:"#2a6a3a",minWidth:"80px",textAlign:"right"}}>{e.diff||"?"}</span>
                     <span style={{color:"#1a5a2a",minWidth:"72px",textAlign:"right"}}>{e.date}</span>
-                    <span className="font-black" style={{color:isMe?"#22c55e":"#3a8a5a",minWidth:"48px",textAlign:"right"}}>{e.score}</span>
+                    <span className="font-black" style={{color:isMe?"#22c55e":isGlobal?"#60a5fa":"#3a8a5a",minWidth:"48px",textAlign:"right"}}>{e.score}</span>
                   </div>
                 </div>
               );
             })}
           </div>
-          {lb.length>20&&<p className="text-xs text-center mt-3" style={{color:"#1a5a2a"}}>Showing top 20 of {lb.length}</p>}
+          {top.length>=50&&<p className="text-xs text-center mt-3" style={{color:"#1a5a2a"}}>Showing top 50 scores</p>}
         </div>
       </div>
     </div>
@@ -1189,16 +1562,34 @@ function MonitorBoss(){
   useEffect(()=>{try{localStorage.setItem('mb_playername',playerName);}catch{};},[playerName]);
 
   useEffect(()=>{
-    (async()=>{try{const r=await window.storage.get("lb_v3");if(r) setLeaderboard(JSON.parse(r.value));}catch{}})();
+    (async()=>{
+      // Load local scores
+      try{const r=await window.storage.get("lb_v3");if(r) setLeaderboard(JSON.parse(r.value));}catch{}
+      // If global is configured, merge in global scores for menu preview
+      if(window.GLB.configured()){
+        try{
+          const data=await window.GLB.getScores(null);
+          if(data&&data.length) setLeaderboard(prev=>{
+            const merged=[...prev,...data].sort((a,b)=>b.score-a.score).slice(0,50);
+            return merged;
+          });
+        }catch(e){console.warn("GLB init load failed:",e);}
+      }
+    })();
   },[]);
 
   async function saveLB(name,sc){
     const entry={name:name||"Anonymous",score:sc,date:new Date().toLocaleDateString(),diff};
+    // Save locally always
     setLeaderboard(prev=>{
       const next=[...prev,entry].sort((a,b)=>b.score-a.score).slice(0,50);
       window.storage.set("lb_v3",JSON.stringify(next)).catch(()=>{});
       return next;
     });
+    // Post to global if configured
+    if(window.GLB.configured()){
+      try{ await window.GLB.postScore(entry); } catch(e){ console.warn("Global LB post failed:",e); }
+    }
   }
 
   function addNotif(msg,col="#22c55e"){
