@@ -316,19 +316,19 @@ function HUD({score,combo,stageName,stageAccent,challNum,total,timeLeft,noTimer,
   return (
     <div style={{position:"absolute",top:0,left:0,right:0,zIndex:30,display:"flex",justifyContent:"space-between",alignItems:"flex-start",padding:"14px 22px",background:"linear-gradient(to bottom,rgba(0,0,0,0.75),transparent)"}}>
       <div>
-        <div style={{fontSize:9,letterSpacing:4,color:"#444",textTransform:"uppercase",fontFamily:'"Rajdhani",sans-serif'}}>Score</div>
+        <div style={{fontSize:9,letterSpacing:4,color:"#ccc",textTransform:"uppercase",fontFamily:'"Rajdhani",sans-serif'}}>Score</div>
         <div style={{fontSize:28,fontWeight:900,color:"#ffd700",textShadow:"0 0 16px rgba(255,215,0,0.4)",fontFamily:'"Rajdhani",sans-serif',lineHeight:1}}>{score.toLocaleString()}</div>
       </div>
       <div style={{textAlign:"center"}}>
         <div style={{fontSize:11,fontWeight:700,color:stageAccent,letterSpacing:3,fontFamily:'"Rajdhani",sans-serif'}}>{stageName}</div>
-        <div style={{fontSize:9,color:"#555",letterSpacing:2,fontFamily:'"Rajdhani",sans-serif',marginTop:2}}>CH {challNum} / {total}</div>
+        <div style={{fontSize:9,color:"#aaa",letterSpacing:2,fontFamily:'"Rajdhani",sans-serif',marginTop:2}}>CH {challNum} / {total}</div>
         {combo>0 && <div style={{fontSize:16,fontWeight:700,color:comboTier?comboTier.color:"#777",fontFamily:'"Rajdhani",sans-serif',marginTop:2}}>x{combo} CHAIN</div>}
       </div>
       <div style={{textAlign:"right"}}>
         {noTimer
-          ? <div style={{fontSize:10,color:"#445",letterSpacing:2,fontFamily:'"Rajdhani",sans-serif',marginTop:8}}>take your time</div>
+          ? <div style={{fontSize:10,color:"#aaa",letterSpacing:2,fontFamily:'"Rajdhani",sans-serif',marginTop:8}}>take your time</div>
           : <div>
-              <div style={{fontSize:9,letterSpacing:4,color:"#444",textTransform:"uppercase",fontFamily:'"Rajdhani",sans-serif'}}>Time</div>
+              <div style={{fontSize:9,letterSpacing:4,color:"#ccc",textTransform:"uppercase",fontFamily:'"Rajdhani",sans-serif'}}>Time</div>
               <div style={{fontSize:28,fontWeight:900,color:tc,fontFamily:'"Rajdhani",sans-serif',lineHeight:1,animation:timeLeft<10?"urgentPulse 0.5s ease-in-out infinite":"none"}}>{timeLeft}s</div>
             </div>
         }
@@ -348,6 +348,55 @@ function MomentumBar({momentum,ninjaMode}) {
       </div>
       <div style={{height:5,background:"rgba(255,255,255,0.08)",borderRadius:3,overflow:"hidden",border:"1px solid "+(ninjaMode?"rgba(0,255,238,0.3)":"rgba(255,255,255,0.08)")}}>
         <div style={{height:"100%",width:momentum+"%",background:ninjaMode?"linear-gradient(90deg,#00ffee,#0088ff)":"linear-gradient(90deg,#ffd700,#ff6600)",borderRadius:3,transition:"width 0.25s ease, background 0.4s",boxShadow:ninjaMode?"0 0 8px #00ffee":"none"}}/>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   TILE PROGRESS BAR
+═══════════════════════════════════════════════════════════════════════ */
+function TileProgressBar({tiles, ninjaMode}) {
+  const total   = tiles.filter(t => t.isCorrect).length;
+  const cleared = tiles.filter(t => t.isCorrect && t.state === "cleared").length;
+  const pct     = total > 0 ? (cleared / total) * 100 : 0;
+  const remaining = total - cleared;
+
+  return (
+    <div style={{position:"absolute",top:56,left:"50%",transform:"translateX(-50%)",width:320,zIndex:30,pointerEvents:"none"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
+        <span style={{fontSize:7,letterSpacing:4,color:ninjaMode?"rgba(0,255,238,0.5)":"rgba(255,255,255,0.2)",fontFamily:'"Rajdhani",sans-serif',textTransform:"uppercase"}}>Progress</span>
+        <span style={{fontSize:9,fontWeight:700,letterSpacing:2,color:ninjaMode?"#00ffee":"#ffd700",fontFamily:'"Rajdhani",sans-serif'}}>
+          {cleared} / {total}
+          {remaining > 0 && <span style={{color:ninjaMode?"rgba(0,255,238,0.4)":"rgba(255,215,0,0.4)",fontSize:7,marginLeft:4}}>({remaining} left)</span>}
+        </span>
+      </div>
+      <div style={{height:4,background:"rgba(255,255,255,0.07)",borderRadius:2,overflow:"hidden",border:"1px solid "+(ninjaMode?"rgba(0,255,238,0.15)":"rgba(255,255,255,0.07)")}}>
+        <div style={{
+          height:"100%",
+          width:pct+"%",
+          background:ninjaMode
+            ? "linear-gradient(90deg,#00ffee,#0088ff)"
+            : pct>=100
+              ? "linear-gradient(90deg,#00ff88,#00ffee)"
+              : "linear-gradient(90deg,#ffd700,#ff8800)",
+          borderRadius:2,
+          transition:"width 0.3s ease, background 0.4s",
+          boxShadow:ninjaMode?"0 0 6px #00ffee":pct>=100?"0 0 8px #00ff88":"none",
+        }}/>
+      </div>
+      {/* pip markers for each correct tile */}
+      <div style={{display:"flex",justifyContent:"space-between",marginTop:4,paddingLeft:1,paddingRight:1}}>
+        {Array.from({length:total},(_,i)=>(
+          <div key={i} style={{
+            width:4,height:4,borderRadius:"50%",
+            background: i < cleared
+              ? (ninjaMode?"#00ffee":"#ffd700")
+              : "rgba(255,255,255,0.1)",
+            transition:"background 0.25s",
+            boxShadow: i < cleared ? (ninjaMode?"0 0 4px #00ffee":"0 0 4px rgba(255,215,0,0.6)") : "none",
+          }}/>
+        ))}
       </div>
     </div>
   );
@@ -377,18 +426,18 @@ function ScoreScreen({score,maxCombo,round,stageId,journeyMode,onRestart,onNext,
       <style dangerouslySetInnerHTML={{__html:GCSS}}/>
       <StarField/>
       <div style={{zIndex:10,textAlign:"center",animation:"fadeIn 0.5s ease-out both"}}>
-        <div style={{fontSize:10,letterSpacing:5,color:"#444",marginBottom:14,fontFamily:'"Rajdhani",sans-serif',textTransform:"uppercase"}}>Stage Complete</div>
+        <div style={{fontSize:10,letterSpacing:5,color:"#ccc",marginBottom:14,fontFamily:'"Rajdhani",sans-serif',textTransform:"uppercase"}}>Stage Complete</div>
         <div style={{fontSize:78,fontWeight:900,lineHeight:1,marginBottom:6,background:"linear-gradient(135deg,#ffd700,#ff6600)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{score.toLocaleString()}</div>
-        <div style={{fontSize:10,letterSpacing:5,color:"#555",marginBottom:40,fontFamily:'"Rajdhani",sans-serif',textTransform:"uppercase"}}>Final Score</div>
+        <div style={{fontSize:10,letterSpacing:5,color:"#aaa",marginBottom:40,fontFamily:'"Rajdhani",sans-serif',textTransform:"uppercase"}}>Final Score</div>
         <div style={{display:"flex",gap:44,justifyContent:"center",marginBottom:40}}>
           {[
-            {label:"MAX COMBO", value:"x"+maxCombo, color:tier?tier.color:"#666"},
+            {label:"MAX COMBO", value:"x"+maxCombo, color:tier?tier.color:"#bbb"},
             {label:"ROUNDS",    value:round,         color:"#aaa"},
-            {label:"RANK",      value:rank,          color:tier?tier.color:"#666"},
+            {label:"RANK",      value:rank,          color:tier?tier.color:"#bbb"},
           ].map(function(s){return (
             <div key={s.label} style={{textAlign:"center"}}>
               <div style={{fontSize:s.label==="RANK"?14:26,fontWeight:700,color:s.color,fontFamily:'"Rajdhani",sans-serif'}}>{s.value}</div>
-              <div style={{fontSize:8,letterSpacing:4,color:"#444",marginTop:5,textTransform:"uppercase",fontFamily:'"Rajdhani",sans-serif'}}>{s.label}</div>
+              <div style={{fontSize:8,letterSpacing:4,color:"#ccc",marginTop:5,textTransform:"uppercase",fontFamily:'"Rajdhani",sans-serif'}}>{s.label}</div>
             </div>
           );})}
         </div>
@@ -396,7 +445,7 @@ function ScoreScreen({score,maxCombo,round,stageId,journeyMode,onRestart,onNext,
           <div style={{marginBottom:24,padding:"14px 24px",borderRadius:12,background:"rgba(0,255,238,0.05)",outline:"1px solid rgba(0,255,238,0.2)",border:"none"}}>
             <div style={{fontSize:9,color:"rgba(0,255,238,0.5)",letterSpacing:4,marginBottom:5,fontFamily:'"Rajdhani",sans-serif'}}>NEXT STAGE UNLOCKED</div>
             <div style={{fontSize:18,color:"#00ffee",fontWeight:700,letterSpacing:2}}>{nextStage.icon} {nextStage.name}</div>
-            <div style={{fontSize:9,color:"#555",marginTop:3,fontFamily:'"Rajdhani",sans-serif',letterSpacing:2}}>{nextStage.sub}</div>
+            <div style={{fontSize:9,color:"#aaa",marginTop:3,fontFamily:'"Rajdhani",sans-serif',letterSpacing:2}}>{nextStage.sub}</div>
           </div>
         )}
         <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
@@ -405,7 +454,7 @@ function ScoreScreen({score,maxCombo,round,stageId,journeyMode,onRestart,onNext,
           )}
           <button onClick={onRestart} style={{padding:"12px 28px",fontFamily:'"Cinzel",serif',fontSize:11,fontWeight:700,letterSpacing:3,borderRadius:8,border:"none",outline:"1.5px solid rgba(255,215,0,0.35)",background:"rgba(255,215,0,0.07)",color:"#ffd700"}}>PLAY AGAIN</button>
           <button onClick={onLauncher} style={{padding:"12px 28px",fontFamily:'"Cinzel",serif',fontSize:11,fontWeight:700,letterSpacing:3,borderRadius:8,border:"none",outline:"1.5px solid rgba(255,120,120,0.35)",background:"rgba(255,100,100,0.06)",color:"#ff9999"}}>LAUNCHER</button>
-          <button onClick={onMenu} style={{padding:"12px 28px",fontFamily:'"Cinzel",serif',fontSize:11,fontWeight:700,letterSpacing:3,borderRadius:8,border:"none",outline:"1.5px solid rgba(255,255,255,0.12)",background:"rgba(255,255,255,0.04)",color:"#888"}}>MENU</button>
+          <button onClick={onMenu} style={{padding:"12px 28px",fontFamily:'"Cinzel",serif',fontSize:11,fontWeight:700,letterSpacing:3,borderRadius:8,border:"none",outline:"1.5px solid rgba(255,255,255,0.12)",background:"rgba(255,255,255,0.04)",color:"#ccc"}}>MENU</button>
         </div>
       </div>
     </div>
@@ -437,7 +486,7 @@ function GameMenuScreen({onJourney,onChooseStage,onLauncher}) {
             <span key={i} style={{fontSize:66,fontWeight:900,fontFamily:'"Cinzel",serif',background:"linear-gradient(135deg,#ff00cc "+(i*18)+"%, #8800ff "+(40+i*10)+"%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",display:"inline-block",animation:"titleFloat "+(1.9+i*0.15)+"s "+(0.4+i*0.1)+"s ease-in-out infinite"}}>{ch}</span>
           ))}
         </div>
-        <div style={{fontSize:10,letterSpacing:5,color:"#445",fontFamily:'"Rajdhani",sans-serif',marginTop:10}}>BEGINNER TO ADVANCED  ·  10 STAGES  ·  EVERY AGE</div>
+        <div style={{fontSize:10,letterSpacing:5,color:"#aaa",fontFamily:'"Rajdhani",sans-serif',marginTop:10}}>BEGINNER TO ADVANCED  ·  10 STAGES  ·  EVERY AGE</div>
       </div>
       <div style={{display:"flex",gap:14,zIndex:10,flexWrap:"wrap",justifyContent:"center"}}>
         {btns.map(function(btn){
@@ -452,7 +501,7 @@ function GameMenuScreen({onJourney,onChooseStage,onLauncher}) {
           );
         })}
       </div>
-      <div style={{position:"absolute",bottom:24,fontSize:9,color:"#333",letterSpacing:3,fontFamily:'"Rajdhani",sans-serif',zIndex:10}}>
+      <div style={{position:"absolute",bottom:24,fontSize:9,color:"#777",letterSpacing:3,fontFamily:'"Rajdhani",sans-serif',zIndex:10}}>
         Colors · Letters · Phonics · Sight Words · Categories · Grammar · Counting · Math · Multiples · Advanced
       </div>
     </div>
@@ -468,7 +517,7 @@ function StageSelectScreen({onSelect,onBack}) {
     <div style={{width:"100%",height:"100vh",overflowY:"auto",background:"radial-gradient(ellipse at 50% 0%,#1a0a2e 0%,#0a0614 55%,#020008 100%)",display:"flex",flexDirection:"column",alignItems:"center",padding:"32px 24px 48px",position:"relative"}}>
       <style dangerouslySetInnerHTML={{__html:GCSS}}/>
       <StarField/>
-      <button onClick={onBack} style={{position:"absolute",top:20,left:20,background:"rgba(255,255,255,0.05)",outline:"1px solid rgba(255,255,255,0.1)",border:"none",color:"#666",borderRadius:8,padding:"8px 16px",fontSize:11,letterSpacing:3,fontFamily:'"Rajdhani",sans-serif',zIndex:10}}>back</button>
+      <button onClick={onBack} style={{position:"absolute",top:20,left:20,background:"rgba(255,255,255,0.05)",outline:"1px solid rgba(255,255,255,0.1)",border:"none",color:"#bbb",borderRadius:8,padding:"8px 16px",fontSize:11,letterSpacing:3,fontFamily:'"Rajdhani",sans-serif',zIndex:10}}>back</button>
       <div style={{textAlign:"center",marginBottom:28,zIndex:10,marginTop:8}}>
         <div style={{fontSize:26,fontWeight:900,fontFamily:'"Cinzel",serif',color:"#ffd700"}}>THE LEARNING PATH</div>
       </div>
@@ -483,14 +532,14 @@ function StageSelectScreen({onSelect,onBack}) {
                 <div style={{flex:1}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3}}>
                     <div style={{fontSize:12,fontWeight:700,color:st.accent,fontFamily:'"Cinzel",serif',letterSpacing:2}}>{st.name}</div>
-                    <div style={{fontSize:9,color:"#333",fontFamily:'"Rajdhani",sans-serif',background:"rgba(0,0,0,0.3)",padding:"2px 6px",borderRadius:4}}>LV {st.id}</div>
+                    <div style={{fontSize:9,color:"#777",fontFamily:'"Rajdhani",sans-serif',background:"rgba(0,0,0,0.3)",padding:"2px 6px",borderRadius:4}}>LV {st.id}</div>
                   </div>
-                  <div style={{fontSize:9,color:"#666",letterSpacing:1,fontFamily:'"Rajdhani",sans-serif',marginBottom:5}}>{st.sub}</div>
-                  <div style={{fontSize:10,color:"#888",fontFamily:'"Rajdhani",sans-serif',lineHeight:1.5}}>{st.desc}</div>
+                  <div style={{fontSize:9,color:"#bbb",letterSpacing:1,fontFamily:'"Rajdhani",sans-serif',marginBottom:5}}>{st.sub}</div>
+                  <div style={{fontSize:10,color:"#ccc",fontFamily:'"Rajdhani",sans-serif',lineHeight:1.5}}>{st.desc}</div>
                   <div style={{display:"flex",gap:4,marginTop:8,flexWrap:"wrap"}}>
                     {st.hint>0 && <span style={{fontSize:8,background:"rgba(255,215,0,0.1)",color:"rgba(255,215,0,0.6)",outline:"1px solid rgba(255,215,0,0.2)",border:"none",borderRadius:10,padding:"2px 7px",letterSpacing:1,fontFamily:'"Rajdhani",sans-serif'}}>hints on</span>}
                     {st.time===0 && <span style={{fontSize:8,background:"rgba(100,255,100,0.1)",color:"rgba(100,255,100,0.6)",outline:"1px solid rgba(100,255,100,0.2)",border:"none",borderRadius:10,padding:"2px 7px",letterSpacing:1,fontFamily:'"Rajdhani",sans-serif'}}>no timer</span>}
-                    <span style={{fontSize:8,color:"#444",fontFamily:'"Rajdhani",sans-serif',padding:"2px 4px"}}>{st.challenges.length} challenges</span>
+                    <span style={{fontSize:8,color:"#ccc",fontFamily:'"Rajdhani",sans-serif',padding:"2px 4px"}}>{st.challenges.length} challenges</span>
                   </div>
                 </div>
               </div>
@@ -574,12 +623,23 @@ function BEDUNinjaGame({initialStageId,initialJourney,onGoLauncher,onMarkComplet
     const rem=tiles.filter(t=>t.isCorrect&&t.state==="idle");
     if(rem.length===0){
       sfx.clear(); setTrans(true);
-      const early=stageR.current<=3;
-      flash(early?rand(PRAISE):"ROUND CLEAR!",early?"#ffd700":"#00ffee");
+      const capturedStageId=stageR.current;
+      const capturedChallIdx=challR.current;
+      const st=STAGES[capturedStageId];
+      const ni=capturedChallIdx+1;
+      const allDone=ni>=st.challenges.length;
+      const early=capturedStageId<=3;
+      flash(allDone?"STAGE COMPLETE!":early?rand(PRAISE):"ROUND CLEAR!",allDone?"#00ffee":early?"#ffd700":"#00ffee");
       setTimeout(()=>{
-        const ni=challR.current+1; setChallIdx(ni); setRound(r=>r+1);
-        const st=STAGES[stageR.current], ch=st.challenges[ni%st.challenges.length];
-        setTiles(ch.build()); setTrans(false);
+        if(stageR.current!==capturedStageId) return;
+        if(allDone){
+          setTrans(false);
+          setScreen("score");
+        } else {
+          setChallIdx(ni); setRound(r=>r+1);
+          setTiles(st.challenges[ni].build());
+          setTrans(false);
+        }
       },1300);
     }
   },[tiles,screen,flash]);
@@ -645,8 +705,9 @@ function BEDUNinjaGame({initialStageId,initialJourney,onGoLauncher,onMarkComplet
       {ninja&&<div style={{position:"absolute",inset:0,pointerEvents:"none",zIndex:1,background:"radial-gradient(ellipse 70% 50% at 50% 50%,rgba(0,255,238,0.04) 0%,transparent 70%)",animation:"ninjaPulse 1s ease-in-out infinite"}}/>}
       <HUD score={score} combo={combo} stageName={stage.name} stageAccent={stage.accent} challNum={(challIdx%stage.challenges.length)+1} total={stage.challenges.length} timeLeft={timeLeft} noTimer={noTimer} ninjaMode={ninja} comboTier={comboTier}/>
       <MomentumBar momentum={momentum} ninjaMode={ninja}/>
+      <TileProgressBar tiles={tiles} ninjaMode={ninja}/>
       <div style={{position:"absolute",top:80,left:"50%",transform:"translateX(-50%)",textAlign:"center",zIndex:20,pointerEvents:"none",maxWidth:580,padding:"0 20px"}}>
-        <div style={{fontSize:9,letterSpacing:4,color:"#444",textTransform:"uppercase",fontFamily:'"Rajdhani",sans-serif',marginBottom:5}}>FIND AND SLASH</div>
+        <div style={{fontSize:9,letterSpacing:4,color:"#ccc",textTransform:"uppercase",fontFamily:'"Rajdhani",sans-serif',marginBottom:5}}>FIND AND SLASH</div>
         <div style={{fontSize:stage.hint>=2?17:15,fontWeight:700,letterSpacing:2,color:ninja?"#00ffee":"#ffd700",textShadow:ninja?"0 0 20px #00ffee":"0 0 14px rgba(255,215,0,0.4)",fontFamily:'"Cinzel",serif',lineHeight:1.35,transition:"all 0.4s"}}>{chall?chall.label.toUpperCase():""}</div>
       </div>
       
@@ -655,7 +716,7 @@ function BEDUNinjaGame({initialStageId,initialJourney,onGoLauncher,onMarkComplet
       </div>
       <ParticleLayer particles={parts}/>
       {banner&&<Banner text={banner.text} color={banner.color}/>}
-      <button onClick={onGoLauncher} style={{position:"absolute",top:16,left:16,zIndex:40,background:"rgba(0,0,0,0.4)",outline:"1px solid rgba(255,255,255,0.08)",border:"none",color:"#444",borderRadius:6,padding:"6px 12px",fontSize:9,letterSpacing:2,fontFamily:'"Rajdhani",sans-serif'}}>HOME</button>
+      <button onClick={onGoLauncher} style={{position:"absolute",top:16,left:16,zIndex:40,background:"rgba(0,0,0,0.4)",outline:"1px solid rgba(255,255,255,0.08)",border:"none",color:"#ccc",borderRadius:6,padding:"6px 12px",fontSize:9,letterSpacing:2,fontFamily:'"Rajdhani",sans-serif'}}>HOME</button>
     </div>
   );
 }
@@ -729,7 +790,7 @@ function BEDUNinjaLauncher() {
           <div style={{display:"flex",alignItems:"baseline",gap:8}}>
             <span style={{fontSize:11,fontWeight:900,letterSpacing:6,color:"#ffd700",animation:"logoGlow 3s ease-in-out infinite"}}>B.EDU</span>
             <span style={{fontSize:11,fontWeight:900,letterSpacing:6,background:"linear-gradient(90deg,#ff00cc,#8800ff)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>NINJA</span>
-            <span style={{fontSize:7,letterSpacing:4,color:"#333",marginLeft:4,alignSelf:"center"}}>LAUNCHER</span>
+            <span style={{fontSize:7,letterSpacing:4,color:"#777",marginLeft:4,alignSelf:"center"}}>LAUNCHER</span>
           </div>
           <div style={{display:"flex",gap:24,flexWrap:"wrap"}}>
             {[
@@ -739,7 +800,7 @@ function BEDUNinjaLauncher() {
             ].map(function(stat){return (
               <div key={stat.label} style={{textAlign:"right"}}>
                 <div style={{fontSize:16,fontWeight:700,color:stat.color,fontFamily:'"Rajdhani",sans-serif'}}>{stat.value}</div>
-                <div style={{fontSize:7,letterSpacing:3,color:"#333",marginTop:1}}>{stat.label}</div>
+                <div style={{fontSize:7,letterSpacing:3,color:"#777",marginTop:1}}>{stat.label}</div>
               </div>
             );})}
           </div>
@@ -748,13 +809,13 @@ function BEDUNinjaLauncher() {
         {/* HERO BAR */}
         <div style={{margin:"32px 0 28px",padding:"28px 36px",borderRadius:20,background:"rgba(255,215,0,0.03)",border:"1px solid rgba(255,215,0,0.1)",backdropFilter:"blur(20px)",display:"flex",alignItems:"center",justifyContent:"space-between",gap:24,flexWrap:"wrap",animation:"launcherIn 0.5s ease-out both"}}>
           <div>
-            <div style={{fontSize:8,letterSpacing:5,color:"#555",marginBottom:8}}>MISSION CONTROL</div>
+            <div style={{fontSize:8,letterSpacing:5,color:"#aaa",marginBottom:8}}>MISSION CONTROL</div>
             <div style={{fontSize:26,fontWeight:900,letterSpacing:2,fontFamily:'"Cinzel",serif',background:"linear-gradient(135deg,#ffd700,#ff8800)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",lineHeight:1.1}}>B.EDU NINJA</div>
-            <div style={{fontSize:10,color:"#555",marginTop:6,letterSpacing:3,fontFamily:'"Rajdhani",sans-serif'}}>10 STAGES  ·  BEGINNER TO ADVANCED  ·  EVERY AGE</div>
+            <div style={{fontSize:10,color:"#aaa",marginTop:6,letterSpacing:3,fontFamily:'"Rajdhani",sans-serif'}}>10 STAGES  ·  BEGINNER TO ADVANCED  ·  EVERY AGE</div>
           </div>
           <div style={{flex:1,minWidth:200,maxWidth:320}}>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
-              <span style={{fontSize:7,letterSpacing:4,color:"#444"}}>JOURNEY PROGRESS</span>
+              <span style={{fontSize:7,letterSpacing:4,color:"#ccc"}}>JOURNEY PROGRESS</span>
               <span style={{fontSize:7,letterSpacing:3,color:"#ffd700"}}>{Math.round(totalPlayed/totalStages*100)}%</span>
             </div>
             <div style={{height:6,background:"rgba(255,255,255,0.06)",borderRadius:3,overflow:"hidden",border:"1px solid rgba(255,255,255,0.04)"}}>
@@ -792,7 +853,7 @@ function BEDUNinjaLauncher() {
             const isActive=activeGroup===i, rgb=hexToRgb(g.color);
             return (
               <button key={i} onClick={()=>setActiveGroup(isActive?null:i)}
-                style={{padding:"7px 18px",fontFamily:'"Rajdhani",sans-serif',fontSize:9,fontWeight:700,letterSpacing:2,borderRadius:20,border:"none",background:isActive?"rgba("+rgb+",0.18)":"rgba(255,255,255,0.04)",outline:"1px solid "+(isActive?g.color+"88":"rgba(255,255,255,0.08)"),color:isActive?g.color:"#555",transition:"all 0.2s"}}>
+                style={{padding:"7px 18px",fontFamily:'"Rajdhani",sans-serif',fontSize:9,fontWeight:700,letterSpacing:2,borderRadius:20,border:"none",background:isActive?"rgba("+rgb+",0.18)":"rgba(255,255,255,0.04)",outline:"1px solid "+(isActive?g.color+"88":"rgba(255,255,255,0.08)"),color:isActive?g.color:"#aaa",transition:"all 0.2s"}}>
                 {g.label}
               </button>
             );
@@ -828,23 +889,23 @@ function BEDUNinjaLauncher() {
                 <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
                   <div style={{fontSize:24,lineHeight:1}}>{st.icon}</div>
                   <div>
-                    <div style={{fontSize:8,color:"#333",letterSpacing:2,marginBottom:2}}>LV {st.id}</div>
+                    <div style={{fontSize:8,color:"#777",letterSpacing:2,marginBottom:2}}>LV {st.id}</div>
                     <div style={{fontSize:11,fontWeight:700,color:st.accent,letterSpacing:2,fontFamily:'"Cinzel",serif'}}>{st.name}</div>
                   </div>
                 </div>
 
-                <div style={{fontSize:8,color:"#555",letterSpacing:1,fontFamily:'"Rajdhani",sans-serif',marginBottom:10,lineHeight:1.5}}>{st.sub}</div>
+                <div style={{fontSize:8,color:"#ccc",letterSpacing:1,fontFamily:'"Rajdhani",sans-serif',marginBottom:10,lineHeight:1.5}}>{st.sub}</div>
 
                 {played ? (
                   <div style={{borderTop:"1px solid rgba(255,255,255,0.05)",paddingTop:10}}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                       <div>
                         <div style={{fontSize:14,fontWeight:700,color:"#ffd700",fontFamily:'"Rajdhani",sans-serif'}}>{(stats.score||0).toLocaleString()}</div>
-                        <div style={{fontSize:7,letterSpacing:3,color:"#444",marginTop:1}}>BEST SCORE</div>
+                        <div style={{fontSize:7,letterSpacing:3,color:"#ccc",marginTop:1}}>BEST SCORE</div>
                       </div>
                       <div style={{textAlign:"right"}}>
                         <div style={{fontSize:11,fontWeight:700,color:"#00ffee",fontFamily:'"Rajdhani",sans-serif'}}>x{stats.maxCombo||0}</div>
-                        <div style={{fontSize:7,letterSpacing:2,color:"#444",marginTop:1}}>{rank}</div>
+                        <div style={{fontSize:7,letterSpacing:2,color:"#ccc",marginTop:1}}>{rank}</div>
                       </div>
                     </div>
                   </div>
@@ -852,7 +913,7 @@ function BEDUNinjaLauncher() {
                   <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
                     {st.hint>0&&<span style={{fontSize:7,background:"rgba(255,215,0,0.07)",color:"rgba(255,215,0,0.5)",border:"none",outline:"1px solid rgba(255,215,0,0.15)",borderRadius:8,padding:"2px 6px",letterSpacing:1,fontFamily:'"Rajdhani",sans-serif'}}>hints</span>}
                     {st.time===0&&<span style={{fontSize:7,background:"rgba(100,255,100,0.07)",color:"rgba(100,255,100,0.5)",border:"none",outline:"1px solid rgba(100,255,100,0.15)",borderRadius:8,padding:"2px 6px",letterSpacing:1,fontFamily:'"Rajdhani",sans-serif'}}>no timer</span>}
-                    <span style={{fontSize:7,color:"#333",fontFamily:'"Rajdhani",sans-serif',padding:"2px 4px",letterSpacing:1}}>{st.challenges.length} ch</span>
+                    <span style={{fontSize:7,color:"#777",fontFamily:'"Rajdhani",sans-serif',padding:"2px 4px",letterSpacing:1}}>{st.challenges.length} ch</span>
                   </div>
                 )}
 
@@ -988,8 +1049,8 @@ function BEDUNinjaSite() {
             <span style={{fontFamily:"'Orbitron',sans-serif",fontSize:10,fontWeight:900,letterSpacing:5,background:"linear-gradient(90deg,#ff00cc,#8800ff)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>NINJA</span>
           </div>
           <div style={{display:"flex",gap:28,alignItems:"center"}}>
-            <span style={{fontSize:9,letterSpacing:4,color:"#333",cursor:"default"}}>10 STAGES</span>
-            <span style={{fontSize:9,letterSpacing:4,color:"#333",cursor:"default"}}>EVERY AGE</span>
+            <span style={{fontSize:9,letterSpacing:4,color:"#777",cursor:"default"}}>10 STAGES</span>
+            <span style={{fontSize:9,letterSpacing:4,color:"#777",cursor:"default"}}>EVERY AGE</span>
             <button onClick={handleLaunch} style={{padding:"8px 20px",fontFamily:"'Cinzel',serif",fontSize:9,fontWeight:700,letterSpacing:3,borderRadius:6,border:"none",background:"rgba(255,215,0,0.08)",outline:"1px solid rgba(255,215,0,0.3)",color:"#ffd700",cursor:"pointer",transition:"all 0.2s"}}
               onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,215,0,0.16)";}}
               onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,215,0,0.08)";}}>
@@ -1000,7 +1061,7 @@ function BEDUNinjaSite() {
 
         {/* Hero title */}
         <div style={{position:"relative",zIndex:10,textAlign:"center",animation:"fadeSlideUp 0.8s 0.1s ease-out both"}}>
-          <div style={{fontSize:9,letterSpacing:8,color:"#444",marginBottom:20,fontFamily:"'Orbitron',sans-serif"}}>EDUCATIONAL · GAME · PLATFORM</div>
+          <div style={{fontSize:9,letterSpacing:8,color:"#ccc",marginBottom:20,fontFamily:"'Orbitron',sans-serif"}}>EDUCATIONAL · GAME · PLATFORM</div>
 
           <div style={{display:"flex",gap:4,justifyContent:"center",alignItems:"baseline",marginBottom:6}}>
             <span style={{fontFamily:"'Cinzel',serif",fontSize:"clamp(52px,10vw,96px)",fontWeight:900,background:"linear-gradient(135deg,#ffd700 0%,#ff8800 60%,#ff4400 100%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",animation:"heroFloat 3.5s ease-in-out infinite",display:"inline-block",lineHeight:1}}>B</span>
@@ -1024,7 +1085,7 @@ function BEDUNinjaSite() {
             ))}
           </div>
 
-          <p style={{fontSize:"clamp(11px,1.6vw,15px)",color:"#556",letterSpacing:3,marginBottom:52,fontFamily:"'Rajdhani',sans-serif",maxWidth:480,margin:"0 auto 52px"}}>
+          <p style={{fontSize:"clamp(11px,1.6vw,15px)",color:"#aaa",letterSpacing:3,marginBottom:52,fontFamily:"'Rajdhani',sans-serif",maxWidth:480,margin:"0 auto 52px"}}>
             A tile-slashing learning game for every age — from colors to calculus.
           </p>
 
@@ -1088,7 +1149,7 @@ function BEDUNinjaSite() {
       {/* ── FEATURES ── */}
       <section style={{padding:"100px 24px",maxWidth:1100,margin:"0 auto"}}>
         <div style={{textAlign:"center",marginBottom:64,animation:"fadeSlideUp 0.7s ease-out both"}}>
-          <div style={{fontSize:8,letterSpacing:6,color:"#444",marginBottom:16,fontFamily:"'Orbitron',sans-serif"}}>WHAT YOU WILL LEARN</div>
+          <div style={{fontSize:8,letterSpacing:6,color:"#ccc",marginBottom:16,fontFamily:"'Orbitron',sans-serif"}}>WHAT YOU WILL LEARN</div>
           <div style={{fontFamily:"'Cinzel',serif",fontSize:"clamp(22px,4vw,40px)",fontWeight:900,color:"#ffd700",letterSpacing:2}}>THE LEARNING PATH</div>
           <div style={{width:60,height:2,background:"linear-gradient(90deg,transparent,#ffd700,transparent)",margin:"20px auto 0"}}/>
         </div>
@@ -1115,7 +1176,7 @@ function BEDUNinjaSite() {
                 <div style={{fontSize:36,marginBottom:16,lineHeight:1}}>{f.icon}</div>
                 <div style={{fontFamily:"'Cinzel',serif",fontSize:13,fontWeight:700,color:f.color,letterSpacing:2,marginBottom:6}}>{f.title}</div>
                 <div style={{fontSize:8,color:"rgba(255,215,0,0.35)",letterSpacing:3,marginBottom:12,fontFamily:"'Orbitron',sans-serif"}}>{f.ages}</div>
-                <div style={{fontSize:11,color:"#556",lineHeight:1.7,letterSpacing:0.5}}>{f.desc}</div>
+                <div style={{fontSize:11,color:"#aaa",lineHeight:1.7,letterSpacing:0.5}}>{f.desc}</div>
               </div>
             );
           })}
@@ -1126,7 +1187,7 @@ function BEDUNinjaSite() {
       <section style={{padding:"80px 24px",background:"rgba(255,215,0,0.02)",borderTop:"1px solid rgba(255,255,255,0.04)",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
         <div style={{maxWidth:860,margin:"0 auto"}}>
           <div style={{textAlign:"center",marginBottom:56}}>
-            <div style={{fontSize:8,letterSpacing:6,color:"#444",marginBottom:16,fontFamily:"'Orbitron',sans-serif"}}>HOW IT WORKS</div>
+            <div style={{fontSize:8,letterSpacing:6,color:"#ccc",marginBottom:16,fontFamily:"'Orbitron',sans-serif"}}>HOW IT WORKS</div>
             <div style={{fontFamily:"'Cinzel',serif",fontSize:"clamp(20px,3vw,34px)",fontWeight:900,color:"#fff",letterSpacing:2}}>SLASH YOUR WAY TO MASTERY</div>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:32}}>
@@ -1139,7 +1200,7 @@ function BEDUNinjaSite() {
               <div key={i} style={{animation:"fadeSlideUp 0.6s "+(0.1+i*0.1)+"s ease-out both"}}>
                 <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:32,fontWeight:900,color:step.color,opacity:0.18,marginBottom:8,letterSpacing:-2}}>{step.n}</div>
                 <div style={{fontFamily:"'Cinzel',serif",fontSize:12,fontWeight:700,color:step.color,letterSpacing:3,marginBottom:10}}>{step.title}</div>
-                <div style={{fontSize:11,color:"#445",lineHeight:1.8,letterSpacing:0.5}}>{step.desc}</div>
+                <div style={{fontSize:11,color:"#aaa",lineHeight:1.8,letterSpacing:0.5}}>{step.desc}</div>
               </div>
             );})}
           </div>
@@ -1149,8 +1210,8 @@ function BEDUNinjaSite() {
       {/* ── STAGE PREVIEW STRIP ── */}
       <section style={{padding:"80px 24px",maxWidth:1100,margin:"0 auto"}}>
         <div style={{textAlign:"center",marginBottom:40}}>
-          <div style={{fontSize:8,letterSpacing:6,color:"#444",marginBottom:12,fontFamily:"'Orbitron',sans-serif"}}>ALL 10 STAGES</div>
-          <div style={{fontFamily:"'Cinzel',serif",fontSize:"clamp(18px,2.5vw,28px)",fontWeight:900,color:"#888",letterSpacing:3}}>EVERY STAGE. EVERY AGE.</div>
+          <div style={{fontSize:8,letterSpacing:6,color:"#ccc",marginBottom:12,fontFamily:"'Orbitron',sans-serif"}}>ALL 10 STAGES</div>
+          <div style={{fontFamily:"'Cinzel',serif",fontSize:"clamp(18px,2.5vw,28px)",fontWeight:900,color:"#ccc",letterSpacing:3}}>EVERY STAGE. EVERY AGE.</div>
         </div>
         <div style={{display:"flex",gap:8,flexWrap:"wrap",justifyContent:"center"}}>
           {STAGES.map(function(st,i){
@@ -1169,7 +1230,7 @@ function BEDUNinjaSite() {
                 <span style={{fontSize:16}}>{st.icon}</span>
                 <div>
                   <div style={{fontSize:9,fontWeight:700,color:st.accent,letterSpacing:2,fontFamily:"'Cinzel',serif"}}>{st.name}</div>
-                  <div style={{fontSize:7,color:"#333",letterSpacing:2,fontFamily:"'Orbitron',sans-serif"}}>{st.sub.split("·")[1]||st.sub}</div>
+                  <div style={{fontSize:7,color:"#777",letterSpacing:2,fontFamily:"'Orbitron',sans-serif"}}>{st.sub.split("·")[1]||st.sub}</div>
                 </div>
               </div>
             );
@@ -1188,11 +1249,11 @@ function BEDUNinjaSite() {
       }}>
         <SiteStars/>
         <div style={{position:"relative",zIndex:10}}>
-          <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:8,letterSpacing:6,color:"#444",marginBottom:20}}>READY TO PLAY?</div>
+          <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:8,letterSpacing:6,color:"#ccc",marginBottom:20}}>READY TO PLAY?</div>
           <div style={{fontFamily:"'Cinzel',serif",fontSize:"clamp(28px,6vw,64px)",fontWeight:900,lineHeight:1.1,marginBottom:16,background:"linear-gradient(135deg,#ffd700,#ff8800 50%,#ff00cc)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>
             BECOME A<br/>LEARNING NINJA
           </div>
-          <p style={{fontSize:13,color:"#445",letterSpacing:2,marginBottom:52,maxWidth:400,margin:"0 auto 52px"}}>Free. No account needed. Works on any device. Start learning in seconds.</p>
+          <p style={{fontSize:13,color:"#aaa",letterSpacing:2,marginBottom:52,maxWidth:400,margin:"0 auto 52px"}}>Free. No account needed. Works on any device. Start learning in seconds.</p>
 
           <button
             onClick={handleLaunch}
