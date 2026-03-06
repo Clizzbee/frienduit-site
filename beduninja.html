@@ -13,12 +13,9 @@
 </head>
 <body>
   <div id="root"></div>
-
-  <!-- React + Babel via CDN -->
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
-
   <script type="text/babel" data-presets="react">
     const { useState, useEffect, useRef, useCallback } = React;
 
@@ -290,15 +287,13 @@ function Tile({tile,ninjaMode,hintLevel,onClick}) {
   const {fg,bg:metaBg,fs:metaFs}=tile.meta;
   const len=tile.display.length;
   const fontSize=metaFs||(len===1?30:len<=3?18:len<=5?14:len<=7?11:9);
-  const showHint=hintLevel>0&&tile.isCorrect&&tile.state==="idle";
+  const justSliced=tile.state==="correct";
   let boxShadow;
-  if(showHint&&hintLevel>=3) boxShadow="0 0 0 3px #ffd700, 0 0 20px rgba(255,215,0,0.55)";
-  else if(showHint&&hintLevel>=2) boxShadow="0 0 0 1.5px rgba(255,215,0,0.45), 0 0 12px rgba(255,215,0,0.3)";
-  else if(showHint) boxShadow="0 0 8px rgba(255,215,0,0.2)";
+  if(justSliced) boxShadow="0 0 0 3px #ffd700, 0 0 30px rgba(255,215,0,0.7)";
   else if(ninjaMode) boxShadow="0 6px 24px rgba(0,0,0,0.6), 0 0 12px rgba(0,255,238,0.12)";
   else boxShadow="0 6px 24px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04)";
   const bg=metaBg||(ninjaMode?"linear-gradient(135deg,rgba(0,18,28,0.9),rgba(0,30,45,0.85))":"linear-gradient(135deg,rgba(18,8,35,0.9),rgba(25,12,50,0.85))");
-  const border=(showHint&&hintLevel>=3)?"2px solid #ffd700":ninjaMode?"1.5px solid rgba(0,255,238,0.4)":"1.5px solid rgba(180,120,255,0.18)";
+  const border=justSliced?"2px solid #ffd700":ninjaMode?"1.5px solid rgba(0,255,238,0.4)":"1.5px solid rgba(180,120,255,0.18)";
   const color=fg||(ninjaMode?"#b8fff8":"#e0d8f8");
   const floatDur=3+(tile.id*0.17)%2.2, floatDelay=(tile.id*0.23)%3.5, spawnDelay=tile.id*0.025;
   let anim;
@@ -307,7 +302,7 @@ function Tile({tile,ninjaMode,hintLevel,onClick}) {
   else if(tile.state==="wrong") anim="tileWrong 0.5s ease-out forwards";
   else anim="none";
   return (
-    <div onClick={tile.state==="idle"?onClick:undefined} style={{width:90,height:74,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:10,background:bg,border,backdropFilter:"blur(10px)",boxShadow,fontSize,fontWeight:700,color,fontFamily:'"Rajdhani",sans-serif',letterSpacing:len===1?0:1.5,userSelect:"none",cursor:tile.state==="idle"?"pointer":"default",transition:"border-color 0.3s, box-shadow 0.3s",animation:anim,opacity:tile.state==="cleared"?0:1,textShadow:(showHint&&hintLevel>=3)?"0 0 8px #ffd700":"none",textAlign:"center",lineHeight:1.2}}>
+    <div onClick={tile.state==="idle"?onClick:undefined} style={{width:90,height:74,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:10,background:bg,border,backdropFilter:"blur(10px)",boxShadow,fontSize,fontWeight:700,color,fontFamily:'"Rajdhani",sans-serif',letterSpacing:len===1?0:1.5,userSelect:"none",cursor:tile.state==="idle"?"pointer":"default",transition:"border-color 0.3s, box-shadow 0.3s",animation:anim,opacity:tile.state==="cleared"?0:1,textShadow:justSliced?"0 0 12px #ffd700":"none",textAlign:"center",lineHeight:1.2}}>
       {tile.display}
     </div>
   );
@@ -654,7 +649,7 @@ function BEDUNinjaGame({initialStageId,initialJourney,onGoLauncher,onMarkComplet
         <div style={{fontSize:9,letterSpacing:4,color:"#444",textTransform:"uppercase",fontFamily:'"Rajdhani",sans-serif',marginBottom:5}}>FIND AND SLASH</div>
         <div style={{fontSize:stage.hint>=2?17:15,fontWeight:700,letterSpacing:2,color:ninja?"#00ffee":"#ffd700",textShadow:ninja?"0 0 20px #00ffee":"0 0 14px rgba(255,215,0,0.4)",fontFamily:'"Cinzel",serif',lineHeight:1.35,transition:"all 0.4s"}}>{chall?chall.label.toUpperCase():""}</div>
       </div>
-      {stage.hint>0&&<div style={{position:"absolute",bottom:58,left:"50%",transform:"translateX(-50%)",zIndex:30,background:"rgba(255,215,0,0.07)",outline:"1px solid rgba(255,215,0,0.18)",border:"none",borderRadius:20,padding:"5px 14px",fontSize:9,color:"rgba(255,215,0,0.6)",letterSpacing:2,fontFamily:'"Rajdhani",sans-serif',whiteSpace:"nowrap"}}>{stage.hint>=3?"correct tiles glow gold":stage.hint>=2?"watch for the subtle glow":"hint active"}</div>}
+      
       <div ref={gridR} style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%) translateY(18px)",display:"grid",gridTemplateColumns:"repeat(5, 90px)",gap:8,zIndex:10,filter:trans?"blur(3px) brightness(0.5)":"none",transition:"filter 0.4s"}}>
         {tiles.map(tile=><Tile key={tile.id} tile={tile} ninjaMode={ninja} hintLevel={stage.hint} onClick={()=>handleTile(tile)}/>)}
       </div>
