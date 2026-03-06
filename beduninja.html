@@ -47,6 +47,124 @@ const sfx = {
 };
 
 /* ═══════════════════════════════════════════════════════════════════════
+   ANNOUNCER
+   Tries Google Translate TTS (sounds human) then StreamElements (Polly/Brian)
+   then Web Speech as last resort. Shows a debug badge so you can see which fires.
+═══════════════════════════════════════════════════════════════════════ */
+
+const HYPE_INTROS = [
+  "Alright!", "Let's go!", "Here we go!", "Next up!", "Challenge time!",
+  "Get ready!", "Listen up!", "Oh yeah!", "Come on!", "Here it is!",
+  "Lock in!", "Stay sharp!", "Go go go!", "You got this!", "Heads up!",
+];
+
+let _ann = { audio: null, timer: null, engine: "none" };
+
+// Show a tiny HUD badge so we can see which engine fired
+const _showBadge = (label) => {
+  let el = document.getElementById("_tts_badge");
+  if(!el){ el=document.createElement("div"); el.id="_tts_badge"; Object.assign(el.style,{position:"fixed",bottom:"8px",right:"8px",zIndex:99999,fontSize:"9px",letterSpacing:"2px",padding:"3px 8px",borderRadius:"4px",fontFamily:"monospace",pointerEvents:"none",transition:"opacity 0.5s"}); document.body.appendChild(el); }
+  el.textContent = "TTS: " + label;
+  el.style.background = label==="GOOGLE"?"#004400":label==="POLLY"?"#003366":label==="WEB"?"#440000":"#222";
+  el.style.color = label==="GOOGLE"?"#00ff88":label==="POLLY"?"#00aaff":label==="WEB"?"#ff8888":"#666";
+  el.style.opacity = "1";
+  clearTimeout(_ann._badgeTimer);
+  _ann._badgeTimer = setTimeout(()=>{ el.style.opacity="0"; }, 4000);
+};
+
+const cancelSpeech = () => {
+  clearTimeout(_ann.timer);
+  if(_ann.audio){ try{ _ann.audio.pause(); _ann.audio.src=""; }catch(e){} _ann.audio=null; }
+  if(window.speechSynthesis) window.speechSynthesis.cancel();
+};
+
+// Attempt 1: Google Translate TTS — sounds like a real person, no API key
+const _tryGoogle = (text, onDone, onFail) => {
+  const url = "https://translate.google.com/translate_tts?ie=UTF-8&tl=en-US&client=tw-ob&q=" + encodeURIComponent(text);
+  const audio = new Audio();
+  audio.crossOrigin = "anonymous";
+  _ann.audio = audio;
+  let fired = false;
+  const fail = () => { if(fired) return; fired=true; _ann.audio=null; onFail(); };
+  audio.oncanplaythrough = () => {
+    if(fired) return; fired=true;
+    _showBadge("GOOGLE");
+    audio.play().then(()=>{
+      audio.onended = ()=>{ _ann.audio=null; onDone(); };
+    }).catch(fail);
+  };
+  audio.onerror = fail;
+  setTimeout(()=>{ if(!fired) fail(); }, 3000); // timeout
+  audio.src = url;
+  audio.load();
+};
+
+// Attempt 2: StreamElements (Amazon Polly Brian) via fetch -> AudioContext
+const _tryPolly = async (text, onDone, onFail) => {
+  try {
+    const url = "https://api.streamelements.com/kappa/v2/speech?voice=Brian&text=" + encodeURIComponent(text);
+    const res = await fetch(url, {mode:"cors"});
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    const buf = await res.arrayBuffer();
+    const ac = new (window.AudioContext||window.webkitAudioContext)();
+    await ac.resume();
+    const decoded = await ac.decodeAudioData(buf);
+    const src = ac.createBufferSource();
+    src.buffer = decoded;
+    src.connect(ac.destination);
+    src.onended = ()=>{ ac.close(); onDone(); };
+    _showBadge("POLLY");
+    src.start(0);
+  } catch(e) {
+    onFail();
+  }
+};
+
+// Attempt 3: Web Speech — robotic but always works
+const _tryWebSpeech = (text, rate, pitch, onDone) => {
+  if(!window.speechSynthesis){ if(onDone)onDone(); return; }
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.rate=rate; utt.pitch=pitch; utt.volume=1.0;
+  const voices = window.speechSynthesis.getVoices();
+  const v = voices.find(v=>/google us english/i.test(v.name))
+         || voices.find(v=>/google uk english male/i.test(v.name))
+         || voices.find(v=>/daniel|david|mark|alex/i.test(v.name))
+         || voices.find(v=>v.lang.startsWith("en")&&!v.localService)
+         || voices.find(v=>v.lang.startsWith("en"));
+  if(v) utt.voice=v;
+  utt.onend=()=>{ if(onDone)onDone(); };
+  _showBadge("WEB");
+  window.speechSynthesis.speak(utt);
+};
+
+const toSpeech = (label) => label
+  .replace(/[-–—]/g, " to ")
+  .replace(/[!]/g, "")
+  .replace(/\s+/g, " ")
+  .trim();
+
+// Chain: speak intro then challenge, trying engines in order
+const _speakOne = (text, rate, pitch, onDone) => {
+  _tryGoogle(text, onDone, ()=>{
+    _tryPolly(text, onDone, ()=>{
+      _tryWebSpeech(text, rate, pitch, onDone);
+    });
+  });
+};
+
+const announce = (label, isFirst=false) => {
+  cancelSpeech();
+  _ann.timer = setTimeout(()=>{
+    const intro = HYPE_INTROS[Math.floor(Math.random()*HYPE_INTROS.length)];
+    const challenge = toSpeech(label);
+    _speakOne(intro, 1.2, 1.2, ()=>{
+      setTimeout(()=> _speakOne(challenge, 1.05, 1.1, ()=>{}), 100);
+    });
+  }, isFirst ? 600 : 150);
+};
+
+/* ═══════════════════════════════════════════════════════════════════════
    HELPERS
 ═══════════════════════════════════════════════════════════════════════ */
 const isPrime = (n) => { if(n<2) return false; for(let i=2;i<=Math.sqrt(n);i++) if(n%i===0) return false; return true; };
@@ -634,11 +752,13 @@ function BEDUNinjaGame({initialStageId,initialJourney,onGoLauncher,onMarkComplet
         if(stageR.current!==capturedStageId) return;
         if(allDone){
           setTrans(false);
+          if(window.speechSynthesis) window.speechSynthesis.cancel();
           setScreen("score");
         } else {
           setChallIdx(ni); setRound(r=>r+1);
           setTiles(st.challenges[ni].build());
           setTrans(false);
+          announce(st.challenges[ni].label, false);
         }
       },1300);
     }
@@ -652,8 +772,10 @@ function BEDUNinjaGame({initialStageId,initialJourney,onGoLauncher,onMarkComplet
     setRound(1); setTimeLeft(st.time||90);
     setChallIdx(0); setBanner(null);
     setParts([]); setTrans(false);
+    const firstLabel = st.challenges[0].label;
     setTiles(st.challenges[0].build());
     setScreen("playing");
+    announce(firstLabel, true);
   };
 
   const handleTile=(tile)=>{
@@ -763,7 +885,7 @@ function BEDUNinjaLauncher() {
       <BEDUNinjaGame
         initialStageId={launchStage}
         initialJourney={launchJourney}
-        onGoLauncher={()=>setView("launcher")}
+        onGoLauncher={()=>{ cancelSpeech(); setView("launcher"); }}
         onMarkComplete={handleMarkComplete}
       />
     );
